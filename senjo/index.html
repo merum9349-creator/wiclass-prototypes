@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Wiclass プロトタイプ — 戦場</title>
+<title>Wiclass プロトタイプ — 戦場（2026-11-01）</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{
-    /* DESIGN.md のトークン（20260927-他人のプロフィール.html と同値） */
+    /* DESIGN.md のトークン */
     --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
     --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
     --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
@@ -16,126 +16,159 @@
   }
   body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
     min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;}
-  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:400px;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:420px;}
   .caption b{color:var(--text-secondary);font-weight:500;}
 
-  /* スマホ枠（モバイルファースト：最大幅430px） */
+  /* スマホ枠 */
   .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
     border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
   .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;
     background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
 
-  /* ===== ステータスバー風ヘッダー ===== */
+  /* ヘッダー */
   .topbar{flex:0 0 auto;z-index:20;display:flex;align-items:center;gap:12px;padding:34px 16px 0;height:82px;
     background:var(--bg-surface);border-bottom:1px solid var(--border);}
   .topbar .t{font-family:'Noto Serif JP';font-size:20px;font-weight:500;letter-spacing:.05em;line-height:1.4;}
-  .topbar .bal{margin-left:auto;font-family:'IBM Plex Mono';font-size:14px;color:var(--accent-gold);}
-  .topbar .filter{width:32px;height:32px;border-radius:3px;border:1px solid var(--border);background:var(--bg-card);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .3s ease-out;}
-  .topbar .filter svg{width:16px;height:16px;stroke:var(--text-secondary);}
-  .topbar .filter.on{border-color:var(--text-secondary);}
-  .topbar .filter.on::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--text-primary);}
+  /* 手持ちのいいね：ヘッダーで一番目立たせる（金色＝いいねの色） */
+  .topbar .bal{margin-left:auto;display:flex;align-items:center;gap:8px;padding:5px 14px 5px 10px;border-radius:22px;
+    background:linear-gradient(135deg,#c4a35a2e,#b873332e);border:1px solid var(--accent-gold);box-shadow:0 0 16px #c4a35a33;}
+  .topbar .bal .hh{font-size:20px;color:var(--accent-gold);line-height:1;}
+  .topbar .bal .num{font-family:'IBM Plex Mono';font-size:22px;font-weight:500;color:var(--accent-gold);line-height:1;}
+  .topbar .bal .lab{font-family:'Noto Serif JP';font-size:10px;color:var(--text-secondary);line-height:1.2;}
+  .topbar .bal.bump .num{animation:bump .5s ease-out;}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
 
-  /* ===== フィード（縦スクロール。終端あり） ===== */
-  .body{flex:1;overflow-y:auto;scrollbar-width:none;padding:14px 16px 0;}
+  .body{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 0 0;}
   .body::-webkit-scrollbar{display:none;}
-  .feed{display:flex;flex-direction:column;gap:12px;}
+  .hide{display:none !important;}
 
-  /* カード共通（DESIGN.md 投稿カード準拠） */
-  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:18px 18px 16px;cursor:pointer;transition:background .3s ease-out;}
-  .card:active{background:var(--bg-hover);}
-  .card.hide{display:none;}
-  .head{display:flex;align-items:center;gap:10px;}
-  .av{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:flex;align-items:center;justify-content:center;
-    font-family:'Noto Serif JP';font-size:15px;font-weight:500;color:var(--text-primary);border:1px solid var(--border-light);}
+  /* 節の見出し */
+  .shead{display:flex;align-items:baseline;gap:8px;padding:16px 16px 8px;font-family:'Noto Serif JP';font-size:13px;font-weight:500;color:var(--text-secondary);}
+  .shead .n{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-primary);background:var(--accent-wine);border-radius:9px;padding:0 7px;line-height:1.6;}
+
+  /* ===== ① 届いているオファー：手紙。ワイン色の帯。フィードの上に固定でまとめる ===== */
+  .offers{padding:0 16px 6px;display:flex;flex-direction:column;gap:10px;}
+  .offer{position:relative;background:linear-gradient(180deg,#2e2523,#28231f);border:1px solid #5a3a36;border-left:4px solid var(--accent-wine);
+    border-radius:4px;padding:14px 14px 12px 14px;cursor:pointer;}
+  .offer .o-top{display:flex;align-items:center;gap:10px;}
+  .offer .o-icon{font-size:14px;color:#d49a94;}
+  .offer .o-lab{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;color:#d49a94;}
+  .offer .o-when{margin-left:auto;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .offer .o-who{display:flex;align-items:center;gap:10px;margin-top:10px;}
   .crest{width:32px;height:32px;border-radius:4px;flex:0 0 32px;display:flex;align-items:center;justify-content:center;
     font-family:'Noto Serif JP';font-size:15px;font-weight:500;color:var(--text-primary);border:1px solid var(--border-light);}
-  .who{min-width:0;flex:1;}
-  .nm{font-family:'Noto Serif JP';font-size:14px;font-weight:500;line-height:1.4;}
-  .one{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);line-height:1.5;margin-top:2px;}
-  .kind{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.1em;color:var(--text-secondary);
-    border:1px solid var(--border-light);border-radius:2px;padding:1px 6px;margin-left:auto;flex:0 0 auto;line-height:1.3;}
+  .offer .o-line{font-family:'Noto Serif JP';font-size:14px;line-height:1.55;}
+  .offer .o-line b{font-weight:600;}
+  .offer .o-msg{margin-top:10px;font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);line-height:1.75;
+    padding-left:10px;border-left:1px solid #5a3a36;}
+  .offer .o-from{margin-top:6px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);}
+  /* プレゼント（オファーに同封できるいいね）。金色＝いいねの色。リボンの箱で「贈り物」に見せる */
+  .gift{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px;border-radius:4px;
+    background:linear-gradient(135deg,#c4a35a22,#b8733322);border:1px solid #c4a35a66;}
+  .gift .box{position:relative;width:40px;height:40px;flex:0 0 40px;border-radius:4px;
+    background:linear-gradient(135deg,#e0c27a,var(--accent-gold) 50%,var(--accent-copper));box-shadow:0 0 14px #c4a35a44;}
+  .gift .box::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:6px;transform:translateX(-50%);background:var(--accent-wine);}
+  .gift .box::after{content:'';position:absolute;top:50%;left:0;right:0;height:6px;transform:translateY(-50%);background:var(--accent-wine);}
+  .gift .g-txt{flex:1;min-width:0;font-family:'Noto Serif JP';font-size:13px;line-height:1.5;color:var(--text-primary);}
+  .gift .g-txt b{font-family:'IBM Plex Mono';font-weight:500;color:var(--accent-gold);font-size:15px;}
+  .gift .g-sub{display:block;font-size:10.5px;color:var(--text-secondary);}
+  .gift .take{flex:0 0 auto;font-family:'Noto Serif JP';font-size:12px;padding:6px 12px;border-radius:3px;cursor:pointer;
+    color:var(--bg-deep);background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));border:none;}
+  .gift.opened{opacity:.75;} .gift.opened .box{filter:grayscale(.3);}
+  .gift.opened .take{background:transparent;color:var(--text-secondary);border:1px solid var(--border-light);cursor:default;}
+  .offer .o-gifted{font-family:'IBM Plex Mono';font-size:10px;color:var(--accent-gold);margin-left:8px;}
+  .offer .o-btns{display:flex;gap:8px;margin-top:12px;}
+  .offer .o-btns button{flex:1;padding:8px 0;border-radius:3px;font-family:'Noto Serif JP';font-size:13px;cursor:pointer;}
+  .offer .go{background:var(--accent-wine);color:var(--text-primary);border:1px solid var(--accent-wine);}
+  .offer .later{background:transparent;color:var(--text-secondary);border:1px solid var(--border-light);}
 
-  /* 状態バッジ（目立たせすぎない。ゴールドはいいね専用なので使わない） */
-  .state{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.06em;color:#8fa886;margin-left:auto;flex:0 0 auto;align-self:flex-start;line-height:1.3;padding-top:2px;}
-  .state.newbie{color:var(--text-muted);}
+  /* ===== ② おすすめ（クリップと求人が混ざる） ===== */
+  .divider{display:flex;align-items:center;gap:10px;padding:18px 16px 4px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
+  .divider::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  /* 所属組織タグ（コンパクト） */
-  .orgs{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:12px;}
-  .org{display:inline-flex;align-items:center;gap:5px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);line-height:1.3;}
-  .org i{width:8px;height:8px;border-radius:2px;display:inline-block;}
-  .org.none{color:var(--text-muted);}
-
-  /* スキルタグ（プロフィールのスキル表示と同じ枠線タグ） */
-  .skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-  .skills span{font-family:'Noto Serif JP';font-size:11px;color:var(--text-primary);border:1px solid var(--border-light);border-radius:2px;padding:2px 9px;line-height:1.5;}
-  .skills.want span{color:var(--text-secondary);}
-
-  .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;}
-  .mono9{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);line-height:1.3;}
-  .foot .mono9:only-child{margin-left:auto;}
-
-  /* クリップ（組織の発信。組織カードのクリップと同じ中身） */
-  .clipbody{display:flex;gap:12px;margin-top:12px;}
-  .cmedia{flex:0 0 72px;height:72px;border-radius:3px;position:relative;border:1px solid var(--border);}
-  .cplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:13px;color:var(--text-primary);opacity:.85;}
-  .clen{position:absolute;right:3px;bottom:2px;font-family:'IBM Plex Mono';font-size:8px;color:var(--text-primary);background:#0008;padding:0 3px;border-radius:2px;}
-  .ctext{flex:1;min-width:0;font-family:'Noto Serif JP';font-size:13px;line-height:1.7;color:var(--text-primary);word-break:auto-phrase;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-  .cpeople{display:flex;align-items:center;margin-top:10px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);}
-  .cpeople i{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid var(--bg-card);margin-left:-5px;}
-  .cpeople i:first-child{margin-left:0;}
-  .cpeople span{margin-left:6px;}
-
-  /* いいね（DESIGN.md：like-glow 背景・gold ボーダー・角丸3px） */
-  .like{font-family:'IBM Plex Mono';font-size:12px;color:var(--accent-gold);background:var(--like-glow);border:1px solid var(--accent-gold);
-    border-radius:3px;padding:3px 10px;cursor:pointer;position:relative;transition:transform .3s ease-out;}
-  .like:active{transform:scale(.96);}
+  /* クリップ：枠のない投稿。SNSの投稿と同じ見た目（人が先、組織は小さく） */
+  .clip{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .clip .c-top{display:flex;align-items:center;gap:10px;}
+  .av{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif JP';font-size:14px;font-weight:500;color:var(--text-primary);border:1px solid var(--border-light);}
+  .clip .c-nm{font-family:'Noto Serif JP';font-size:13.5px;font-weight:500;line-height:1.3;}
+  .clip .c-org{display:flex;align-items:center;gap:5px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);margin-top:2px;}
+  .clip .c-org i{width:8px;height:8px;border-radius:2px;display:inline-block;}
+  .clip .c-when{margin-left:auto;align-self:flex-start;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .clip .c-text{margin-top:8px;font-family:'Noto Serif JP';font-size:14px;line-height:1.75;}
+  .clip .c-media{margin-top:10px;aspect-ratio:16/9;border-radius:4px;position:relative;border:1px solid var(--border);}
+  .clip .c-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;
+    border:1px solid #e8e4d9aa;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .clip .c-len{position:absolute;right:6px;bottom:5px;font-family:'IBM Plex Mono';font-size:10px;background:#0009;padding:0 5px;border-radius:2px;}
+  .clip .c-foot{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  /* 一緒に関わった人はタイムラインでは出さない（2026-11-01）。クリップの詳細で見せる */
+  .clip .c-imp{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .like{margin-left:auto;font-family:'IBM Plex Mono';font-size:12px;color:var(--accent-gold);background:var(--like-glow);border:1px solid var(--accent-gold);
+    border-radius:3px;padding:3px 10px;cursor:pointer;}
   .like.done{background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);border-color:transparent;cursor:default;}
-  .like.fired{animation:glow .5s ease-out;}
-  @keyframes glow{0%{box-shadow:0 0 0 0 #c4a35aaa;}100%{box-shadow:0 0 24px 10px #c4a35a00;}}
 
-  /* 求人 */
-  .pos{font-family:'Noto Serif JP';font-size:16px;font-weight:500;line-height:1.5;margin-top:12px;}
-  .interest{display:block;width:100%;margin-top:14px;padding:10px 0;border-radius:3px;cursor:pointer;
-    font-family:'Noto Serif JP';font-size:13px;letter-spacing:.04em;color:var(--accent-gold);background:transparent;border:1px solid var(--accent-gold);
-    transition:background .3s ease-out,color .3s ease-out;}
-  .interest:active{background:var(--like-glow);}
-  .interest.done{background:var(--like-glow);cursor:default;}
+  /* 求人：点線の「空いている席」。組織カードの「募集中」と同じ見た目。組織が先、役割を大きく */
+  .job{margin:12px 16px;border:1px dashed var(--border-light);border-radius:4px;padding:14px 14px 12px;cursor:pointer;background:#1e1f1b;}
+  .job .j-lab{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;color:#8fa886;}
+  .job .j-lab .plus{font-size:14px;line-height:1;}
+  .job .j-org{display:flex;align-items:center;gap:8px;margin-top:10px;}
+  .job .j-org .crest{width:24px;height:24px;flex:0 0 24px;font-size:12px;}
+  .job .j-org span{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .job .j-role{margin-top:6px;font-family:'Noto Serif JP';font-size:17px;font-weight:600;line-height:1.5;text-wrap:balance;}
+  .job .j-desc{margin-top:6px;font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);line-height:1.75;}
+  .job .j-skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .job .j-skills span{font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);border:1px solid var(--border-light);border-radius:2px;padding:1px 8px;}
+  .job .join{display:block;width:100%;margin-top:12px;padding:9px 0;border-radius:3px;cursor:pointer;
+    font-family:'Noto Serif JP';font-size:13px;color:#a9c2a0;background:transparent;border:1px solid #6a8a61;}
+  .job .join .c{font-family:'IBM Plex Mono';font-size:11px;color:var(--accent-gold);margin-left:6px;}
+  .job .join.done{background:#4a674133;cursor:default;}
 
-  /* フィード終端（無限スクロールにしない） */
-  .end{padding:28px 0 40px;text-align:center;}
+
+  /* 返信ボタン（クリップの左下） */
+  .rep{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);background:transparent;border:1px solid var(--border-light);
+    border-radius:3px;padding:3px 10px;cursor:pointer;}
+  .rep span{font-family:'IBM Plex Mono';font-size:11px;margin-left:2px;}
+
+  /* クリップの詳細（下から出るシート）：本文・一緒に関わった人・返信 */
+  .dscrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40;}
+  .detail{position:absolute;left:0;right:0;bottom:0;top:70px;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;
+    transform:translateY(100%);transition:transform .4s ease-out;z-index:41;display:flex;flex-direction:column;}
+  .dopen .dscrim{opacity:1;pointer-events:auto;} .dopen .detail{transform:translateY(0);}
+  .detail .d-bar{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-family:'Noto Serif JP';font-size:14px;font-weight:500;}
+  .detail .d-bar .x{margin-left:auto;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:0 4px;}
+  .detail .d-body{flex:1;overflow-y:auto;scrollbar-width:none;}
+  .detail .d-clip{padding:14px 16px;border-bottom:1px solid var(--border);}
+  .detail .d-with{margin-top:12px;padding:10px 12px;background:var(--bg-card);border-radius:4px;}
+  .detail .d-with .k{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);}
+  .detail .d-with .ppl{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+  .detail .d-with .pp{display:flex;align-items:center;gap:6px;font-family:'Noto Serif JP';font-size:12.5px;}
+  .detail .d-with .pp i{width:22px;height:22px;border-radius:50%;display:inline-block;border:1px solid var(--border-light);}
+  .detail .r-head{padding:12px 16px 4px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
+  .reply{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .reply .av{width:30px;height:30px;flex:0 0 30px;font-size:12px;}
+  .reply .r-nm{font-family:'Noto Serif JP';font-size:12.5px;font-weight:500;}
+  .reply .r-nm .tag{font-family:'IBM Plex Mono';font-size:9px;font-weight:400;color:#8fa886;border:1px solid #6a8a61;border-radius:2px;padding:0 4px;margin-left:6px;}
+  .reply .r-nm .t{font-family:'IBM Plex Mono';font-size:9px;font-weight:400;color:var(--text-muted);margin-left:6px;}
+  .reply .r-tx{font-family:'Noto Serif JP';font-size:13px;line-height:1.7;margin-top:2px;}
+  .reply.mine{background:#c4a35a0d;}
+  .detail .d-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--bg-deep);}
+  .detail .d-input input{flex:1;min-width:0;background:var(--bg-card);border:1px solid var(--border-light);border-radius:18px;padding:8px 14px;
+    color:var(--text-primary);font-family:'Noto Serif JP';font-size:13px;outline:none;}
+  .detail .d-input button{flex:0 0 auto;border:none;border-radius:18px;padding:0 16px;background:var(--text-secondary);color:var(--bg-deep);
+    font-family:'Noto Serif JP';font-size:13px;cursor:pointer;}
+
+  .end{padding:28px 16px 40px;text-align:center;}
   .end .line{display:flex;align-items:center;gap:10px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
   .end .line::before,.end .line::after{content:'';flex:1;height:1px;background:var(--border);}
-  .end .mono9{margin-top:8px;}
-  .empty{display:none;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);text-align:center;padding:40px 0;}
 
-  /* フィルタ（下から出るシート） */
-  .scrim{position:absolute;inset:0;background:#1a1a17aa;opacity:0;pointer-events:none;transition:opacity .3s ease-out;z-index:40;}
-  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:4px 4px 0 0;
-    padding:20px 20px 28px;transform:translateY(100%);transition:transform .4s ease-out;z-index:41;}
-  .open .scrim{opacity:1;pointer-events:auto;}
-  .open .sheet{transform:translateY(0);}
-  .sheet .st{font-family:'Noto Serif JP';font-size:16px;font-weight:500;margin-bottom:14px;}
-  .opt{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;
-    font-family:'Noto Serif JP';font-size:14px;color:var(--text-secondary);transition:color .3s ease-out;}
-  .opt:last-child{border-bottom:none;}
-  .opt .ck{font-family:'IBM Plex Mono';font-size:12px;opacity:0;transition:opacity .3s ease-out;}
-  .opt.sel{color:var(--text-primary);}
-  .opt.sel .ck{opacity:1;}
-
-  .toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
-    background:var(--bg-card);border:1px solid var(--border-light);color:var(--text-primary);
-    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;
-    opacity:0;transition:all .4s ease-out;pointer-events:none;line-height:1.6;}
+  .toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* ===== 文字組み：日本語の改行を文節単位にする ===== */
   body{word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
-  .nm,.ttl,.pos{text-wrap:balance;}
-  .one,.prev,.toast{text-wrap:pretty;}
+  .c-text,.j-desc,.o-msg{text-wrap:pretty;}
 
-  /* ===== スマホで開いたとき：外枠を外して画面いっぱいに表示 ===== */
+  /* スマホで開いたとき：外枠を外して全画面 */
   @media (max-width:520px){
     body{padding:0;gap:0;background:var(--bg-deep);}
     .caption{display:none;}
@@ -143,185 +176,208 @@
     .notch{display:none;}
     .topbar{height:auto;padding:calc(env(safe-area-inset-top) + 14px) 16px 12px;}
     .end{padding-bottom:calc(env(safe-area-inset-bottom) + 40px);}
-    .sheet{padding-bottom:calc(env(safe-area-inset-bottom) + 28px);}
     .toast{width:auto;max-width:calc(100% - 40px);}
   }
 </style>
 </head>
 <body>
 
-<div class="caption">Wiclass プロトタイプ — <b>戦場</b>（初期案）。オファー可の個人・組織のクリップ・組織の求人が混ざって並ぶ。縦に読むが、終わりがある。</div>
+<div class="caption">Wiclass プロトタイプ — <b>戦場</b>（2026-11-01）。載せるのは「あなたに届いているオファー」と「おすすめ（クリップ・求人）」。3種類の見た目をはっきり分けた：オファー＝ワイン色の手紙（いいねのプレゼントを同封できる）／クリップ＝枠のない投稿／求人＝点線の空席。</div>
 
 <div class="phone" id="phone">
   <div class="notch"></div>
 
-  <!-- ステータスバー風ヘッダー：タイトル・♥残高・フィルタ -->
   <div class="topbar">
     <div class="t">戦場</div>
-    <div class="bal">♥ <span id="bal">12</span></div>
-    <div class="filter" id="filterBtn" onclick="openSheet()" aria-label="絞り込み">
-      <svg viewBox="0 0 16 16" fill="none" stroke-width="1.2" stroke-linecap="round"><path d="M2 3.5h12M4.5 8h7M7 12.5h2"/></svg>
-    </div>
+    <div class="bal" id="balBox"><span class="hh">♥</span><span class="num" id="bal">12</span><span class="lab">手持ち</span></div>
   </div>
 
   <div class="body">
-    <div class="feed" id="feed">
 
-      <!-- 1. 個人（ニュービー：インストールから1週間。意思表示ではないので「オファー可」とは区別して見せる） -->
-      <div class="card" data-type="person" onclick="toast('早瀬さんのプロフィールへ（モックでは省略）')">
-        <div class="head">
-          <div class="av" style="background:#4a6741">早</div>
-          <div class="who">
-            <div class="nm">早瀬 みのり</div>
-            <div class="one">イラストと、小さなアニメーションを作っています。</div>
+    <!-- ① あなたに届いているオファー（フィードの一番上にまとめる。DMの受信箱に近い） -->
+    <div data-type="offer" class="sec-offer">
+      <div class="shead">あなたに届いているオファー <span class="n">2</span></div>
+      <div class="offers">
+        <div class="offer" onclick="toast('オファーの詳細へ（モックでは省略）')">
+          <div class="o-top"><span class="o-icon">✉</span><span class="o-lab">OFFER</span><span class="o-gifted">♥ プレゼントつき</span><span class="o-when">2時間前</span></div>
+          <div class="o-who">
+            <div class="crest" style="background:#3d4f6a">夜</div>
+            <div class="o-line"><b>夜行ゲームス</b>が、あなたを気になっています</div>
           </div>
-          <div class="state newbie">ニュービー</div>
-        </div>
-        <div class="orgs"><span class="org none">まだ所属はありません</span></div>
-        <div class="skills"><span>イラスト</span><span>Live2D</span><span>After Effects</span></div>
-        <div class="foot"><span class="mono9">はじめて3日目</span><span class="mono9">最終ログイン 1時間前</span></div>
-      </div>
-
-      <!-- 2. 組織のクリップ（2026-11-01 旧プレスリリースをクリップに統一） -->
-      <div class="card" data-type="clip" onclick="toast('クリップの詳細へ（モックでは省略）')">
-        <div class="head">
-          <div class="crest" style="background:#3d4f6a">夜</div>
-          <div class="who"><div class="nm">夜行ゲームス</div></div>
-          <div class="kind">クリップ</div>
-        </div>
-        <div class="clipbody"><div class="cmedia" style="background:linear-gradient(150deg,#3d4f6a,#141820)"><span class="cplay">▶</span><span class="clen">0:45</span></div><div class="ctext">「LUNA」、今日からSteamで早期アクセスを始めました。2年かかった。</div></div>
-        <div class="cpeople"><i style="background:#8b3a3a"></i><i style="background:#8b3a3a"></i><i style="background:#4a6741"></i><span>田中・佐久間・Mizuki</span></div>
-        <div class="foot"><span class="mono9">5時間前　インプ 2,340</span><button class="like" onclick="like(event,this)">♥ <span>128</span></button></div>
-      </div>
-
-      <!-- 3. 個人（オファー可） -->
-      <div class="card" data-type="person" onclick="toast('佐久間さんのプロフィールへ（モックでは省略）')">
-        <div class="head">
-          <div class="av" style="background:#8b3a3a">佐</div>
-          <div class="who">
-            <div class="nm">佐久間 亮</div>
-            <div class="one">インディーゲームのサウンドを作って、作品の売上を伸ばす。</div>
+          <div class="o-msg">効果音まわりを一緒にやってくれる人を探しています。クリップを見て、声をかけました。まずは話だけでもどうですか。</div>
+          <div class="o-from">田中 健（創業）より</div>
+          <div class="gift" onclick="event.stopPropagation()">
+            <div class="box"></div>
+            <div class="g-txt">いいね <b>♥5</b> のプレゼントが届いています<span class="g-sub">夜行ゲームスから。話を聞くと受け取れます</span></div>
           </div>
-          <div class="state">◎ オファー可</div>
+          <div class="o-btns"><button class="go" onclick="takeAndReply(event,this,5)">♥5 を受け取って話を聞く</button><button class="later" onclick="reply(event,this,'あとで')">あとで</button></div>
         </div>
-        <div class="orgs"><span class="org"><i style="background:#3d4f6a"></i>夜行ゲームス</span><span class="org"><i style="background:#2c3e50"></i>週刊ざつだん</span></div>
-        <div class="skills"><span>効果音</span><span>環境音の収録</span><span>Wwise</span><span>ミックス</span></div>
-        <div class="foot"><span class="mono9">最終ログイン 3時間前</span></div>
-      </div>
-
-      <!-- 4. 組織求人 -->
-      <div class="card" data-type="job" onclick="toast('求人の詳細へ（モックでは省略）')">
-        <div class="head">
-          <div class="crest" style="background:#2c3e50">雑</div>
-          <div class="who"><div class="nm">週刊ざつだん</div></div>
-          <div class="kind">求人</div>
-        </div>
-        <div class="pos">ポッドキャストの切り抜き動画を作る人</div>
-        <div class="prev">毎週の配信から、1分前後の切り抜きを2〜3本作ってほしいです。どこを切るかのセンスも含めて、一緒に番組を育ててくれる人を探しています。</div>
-        <div class="skills want"><span>Premiere Pro</span><span>テロップ</span><span>サムネイル制作</span></div>
-        <button class="interest" onclick="interest(event,this)">気になっています ♥</button>
-      </div>
-
-      <!-- 5. 個人（オファー可）：しばらく使っていない人も「可」のまま並ぶ（2026-10-18 決定） -->
-      <div class="card" data-type="person" onclick="toast('森下さんのプロフィールへ（モックでは省略）')">
-        <div class="head">
-          <div class="av" style="background:#3d4f6a">森</div>
-          <div class="who">
-            <div class="nm">森下 恵</div>
-            <div class="one">商店街の空き店舗を、週末だけのカフェにしています。</div>
+        <div class="offer" onclick="toast('オファーの詳細へ（モックでは省略）')">
+          <div class="o-top"><span class="o-icon">✉</span><span class="o-lab">OFFER</span><span class="o-when">昨日</span></div>
+          <div class="o-who">
+            <div class="crest" style="background:#8b3a3a">軒</div>
+            <div class="o-line"><b>軒先カフェ計画</b>が、あなたを気になっています</div>
           </div>
-          <div class="state">◎ オファー可</div>
+          <div class="o-from">佐々木 美穂（創業）より</div>
+          <div class="o-btns"><button class="go" onclick="reply(event,this,'話を聞く')">話を聞く</button><button class="later" onclick="reply(event,this,'あとで')">あとで</button></div>
         </div>
-        <div class="orgs"><span class="org"><i style="background:#8b3a3a"></i>軒先カフェ計画</span></div>
-        <div class="skills"><span>店舗運営</span><span>SNS運用</span><span>写真</span><span>イベント企画</span></div>
-        <div class="foot"><span class="mono9">最終ログイン 12日前</span></div>
       </div>
-
-      <!-- 6. 組織のクリップ（2026-11-01 旧プレスリリースをクリップに統一） -->
-      <div class="card" data-type="clip" onclick="toast('クリップの詳細へ（モックでは省略）')">
-        <div class="head">
-          <div class="crest" style="background:#4a6741">ハ</div>
-          <div class="who"><div class="nm">ハコ予約</div></div>
-          <div class="kind">クリップ</div>
-        </div>
-        <div class="clipbody"><div class="ctext">美容室だけでなく、整体やネイルにも使えるんじゃないかと思い始めている。</div></div>
-        <div class="cpeople"><i style="background:#8b3a3a"></i><span>木村</span></div>
-        <div class="foot"><span class="mono9">2日前　インプ 358</span><button class="like" onclick="like(event,this)">♥ <span>64</span></button></div>
-      </div>
-
     </div>
 
-    <div class="empty" id="empty">この条件で並んでいるものはありません。</div>
+    <!-- ② おすすめ（関心がありそうなクリップと求人） -->
+    <div class="divider">あなたへのおすすめ</div>
 
-    <!-- 終端：無限スクロールにしない（理由：未確認。Dispatchでの作成時に入った） -->
-    <div class="end">
-      <div class="line">ここまでです</div>
-      <div class="mono9" id="count">6件</div>
+    <!-- クリップ：枠なし。書いた人が先頭、組織は名前の下に小さく -->
+    <div class="clip" data-type="clip" data-id="luna" onclick="openDetail(event,'luna')">
+      <div class="c-top">
+        <div class="av" style="background:#8b3a3a">田</div>
+        <div><div class="c-nm">田中 健</div><div class="c-org"><i style="background:#3d4f6a"></i>夜行ゲームス</div></div>
+        <div class="c-when">5時間前</div>
+      </div>
+      <div class="c-text">「LUNA」、今日からSteamで早期アクセスを始めました。2年かかった。</div>
+      <div class="c-media" style="background:linear-gradient(150deg,#3d4f6a,#141820)"><span class="c-play">▶</span><span class="c-len">0:45</span></div>
+      <div class="c-foot">
+        <button class="rep" onclick="openDetail(event,'luna')">返信 <span>3</span></button>
+        <span class="c-imp">インプ 2,340</span>
+        <button class="like" onclick="like(event,this)">♥ <span>128</span></button>
+      </div>
     </div>
+
+    <!-- 求人：点線の空席。組織が先頭、役割を大きく、参加リクエストで応える -->
+    <div class="job" data-type="job" onclick="toast('求人の詳細へ（モックでは省略）')">
+      <div class="j-lab"><span class="plus">＋</span>メンバー募集</div>
+      <div class="j-org"><div class="crest" style="background:#2c3e50">雑</div><span>週刊ざつだん</span></div>
+      <div class="j-role">ポッドキャストの切り抜き動画を作る人</div>
+      <div class="j-desc">毎週の配信から、1分前後の切り抜きを2〜3本作ってほしいです。どこを切るかのセンスも含めて、一緒に番組を育ててくれる人を探しています。</div>
+      <div class="j-skills"><span>Premiere Pro</span><span>テロップ</span><span>サムネイル制作</span></div>
+      <button class="join" onclick="join(event,this)">参加リクエスト<span class="c">♥1</span></button>
+    </div>
+
+    <div class="clip" data-type="clip" data-id="haco" onclick="openDetail(event,'haco')">
+      <div class="c-top">
+        <div class="av" style="background:#8b3a3a">木</div>
+        <div><div class="c-nm">木村 翔</div><div class="c-org"><i style="background:#4a6741"></i>ハコ予約</div></div>
+        <div class="c-when">2日前</div>
+      </div>
+      <div class="c-text">美容室だけでなく、整体やネイルにも使えるんじゃないかと思い始めている。</div>
+      <div class="c-foot">
+        <button class="rep" onclick="openDetail(event,'haco')">返信 <span>2</span></button>
+        <span class="c-imp">インプ 358</span>
+        <button class="like" onclick="like(event,this)">♥ <span>64</span></button>
+      </div>
+    </div>
+
+    <div class="clip" data-type="clip" data-id="zatsu" onclick="openDetail(event,'zatsu')">
+      <div class="c-top">
+        <div class="av" style="background:#3d4f6a">渡</div>
+        <div><div class="c-nm">渡辺 由衣</div><div class="c-org"><i style="background:#2c3e50"></i>週刊ざつだん</div></div>
+        <div class="c-when">2日前</div>
+      </div>
+      <div class="c-text">リスナーさんをゲストに呼ぶ回をやってみたい。</div>
+      <div class="c-foot">
+        <button class="rep" onclick="openDetail(event,'zatsu')">返信 <span>4</span></button>
+        <span class="c-imp">インプ 890</span>
+        <button class="like" onclick="like(event,this)">♥ <span>31</span></button>
+      </div>
+    </div>
+
+    <div class="job" data-type="job" onclick="toast('求人の詳細へ（モックでは省略）')">
+      <div class="j-lab"><span class="plus">＋</span>メンバー募集</div>
+      <div class="j-org"><div class="crest" style="background:#4a6741">ハ</div><span>ハコ予約</span></div>
+      <div class="j-role">Webアプリを一緒に作るエンジニア</div>
+      <div class="j-desc">Webアプリの開発経験があり、Next.jsかFlutterを使える方を探しています。技術の判断を一緒にしてくれると助かります。</div>
+      <div class="j-skills"><span>Next.js</span><span>Flutter</span></div>
+      <button class="join" onclick="join(event,this)">参加リクエスト<span class="c">♥1</span></button>
+    </div>
+
+    <div class="clip" data-type="clip" data-id="purin" onclick="openDetail(event,'purin')">
+      <div class="c-top">
+        <div class="av" style="background:#3d3530">伊</div>
+        <div><div class="c-nm">伊藤</div><div class="c-org"><i style="background:#8b3a3a"></i>軒先カフェ計画</div></div>
+        <div class="c-when">3時間前</div>
+      </div>
+      <div class="c-text">かぼちゃのプリン、2日で売り切れました。</div>
+      <div class="c-media" style="background:linear-gradient(135deg,#6b5a3e,#2a2318)"></div>
+      <div class="c-foot">
+        <button class="rep" onclick="openDetail(event,'purin')">返信 <span>1</span></button>
+        <span class="c-imp">インプ 1,870</span>
+        <button class="like" onclick="like(event,this)">♥ <span>92</span></button>
+      </div>
+    </div>
+
+    <div class="end"><div class="line">ここまでです</div></div>
   </div>
 
-  <!-- フィルタシート -->
-  <div class="scrim" onclick="closeSheet()"></div>
-  <div class="sheet">
-    <div class="st">絞り込み</div>
-    <div class="opt sel" data-f="all" onclick="setFilter(this)">すべて<span class="ck">✓</span></div>
-    <div class="opt" data-f="person" onclick="setFilter(this)">個人<span class="ck">✓</span></div>
-    <div class="opt" data-f="clip" onclick="setFilter(this)">クリップ<span class="ck">✓</span></div>
-    <div class="opt" data-f="job" onclick="setFilter(this)">求人<span class="ck">✓</span></div>
+
+  <!-- クリップの詳細（返信つき）。返信は無料（AI判断・要確認） -->
+  <div class="dscrim" onclick="closeDetail()"></div>
+  <div class="detail" id="detail">
+    <div class="d-bar">クリップ<span class="x" onclick="closeDetail()">×</span></div>
+    <div class="d-body" id="dBody"></div>
+    <div class="d-input"><input id="rIn" placeholder="返信する" onkeydown="if(event.key==='Enter')sendReply()"><button onclick="sendReply()">送信</button></div>
   </div>
 
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
-  const phone = document.getElementById('phone');
-  let t;
-  // トースト表示
-  function toast(msg){
-    const el = document.getElementById('toast');
-    el.textContent = msg; el.classList.add('show');
-    clearTimeout(t); t = setTimeout(() => el.classList.remove('show'), 2200);
+  const phone=document.getElementById('phone');let t;
+  // トースト
+  function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(t);t=setTimeout(()=>el.classList.remove('show'),2200);}
+  // 手持ちを1減らす（足りなければ false）
+  function bump(){const x=document.getElementById('balBox');x.classList.remove('bump');void x.offsetWidth;x.classList.add('bump');}
+  function spend(){const b=document.getElementById('bal');const v=parseInt(b.textContent,10);if(v<=0){toast('♥が足りません');return false;}b.textContent=v-1;bump();return true;}
+  // クリップへのいいね（1回きり）
+  function like(e,btn){e.stopPropagation();if(btn.classList.contains('done')||!spend())return;const n=btn.querySelector('span');n.textContent=parseInt(n.textContent,10)+1;btn.classList.add('done');}
+  // 求人への参加リクエスト（♥1消費。個人→組織の反応は参加リクエストに統一）
+  function join(e,btn){e.stopPropagation();if(btn.classList.contains('done')||!spend())return;btn.classList.add('done');btn.innerHTML='リクエスト済み';toast('参加リクエストを送りました。返事が来たら知らせます');}
+  // プレゼントつきのオファー：「話を聞く」と返事をすると、同封のいいねが手持ちに入る（受け取り＝返事）
+  function takeAndReply(e,btn,n){e.stopPropagation();const o=btn.closest('.offer');const g=o.querySelector('.gift');if(g.classList.contains('opened'))return;
+    const b=document.getElementById('bal');b.textContent=parseInt(b.textContent,10)+n;bump();g.classList.add('opened');
+    g.querySelector('.g-sub').textContent='受け取りました。手持ちに入っています';btn.textContent='話を聞くと返しました';
+    toast('♥'+n+' を受け取り、組織に「話を聞きたい」と返しました');}
+  // オファーへの返事
+  function reply(e,btn,kind){e.stopPropagation();toast(kind==='話を聞く'?'組織に「話を聞きたい」と返しました':'あとで見るに移しました');}
+  // ===== クリップの詳細と返信 =====
+  // 一緒に関わった人はタイムラインでは出さず、詳細で見せる
+  const clipData={
+    luna:{with:[['佐久間','#8b3a3a'],['Mizuki','#4a6741']],replies:[
+      ['高橋','#3d4f6a','','おめでとうございます。初期出資者として嬉しい。','4時間前'],
+      ['Mizuki','#4a6741','メンバー','2年分のドットがやっと人に見てもらえる。','4時間前'],
+      ['小林','#5a4a40','','効果音、どうやって録ってるのか気になります。','2時間前']]},
+    haco:{with:[],replies:[
+      ['Aya','#3d3530','','ネイルサロン、まさに電話予約で困ってました。','1日前'],
+      ['林','#3d4f6a','メンバー','整体の知り合いに聞いてみます。','1日前']]},
+    zatsu:{with:[['加藤','#8b3a3a']],replies:[
+      ['yui','#4a6741','','出たいです。会社員3年目の転職の話ならできます。','2日前'],
+      ['斎藤','#3d3530','','毎週聞いてます。ゲスト回、楽しみ。','1日前'],
+      ['加藤','#8b3a3a','メンバー','応募フォーム作りますね。','1日前'],
+      ['前田','#2c3e50','','編集、手伝えるかもしれません。','20時間前']]},
+    purin:{with:[['佐々木','#4a6741']],replies:[
+      ['Hana','#4a4455','','次はいつ出ますか。','2時間前']]}
+  };
+  let curId=null;
+  function openDetail(e,id){
+    if(e)e.stopPropagation();curId=id;
+    const card=document.querySelector('.clip[data-id="'+id+'"]').cloneNode(true);
+    card.removeAttribute('onclick');card.className='d-clip';card.querySelectorAll('.rep').forEach(x=>x.remove());
+    const d=clipData[id];
+    const withHTML=d.with.length?'<div class="d-with"><div class="k">一緒に関わった人</div><div class="ppl">'+d.with.map(w=>'<span class="pp"><i style="background:'+w[1]+'"></i>'+w[0]+'</span>').join('')+'</div></div>':'';
+    const body=document.getElementById('dBody');
+    body.innerHTML='';body.appendChild(card);card.insertAdjacentHTML('beforeend',withHTML);
+    body.insertAdjacentHTML('beforeend','<div class="r-head">返信 '+d.replies.length+'件</div>'+d.replies.map(replyHTML).join(''));
+    phone.classList.add('dopen');
   }
-  // 残高を1減らす。足りなければ false
-  function spend(){
-    const b = document.getElementById('bal');
-    const v = parseInt(b.textContent, 10);
-    if (v <= 0){ toast('♥が足りません'); return false; }
-    b.textContent = v - 1; return true;
-  }
-  // クリップへのいいね（1回きり。♥は通貨なので取り消さない）
-  function like(e, btn){
-    e.stopPropagation();
-    if (btn.classList.contains('done') || !spend()) return;
-    const n = btn.querySelector('span');
-    n.textContent = parseInt(n.textContent, 10) + 1;
-    btn.classList.add('done', 'fired');
-    setTimeout(() => btn.classList.remove('fired'), 500);
-  }
-  // 求人への「気になっています」（いいねを消費するかは未確定のため、モックでは消費しない）
-  function interest(e, btn){
-    e.stopPropagation();
-    if (btn.classList.contains('done')) return;
-    btn.classList.add('done');
-    btn.textContent = '気になっていると伝えました';
-    toast('組織に届きました（♥を消費するかは未確定）');
-  }
-  // フィルタ
-  function openSheet(){ phone.classList.add('open'); }
-  function closeSheet(){ phone.classList.remove('open'); }
-  function setFilter(opt){
-    document.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o === opt));
-    const f = opt.dataset.f;
-    let shown = 0;
-    document.querySelectorAll('.card').forEach(c => {
-      const hit = f === 'all' || c.dataset.type === f;
-      c.classList.toggle('hide', !hit);
-      if (hit) shown++;
-    });
-    document.getElementById('count').textContent = shown + '件';
-    document.getElementById('empty').style.display = shown ? 'none' : 'block';
-    document.getElementById('filterBtn').classList.toggle('on', f !== 'all');
-    setTimeout(closeSheet, 300);
+  function replyHTML(r,mine){return '<div class="reply'+(r[5]?' mine':'')+'"><div class="av" style="background:'+r[1]+'">'+r[0][0]+'</div><div><div class="r-nm">'+r[0]+(r[2]?'<span class="tag">'+r[2]+'</span>':'')+'<span class="t">'+r[4]+'</span></div><div class="r-tx">'+r[3]+'</div></div></div>';}
+  function closeDetail(){phone.classList.remove('dopen');}
+  // 返信を送る（無料。いいねは減らない）
+  function sendReply(){
+    const inp=document.getElementById('rIn');const v=inp.value.trim();if(!v||!curId)return;
+    const r=['あなた','#33322c','',v.replace(/</g,'&lt;'),'今',true];clipData[curId].replies.push(r);
+    const body=document.getElementById('dBody');body.insertAdjacentHTML('beforeend',replyHTML(r));
+    body.querySelector('.r-head').textContent='返信 '+clipData[curId].replies.length+'件';
+    document.querySelector('.clip[data-id="'+curId+'"] .rep span').textContent=clipData[curId].replies.length;
+    inp.value='';body.scrollTop=body.scrollHeight;
   }
 </script>
 </body>
