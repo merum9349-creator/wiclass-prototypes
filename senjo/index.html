@@ -196,29 +196,26 @@
 
     <!-- ① あなたに届いているオファー（フィードの一番上にまとめる。DMの受信箱に近い） -->
     <div data-type="offer" class="sec-offer">
-      <div class="shead">あなたに届いているオファー <span class="n">2</span></div>
       <div class="offers">
         <div class="offer" onclick="toast('オファーの詳細へ（モックでは省略）')">
-          <div class="o-top"><span class="o-icon">✉</span><span class="o-lab">OFFER</span><span class="o-gifted">♥ プレゼントつき</span><span class="o-when">2時間前</span></div>
+          <div class="o-top"><span class="o-icon">✉</span><span class="o-when">2時間前</span></div>
           <div class="o-who">
             <div class="crest" style="background:#3d4f6a">夜</div>
             <div class="o-line"><b>夜行ゲームス</b>が、あなたを気になっています</div>
           </div>
           <div class="o-msg">効果音まわりを一緒にやってくれる人を探しています。クリップを見て、声をかけました。まずは話だけでもどうですか。</div>
-          <div class="o-from">田中 健（創業）より</div>
           <div class="gift" onclick="event.stopPropagation()">
             <div class="box"></div>
-            <div class="g-txt">いいね <b>♥5</b> のプレゼントが届いています<span class="g-sub">夜行ゲームスから。話を聞くと受け取れます</span></div>
+            <div class="g-txt">いいね <b>♥5</b> のプレゼントが届いています</div>
           </div>
           <div class="o-btns"><button class="go" onclick="takeAndReply(event,this,5)">♥5 を受け取って話を聞く</button><button class="later" onclick="reply(event,this,'あとで')">あとで</button></div>
         </div>
         <div class="offer" onclick="toast('オファーの詳細へ（モックでは省略）')">
-          <div class="o-top"><span class="o-icon">✉</span><span class="o-lab">OFFER</span><span class="o-when">昨日</span></div>
+          <div class="o-top"><span class="o-icon">✉</span><span class="o-when">昨日</span></div>
           <div class="o-who">
             <div class="crest" style="background:#8b3a3a">軒</div>
             <div class="o-line"><b>軒先カフェ計画</b>が、あなたを気になっています</div>
           </div>
-          <div class="o-from">佐々木 美穂（創業）より</div>
           <div class="o-btns"><button class="go" onclick="reply(event,this,'話を聞く')">話を聞く</button><button class="later" onclick="reply(event,this,'あとで')">あとで</button></div>
         </div>
       </div>
@@ -334,7 +331,7 @@
   // プレゼントつきのオファー：「話を聞く」と返事をすると、同封のいいねが手持ちに入る（受け取り＝返事）
   function takeAndReply(e,btn,n){e.stopPropagation();const o=btn.closest('.offer');const g=o.querySelector('.gift');if(g.classList.contains('opened'))return;
     const b=document.getElementById('bal');b.textContent=parseInt(b.textContent,10)+n;bump();g.classList.add('opened');
-    g.querySelector('.g-sub').textContent='受け取りました。手持ちに入っています';btn.textContent='話を聞くと返しました';
+    btn.textContent='話を聞くと返しました';
     toast('♥'+n+' を受け取り、組織に「話を聞きたい」と返しました');}
   // オファーへの返事
   function reply(e,btn,kind){e.stopPropagation();toast(kind==='話を聞く'?'組織に「話を聞きたい」と返しました':'あとで見るに移しました');}
