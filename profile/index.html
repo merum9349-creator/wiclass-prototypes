@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 他人のプロフィール</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
+    --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:380px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+
+  .phone{width:360px;height:760px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;
+    background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
+  .topbar{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:12px;padding:34px 16px 10px;
+    background:linear-gradient(to bottom,#1a1a17ee 60%,#1a1a1700);}
+  .topbar .back{font-size:18px;color:var(--text-secondary);cursor:pointer;}
+  .topbar .t{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);letter-spacing:.16em;}
+  .body{flex:1;overflow-y:auto;scrollbar-width:none;}
+  .body::-webkit-scrollbar{display:none;}
+
+  /* ===== ヘッダー ===== */
+  /* ファーストビュー：顔の右に資本（影響力の指標） */
+  /* 名前の右に資本（名前より少し小さく、控えめに） */
+  .namerow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;}
+  .namerow .name{margin-top:0;}
+  .cap{font-family:'IBM Plex Mono';font-size:16px;color:var(--accent-gold);white-space:nowrap;text-align:right;line-height:1.5;}
+  .cap .ck{display:block;margin-right:0;line-height:1.3;}
+  .cap .ck{font-size:9px;letter-spacing:.14em;color:var(--text-muted);margin-right:6px;vertical-align:middle;}
+  .who .mission{margin-top:12px;}
+  .whoami{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:8px;}
+  .who .sense{font-size:12px;line-height:1.9;margin-top:12px;}
+
+  .cover{height:120px;position:relative;
+    background:radial-gradient(80% 90% at 70% 20%,#3d4f6a 0%,#23293a 45%,#1a1a17 100%);}
+  .cover::after{content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,#ffffff05 0 1px,transparent 1px 18px);}
+  .who{padding:0 22px;margin-top:-44px;position:relative;}
+  .face{width:88px;height:88px;border-radius:50%;border:3px solid var(--bg-deep);
+    background:linear-gradient(145deg,#8b3a3a,#3a1c1c);display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif JP';font-size:34px;font-weight:600;color:var(--text-primary);}
+  .name{font-family:'Noto Serif JP';font-size:28px;font-weight:600;margin-top:10px;letter-spacing:.04em;}
+  .name small{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text-muted);font-weight:400;margin-left:8px;font-style:italic;}
+  .title{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);margin-top:2px;}
+
+  .sec{padding:28px 22px 0;}
+  .lab{font-family:'Noto Serif JP';font-size:18px;font-weight:500;letter-spacing:.04em;color:var(--text-primary);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .lab::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* ① 志（イマジネーション・感性・ミッション） */
+  .mission{position:relative;padding-left:12px;}
+  .mission .pole{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--text-secondary);border-radius:1px;}
+  .mission .cloth{padding:14px 34px 14px 16px;clip-path:polygon(0 0,100% 0,90% 50%,100% 100%,0 100%);
+    background:linear-gradient(120deg,#8b3a3a,#8b3a3a99);font-family:'Noto Serif JP';font-size:17px;font-weight:600;line-height:1.6;}
+  .sense{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);line-height:2;margin-top:14px;}
+
+  /* ② キャリア・スキル */
+  .timeline{position:relative;padding-left:18px;}
+  .timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:var(--border-light);}
+  .tl{position:relative;padding-bottom:16px;}
+  .tl::before{content:'';position:absolute;left:-18px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--bg-deep);border:1px solid var(--text-secondary);}
+  .tl.now::before{background:var(--text-secondary);}
+  .tl .yr{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);}
+  .tl .what{font-family:'Noto Serif JP';font-size:14px;font-weight:500;}
+  .tl .det{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .skills span{font-family:'Noto Serif JP';font-size:12px;color:var(--text-primary);border:1px solid var(--border-light);border-radius:2px;padding:3px 10px;}
+
+  /* ③ これまでの成果物 */
+  .works{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .work{cursor:pointer;}
+  .work .th{aspect-ratio:1/1;border-radius:3px;border:1px solid var(--border);position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:7px;}
+  .work .th .kind{font-family:'IBM Plex Mono';font-size:8px;color:var(--text-primary);background:#1a1a17aa;border-radius:2px;padding:1px 6px;}
+  .work .th .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;
+    border:1px solid #e8e4d9aa;background:#1a1a1788;display:flex;align-items:center;justify-content:center;font-size:10px;padding-left:2px;}
+  .work .wt{font-family:'Noto Serif JP';font-size:13px;font-weight:500;margin-top:6px;line-height:1.4;}
+  .work .wm{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-secondary);margin-top:2px;}
+  .work .ok{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:2px;}
+  .work .ok b{color:var(--text-secondary);font-weight:500;}
+
+  /* ④ 所属と役割 */
+  .org{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+  .org:last-child{border-bottom:none;}
+  .crest{width:46px;height:46px;border-radius:4px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif JP';font-size:20px;font-weight:600;border:1px solid var(--border-light);}
+  .org .on{font-family:'Noto Serif JP';font-size:15px;font-weight:600;}
+  .org .role{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.08em;color:var(--text-primary);border:1px solid var(--text-secondary);border-radius:2px;padding:0 6px;margin-left:6px;vertical-align:middle;}
+  .org .of{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:3px;line-height:1.6;}
+  .org .since{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:3px;}
+  /* 所属：コンパクトなカルーセル（横スクロール） */
+  .org-carousel{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+  .org-carousel::-webkit-scrollbar{display:none;}
+  .org-chip{flex:0 0 auto;width:72px;border-radius:6px;border:1px solid var(--border-light);padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+  .org-chip span{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:18px;font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .org-chip p{font-family:'Noto Serif JP';font-size:9px;color:var(--text-secondary);text-align:center;line-height:1.4;padding:0 4px;}
+
+  /* ⑤ 資本 */
+  .capital{background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;padding:16px;}
+  .capital .row{display:flex;align-items:baseline;justify-content:space-between;}
+  .capital .k{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;color:var(--text-muted);}
+  .capital .v{font-family:'IBM Plex Mono';font-size:26px;color:var(--accent-gold);}
+  .capital .sub{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);margin-top:2px;}
+  .backs{margin-top:14px;border-top:1px solid var(--border);padding-top:10px;}
+  .back{display:flex;align-items:center;gap:10px;padding:6px 0;}
+  .back .c{width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:11px;border:1px solid var(--border-light);}
+  .back .n{font-family:'Noto Serif JP';font-size:13px;}
+  .back .no{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-secondary);}
+  .back .tag{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-secondary);border:1px solid var(--border-light);border-radius:2px;padding:0 5px;}
+  .back .amt{margin-left:auto;font-family:'IBM Plex Mono';font-size:12px;color:var(--accent-gold);}
+
+  .end{height:120px;}
+
+  /* 個人に投じるボタン（画面下に固定） */
+  .give{position:absolute;left:0;right:0;bottom:0;z-index:25;padding:22px 20px 20px;
+    background:linear-gradient(to bottom,#1a1a1700 0%,var(--bg-deep) 30%);}
+  .invest{width:100%;padding:13px;border:none;border-radius:4px;cursor:pointer;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);
+    font-family:'Noto Serif JP';font-size:14px;font-weight:600;letter-spacing:.04em;transition:transform .15s,opacity .3s;}
+  .invest:active{transform:scale(.98);}
+  .invest:disabled{opacity:.35;cursor:default;}
+  .invest .glow{position:absolute;inset:0;border-radius:4px;}
+  .invest.fired .glow{animation:glow .6s ease-out;}
+  @keyframes glow{0%{box-shadow:0 0 0 0 #c4a35aaa;}100%{box-shadow:0 0 36px 14px #c4a35a00;}}
+  .give .note{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;}
+  .give .mine{font-family:'IBM Plex Mono';color:var(--accent-gold);}
+  #recv{display:inline-block;transition:transform .3s;}
+  #recv.bump{transform:scale(1.3);}
+  .toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
+    background:var(--bg-card);border:1px solid var(--border-light);color:var(--text-primary);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;
+    opacity:0;transition:all .4s ease-out;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===== 文字組み：日本語の改行を文節単位にし、変な位置で折り返さない ===== */
+  body{word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .nm,.name,.g-title,.t1,.cloth,.wt,.sh-title,.on,.role,.what{text-wrap:balance;}
+  .desc,.ethos,.sense,.g-body,.note,.det,.of,.t2,.toast{text-wrap:pretty;}
+
+  /* ===== スマホで開いたとき：外枠を外して画面いっぱいに表示 ===== */
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption,.controls{display:none;}
+    .phone{width:100vw;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .topbar{padding-top:calc(env(safe-area-inset-top) + 14px);}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+
+  /* 名前と資本の並び：ローマ字は名前の下に回し、横幅を取りすぎない */
+  .namerow{align-items:flex-start;}
+  .name{font-size:24px;}
+  .name small{display:block;margin-left:0;font-size:14px;margin-top:2px;}
+  .cap{font-size:15px;flex:0 0 auto;}
+  .cap .ck{letter-spacing:.06em;}
+  .who{padding:0 20px;}
+  .sec{padding:26px 20px 0;}
+  .works{gap:12px;}
+  @media (max-width:520px){
+    .give{padding-bottom:calc(env(safe-area-inset-bottom) + 16px);}
+    .cover{height:calc(110px + env(safe-area-inset-top));}
+  }
+/* ── クリップ（組織カードと同じデザイン） ── */
+.clips{padding:0 0 8px;}
+.clip{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.clip:last-of-type{border-bottom:none;}
+.clip .c-media{flex:0 0 64px;height:64px;border-radius:3px;position:relative;border:1px solid var(--border);}
+.clip .c-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;color:var(--text-primary);opacity:.85;}
+.clip .c-len{position:absolute;right:3px;bottom:2px;font-family:'IBM Plex Mono';font-size:8px;color:var(--text-primary);background:#0008;padding:0 3px;border-radius:2px;}
+.clip .c-body{min-width:0;flex:1;}
+.clip .c-org-tag{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-secondary);margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.clip .c-org-dot{width:8px;height:8px;border-radius:2px;display:inline-block;}
+.clip .c-text{font-family:'Noto Serif JP';font-size:12px;line-height:1.65;color:var(--text-primary);word-break:auto-phrase;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.clip .c-cred{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:5px;font-size:10px;color:var(--text-secondary);font-family:'Noto Serif JP';}
+.clip .c-by,.clip .c-with{display:inline-flex;align-items:center;gap:4px;}
+.clip .c-cred i{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid var(--bg-card);}
+.clip .c-ago{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:3px;}
+.clip .c-imp{margin-left:10px;}
+.clip-all{display:block;text-align:center;margin-top:12px;padding:9px 0;border:1px solid var(--border-light);border-radius:3px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>他人のプロフィール</b>（組織の顔ぶれでアイコンをタップしたとき）。ファーストビューに受け取った資本と目標、所属組織。その下にキャリア／スキル／成果物／出資先。</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="topbar"><div class="back" onclick="toast('組織のページへ戻る（モックでは省略）')">←</div><div class="t">PROFILE</div></div>
+
+  <div class="body">
+
+    <!-- ファーストビュー：顔・資本・名前・志（肩書きと統合） -->
+    <div class="cover"></div>
+    <div class="who">
+      <div class="face">佐</div>
+      <div class="namerow">
+        <div class="name">佐久間 亮<small>Ryo Sakuma</small></div>
+        <div class="cap">
+          <div class="ck">佐久間が受け取った資本</div>
+          <div>♥ <span id="recv">486</span></div>
+        </div>
+      </div>
+      <div class="mission">
+        <div class="pole"></div>
+        <div class="cloth">インディーゲームのサウンドを作って、作品の売上を伸ばす。</div>
+      </div>
+      <div class="sense">
+        ゲーム会社で10年、効果音と環境音を担当してきました。2024年に独立し、今は夜行ゲームスで「LUNA」を制作しています。
+      </div>
+    </div>
+
+    <!-- 所属（FV内に所属組織を見せる） -->
+    <div class="sec"><div class="lab">所属</div>
+      <div class="org-carousel">
+        <div class="org-chip" style="background:linear-gradient(150deg,#3d4f6a,#1a1a17)"><span>夜</span><p>夜行ゲームス</p></div>
+        <div class="org-chip" style="background:linear-gradient(150deg,#2c3e50,#1a1a17)"><span>雑</span><p>週刊ざつだん</p></div>
+      </div>
+    </div>
+
+    <!-- ② キャリア・スキル -->
+    <div class="sec">
+      <div class="lab">キャリア</div>
+      <div class="timeline">
+        <div class="tl now"><div class="yr">2024 —</div><div class="what">独立し、夜行ゲームスを設立</div><div class="det">インディーゲームのサウンド全般を担当</div></div>
+        <div class="tl"><div class="yr">2014 — 2024</div><div class="what">ゲーム会社 サウンドデザイナー</div><div class="det">家庭用ゲーム12タイトルの効果音・環境音を担当</div></div>
+        <div class="tl"><div class="yr">2012 — 2014</div><div class="what">音響専門学校</div><div class="det">音響技術を専攻</div></div>
+      </div>
+    </div>
+
+    <!-- スキル -->
+    <div class="sec">
+      <div class="lab">スキル</div>
+      <div class="skills"><span>作曲</span><span>効果音</span><span>環境音の収録</span><span>Wwise</span><span>FMOD</span><span>ミックス</span></div>
+    </div>
+
+    <!-- ③ これまでの成果物 -->
+    <div class="sec">
+      <div class="lab">これまでの成果物</div>
+      <div class="works">
+        <div class="work" onclick="toast('外部サイト（Steam）へ（モックでは省略）')">
+          <div class="th" style="background:linear-gradient(160deg,#3d4f6a,#141820)"><div class="play">▶</div><span class="kind">サウンドトラック</span></div>
+          <div class="wt">「LUNA」オリジナル・サウンドトラック</div>
+          <div class="wm">Steam ／ 2026</div>
+          <div class="ok"><b>✓</b> 外部で確認できる</div>
+        </div>
+        <div class="work" onclick="toast('外部サイト（itch.io）へ（モックでは省略）')">
+          <div class="th" style="background:radial-gradient(90% 80% at 40% 30%,#6b5a3e,#1c1a15)"><span class="kind">短編ゲーム</span></div>
+          <div class="wt">短編ゲーム「TORO」</div>
+          <div class="wm">itch.io ／ 3,200 ダウンロード</div>
+          <div class="ok"><b>✓</b> 外部で確認できる</div>
+        </div>
+        <div class="work" onclick="toast('外部サイト（BOOTH）へ（モックでは省略）')">
+          <div class="th" style="background:linear-gradient(200deg,#2c3e50,#141414)"><div class="play">▶</div><span class="kind">素材集</span></div>
+          <div class="wt">ゲーム用効果音素材集（100種）</div>
+          <div class="wm">BOOTH ／ 販売数 850</div>
+          <div class="ok"><b>✓</b> 外部で確認できる</div>
+        </div>
+        <div class="work" onclick="toast('作品の詳細（モックでは省略）')">
+          <div class="th" style="background:linear-gradient(135deg,#4a6741,#1a1f17)"><span class="kind">選出</span></div>
+          <div class="wt">インディーゲーム展示会 選出作品</div>
+          <div class="wm">「TORO」 ／ 2023</div>
+          <div class="ok">本人の申告</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 資本の内訳：投じてきた先 -->
+    <div class="sec">
+      <div class="lab">出資先</div>
+      <div class="capital">
+        <div class="backs" style="margin-top:0;border-top:none;padding-top:0">
+          <div class="k" style="margin-bottom:4px">佐久間が出資している組織</div>
+          <div class="back"><div class="c" style="background:#4a6741">ハ</div><span class="n">ハコ予約</span><span class="no">第2号</span><span class="tag">初期</span><span class="amt">♥ 20</span></div>
+          <div class="back"><div class="c" style="background:#8b3a3a">軒</div><span class="n">軒先カフェ計画</span><span class="no">第9号</span><span class="tag">初期</span><span class="amt">♥ 12</span></div>
+          <div class="back"><div class="c" style="background:#2c3e50">雑</div><span class="n">週刊ざつだん</span><span class="no">第14号</span><span class="amt">♥ 7</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="lab">クリップ</div>
+      <div class="clips">
+        <div class="clip">
+          <div class="c-media" style="background:linear-gradient(150deg,#3d4f6a,#141820)">
+            <span class="c-play">▶</span><span class="c-len">2:34</span>
+          </div>
+          <div class="c-body">
+            <div class="c-org-tag"><span class="c-org-dot" style="background:#3d4f6a"></span>夜行ゲームス</div>
+            <div class="c-text">「LUNA」のサウンドデザイン、こんなふうに作ってます。効果音のレイヤー構造を解説します。</div>
+            <div class="c-cred"><span class="c-by"><i style="background:#8b3a3a"></i>佐久間</span><span class="c-with"><i style="background:#4a6741"></i>田中と一緒に</span></div>
+            <div class="c-ago">3週間前<span class="c-imp">インプ 2,100</span></div>
+          </div>
+        </div>
+        <div class="clip">
+          <div class="c-body">
+            <div class="c-org-tag"><span class="c-org-dot" style="background:#2c3e50"></span>週刊ざつだん</div>
+            <div class="c-text">第82回の編集後記です。今週はゲスト収録が3本重なって大変でした。</div>
+            <div class="c-cred"><span class="c-by"><i style="background:#8b3a3a"></i>佐久間</span></div>
+            <div class="c-ago">1ヶ月前<span class="c-imp">インプ 890</span></div>
+          </div>
+        </div>
+        <div class="clip">
+          <div class="c-media" style="background:linear-gradient(135deg,#3d4f6a,#1a1a17)">
+            <span class="c-play">▶</span><span class="c-len">0:58</span>
+          </div>
+          <div class="c-body">
+            <div class="c-org-tag"><span class="c-org-dot" style="background:#3d4f6a"></span>夜行ゲームス</div>
+            <div class="c-text">新マップのアンビエント音源、完成しました。</div>
+            <div class="c-cred"><span class="c-by"><i style="background:#8b3a3a"></i>佐久間</span><span class="c-with"><i style="background:#3d4f6a"></i><i style="background:#8b3a3a"></i><span>Mizuki・山本と一緒に</span></span></div>
+            <div class="c-ago">2ヶ月前<span class="c-imp">インプ 1,450</span></div>
+          </div>
+        </div>
+        <a class="clip-all">クリップをすべて見る ›</a>
+      </div>
+    </div>
+
+    <div class="end"></div>
+  </div>
+
+  <!-- 個人にも資本を投じる（画面下に固定） -->
+  <div class="give">
+    <button class="invest" id="invest"><span class="glow"></span>♥1 佐久間に投資する</button>
+    <div class="note">手持ちの <span class="mine">♥<span id="mine">3</span></span> から1つ使います</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="caption" style="opacity:.75">文言はポエム調・体言止めを避け、平易な説明文にしている。外部で確認できる成果物には印を付け、本人の申告と区別。金色は資本（いいね）だけ。</div>
+
+<script>
+  function toast(m){const t=document.getElementById('toast');t.innerHTML=m;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',1800);}
+
+  // 個人に資本を投じる（チュートリアル後なので何度でも押せる。手持ちが尽きるまで）
+  let mine=3,recv=486;
+  const btn=document.getElementById('invest');
+  btn.addEventListener('click',()=>{
+    if(mine<=0)return;
+    mine--;recv++;
+    document.getElementById('mine').textContent=mine;
+    const r=document.getElementById('recv');r.textContent=recv;r.classList.add('bump');setTimeout(()=>r.classList.remove('bump'),300);
+    btn.classList.remove('fired');void btn.offsetWidth;btn.classList.add('fired');
+    toast('佐久間に投資しました。<br>佐久間に通知が届きます。');
+    if(mine===0){btn.disabled=true;btn.lastChild.textContent='手持ちのいいねがありません（明日3つ補充）';}
+  });
+</script>
+</body>
+</html>
