@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 初回起動（資本3つ → 組織が並ぶ）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
+    --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:380px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .controls{display:flex;gap:8px;}
+  .controls button{font-family:'IBM Plex Mono';font-size:11px;background:var(--bg-card);color:var(--text-secondary);
+    border:1px solid var(--border);border-radius:3px;padding:5px 10px;cursor:pointer;}
+
+  .phone{width:360px;height:760px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;
+    background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
+
+  /* 画面の切り替え */
+  .view{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .5s ease-out;}
+  .view.active{opacity:1;pointer-events:auto;}
+
+  /* ===== 1. スプラッシュ ===== */
+  #v1{align-items:center;justify-content:center;text-align:center;padding:0 36px;
+    background:radial-gradient(120% 70% at 50% 40%,#26241f 0%,#1a1a17 70%);}
+  .logo{font-family:'Cormorant Garamond',serif;font-size:46px;letter-spacing:.08em;color:var(--text-primary);}
+  .tagline{font-family:'Noto Serif JP';font-size:14px;color:var(--text-secondary);margin-top:14px;letter-spacing:.06em;}
+  .start{margin-top:64px;font-family:'Noto Serif JP';font-size:14px;color:var(--text-primary);background:transparent;
+    border:1px solid var(--border-light);border-radius:3px;padding:12px 42px;cursor:pointer;letter-spacing:.1em;transition:all .4s;}
+  .start:hover{border-color:var(--text-secondary);}
+  .fine{position:absolute;bottom:40px;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);letter-spacing:.12em;}
+
+  /* ===== 2. 資本の授与 ===== */
+  #v2{align-items:center;justify-content:center;text-align:center;padding:0 34px;}
+  .g-label{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.2em;color:var(--text-muted);}
+  .g-title{font-family:'Noto Serif JP';font-size:22px;font-weight:500;margin-top:10px;line-height:1.6;}
+  .coins{display:flex;gap:18px;justify-content:center;margin:40px 0 36px;}
+  .coin{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:26px;color:var(--bg-deep);background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));
+    box-shadow:0 0 0 0 #c4a35a00;opacity:0;transform:translateY(14px) scale(.8);}
+  .coin.in{animation:coinIn .6s ease-out forwards;}
+  @keyframes coinIn{
+    0%{opacity:0;transform:translateY(14px) scale(.8);box-shadow:0 0 0 0 #c4a35a88;}
+    60%{opacity:1;transform:translateY(0) scale(1.05);box-shadow:0 0 34px 8px #c4a35a44;}
+    100%{opacity:1;transform:translateY(0) scale(1);box-shadow:0 0 18px 2px #c4a35a33;}
+  }
+  .g-body{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);line-height:2;}
+  .g-body em{font-style:normal;color:var(--accent-gold);font-family:'IBM Plex Mono';}
+  .go{margin-top:38px;font-family:'Noto Serif JP';font-size:14px;color:var(--text-primary);background:var(--bg-card);
+    border:1px solid var(--border-light);border-radius:3px;padding:12px 32px;cursor:pointer;opacity:0;transition:opacity .5s;}
+  .go.show{opacity:1;}
+
+  /* ===== 3. 組織が並ぶ ===== */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:36px 20px 12px;
+    background:var(--bg-surface);border-bottom:1px solid var(--border);}
+  .topbar .l{font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:.06em;}
+  .bal{display:flex;align-items:baseline;gap:6px;font-family:'IBM Plex Mono';color:var(--accent-gold);}
+  .bal .h{font-size:14px;}
+  .bal .n{font-size:18px;font-weight:500;transition:transform .3s;display:inline-block;}
+  .bal .n.bump{transform:scale(1.4);}
+  .bal .u{font-size:9px;color:var(--text-muted);letter-spacing:.1em;}
+  .intro{padding:18px 22px 4px;}
+  .intro .t1{font-family:'Noto Serif JP';font-size:17px;font-weight:500;}
+  .intro .t2{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:4px;}
+
+  /* 横にめくる：組織の切り替え ／ 縦にスクロール：組織の中身 */
+  .deck{flex:1;min-height:0;display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;padding:14px 22px 10px;}
+  .deck::-webkit-scrollbar{display:none;}
+  .org{flex:0 0 300px;scroll-snap-align:center;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;
+    display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;}
+  .org::-webkit-scrollbar{display:none;}
+  .org .head{padding:20px 18px 16px;position:relative;}
+  .org .band{position:absolute;inset:0 0 auto 0;height:3px;}
+  .org .row1{display:flex;align-items:center;gap:13px;}
+  .crest{width:54px;height:54px;border-radius:4px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif JP';font-size:24px;font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .org .ind{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;}
+  .org .nm{font-family:'Noto Serif JP';font-size:22px;font-weight:600;line-height:1.3;}
+  .org .ethos{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);margin-top:12px;}
+  .badge{display:inline-block;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.08em;color:var(--text-secondary);
+    border:1px solid var(--border-light);border-radius:2px;padding:1px 7px;margin-left:6px;vertical-align:middle;}
+
+  .capital{margin:0 18px;padding:12px 14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:3px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .capital .lab{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;color:var(--text-muted);}
+  .capital .sub{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:2px;}
+  .capital .val{font-family:'IBM Plex Mono';font-size:22px;color:var(--accent-gold);transition:transform .3s;}
+  .capital .val.bump{transform:scale(1.2);}
+
+  .sec{font-family:'Noto Serif JP';font-size:18px;font-weight:500;letter-spacing:.04em;color:var(--text-primary);padding:16px 18px 6px;}
+  .post{margin:0 18px;font-family:'Noto Serif JP';font-size:13px;line-height:1.7;color:var(--text-primary);
+    border-left:2px solid var(--border-light);padding-left:10px;}
+  .post .when{display:block;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:3px;}
+
+  /* メンバーの一言（仮称）：採用担当の一言＋その人の人となり */
+  .voice{margin:0 18px;padding:12px 14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;}
+  .voice .v-who{display:flex;gap:10px;align-items:flex-start;}
+  .voice .v-av{width:36px;height:36px;border-radius:50%;flex:0 0 auto;border:1px solid var(--border-light);}
+  .voice .v-id{min-width:0;}
+  .voice .v-nm{font-family:'Noto Serif JP';font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;}
+  .voice .v-role{font-family:'IBM Plex Mono';font-size:9px;font-weight:400;color:var(--text-muted);margin-left:6px;letter-spacing:.06em;}
+  .voice .v-bio{font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);line-height:1.6;margin-top:2px;word-break:auto-phrase;}
+  .voice .v-text{font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-primary);line-height:1.85;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);word-break:auto-phrase;text-wrap:pretty;}
+
+  /* クリップ（組織の発信）。カードが長くなりすぎないよう、1件は横並びのコンパクトな行にする */
+  .clips{padding:0 18px 24px;}
+  .clip{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .clip .c-media{flex:0 0 64px;height:64px;border-radius:3px;position:relative;border:1px solid var(--border);}
+  .clip .c-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;color:var(--text-primary);opacity:.85;}
+  .clip .c-len{position:absolute;right:3px;bottom:2px;font-family:'IBM Plex Mono';font-size:8px;color:var(--text-primary);background:#0008;padding:0 3px;border-radius:2px;}
+  .clip .c-body{min-width:0;flex:1;}
+  .clip .c-text{font-family:'Noto Serif JP';font-size:12px;line-height:1.65;color:var(--text-primary);word-break:auto-phrase;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .clip.textonly .c-text{-webkit-line-clamp:3;}
+  .clip .c-cred{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:5px;font-size:10px;color:var(--text-secondary);font-family:'Noto Serif JP';}
+  .clip .c-by,.clip .c-with{display:inline-flex;align-items:center;gap:4px;}
+  .clip .c-cred i{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid var(--bg-card);}
+  .clip .c-with i+i{margin-left:-6px;}
+  .clip .c-ago{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:3px;}
+  .clip .c-imp{margin-left:10px;} /* インプ（表示回数） */
+  .clip-all{display:block;text-align:center;margin-top:12px;padding:9px 0;border:1px solid var(--border-light);border-radius:3px;
+    font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);cursor:pointer;}
+
+  /* 顔ぶれ（スカッド。組織図にしない） */
+  .squad{display:flex;gap:10px;padding:2px 18px 0;}
+  .m{width:44px;text-align:center;}
+  .m .av{width:36px;height:36px;border-radius:50%;margin:0 auto 4px;border:1px solid var(--border-light);}
+  .m .r{font-family:'IBM Plex Mono';font-size:8px;color:var(--text-secondary);letter-spacing:.04em;}
+  .m.lead .av{box-shadow:0 0 0 2px var(--text-secondary);}
+  .m.more .av{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);background:var(--bg-surface);}
+
+  /* いま探している（空いている席。求人の見た目にしない） */
+  .seek{padding:2px 18px 0;}
+  .seat{border:1px dashed var(--border-light);border-radius:3px;padding:10px 12px;cursor:pointer;transition:border-color .3s;}
+  .seat:hover{border-color:var(--text-secondary);}
+  .seat .role{font-family:'Noto Serif JP';font-size:13px;font-weight:500;color:var(--text-primary);}
+  .seat .desc{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);line-height:1.75;margin-top:4px;}
+  .seek .more{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:6px;text-align:right;}
+
+  /* 旗（その組織が掲げる、形のある目的） */
+  .flag{margin-top:16px;position:relative;padding-left:12px;}
+  .flag .pole{position:absolute;left:0;top:-4px;bottom:-10px;width:2px;background:var(--text-secondary);border-radius:1px;}
+  .flag .lab{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.16em;color:var(--text-muted);margin-bottom:5px;}
+  .flag .cloth{padding:12px 30px 12px 14px;clip-path:polygon(0 0,100% 0,90% 50%,100% 100%,0 100%);
+    font-family:'Noto Serif JP';font-size:15px;font-weight:600;line-height:1.6;color:var(--text-primary);}
+
+  /* 出資者の名簿（要約）。募集中の下に置く */
+  .flag .pole{bottom:0;}
+  .roster-wrap{padding:16px 18px 0;}
+  .roster{margin-top:0;padding:10px 12px 6px;cursor:pointer;border-top:1px solid var(--border);}
+  .roster .r-head{font-family:'Noto Serif JP';font-size:13px;color:var(--text-primary);display:flex;align-items:baseline;gap:4px;}
+  .roster .r-head b{font-family:'IBM Plex Mono';font-weight:500;font-size:15px;display:inline-block;transition:transform .3s;}
+  .roster .r-head b.bump{transform:scale(1.35);}
+  .roster .r-more{margin-left:auto;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .roster .r-line{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--text-secondary);font-family:'Noto Serif JP';}
+  .roster .r-line .k{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.08em;color:var(--text-muted);width:40px;flex:0 0 auto;}
+  .roster .r-line .amt{font-family:'IBM Plex Mono';font-size:11px;color:var(--accent-gold);}
+  .roster .fav{display:flex;}
+  .roster .fav i{width:18px;height:18px;border-radius:50%;border:1px solid var(--bg-card);margin-left:-5px;display:block;}
+  .roster .fav i:first-child{margin-left:0;}
+  .roster .fav .plus{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);margin-left:6px;}
+  .r-new{overflow:hidden;max-height:0;transition:max-height .6s ease-out;}
+  .r-new.show{max-height:40px;}
+  .r-new .ink{margin-top:8px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-primary);
+    border-left:2px solid var(--accent-gold);padding:3px 0 3px 8px;
+    clip-path:inset(0 100% 0 0);transition:clip-path 1.1s ease-out;}
+  .r-new.show .ink{clip-path:inset(0 0 0 0);}
+  .r-new .ink .no{font-family:'IBM Plex Mono';color:var(--accent-gold);}
+
+  /* 全体の名簿（シート） */
+  .sheet-bg{position:absolute;inset:0;background:#0a0a09cc;z-index:60;opacity:0;pointer-events:none;transition:opacity .4s;}
+  .sheet-bg.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;height:78%;background:var(--bg-surface);border-top:1px solid var(--border-light);
+    border-radius:4px 4px 0 0;z-index:61;transform:translateY(100%);transition:transform .45s ease-out;display:flex;flex-direction:column;}
+  .sheet.show{transform:translateY(0);}
+  .sheet .sh-top{padding:16px 20px 12px;border-bottom:1px solid var(--border);position:relative;}
+  .sheet .sh-top .x{position:absolute;right:18px;top:14px;font-size:18px;color:var(--text-secondary);cursor:pointer;}
+  .sheet .sh-org{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;color:var(--text-muted);}
+  .sheet .sh-title{font-family:'Noto Serif JP';font-size:17px;font-weight:600;margin-top:2px;}
+  .sheet .sh-flag{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:4px;}
+  .sheet .sh-body{flex:1;overflow-y:auto;padding:6px 20px 24px;scrollbar-width:none;}
+  .sheet .sh-body::-webkit-scrollbar{display:none;}
+  .sh-sec{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;color:var(--text-muted);margin:18px 0 6px;}
+  .sh-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .sh-row .av{width:28px;height:28px;border-radius:50%;flex:0 0 auto;}
+  .sh-row .nm{font-family:'Noto Serif JP';font-size:13px;color:var(--text-primary);}
+  .sh-row .no{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);width:48px;flex:0 0 auto;}
+  .sh-row .amt{margin-left:auto;font-family:'IBM Plex Mono';font-size:12px;color:var(--accent-gold);}
+  .sh-row .rank{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-secondary);width:14px;}
+  .sh-row.me{background:#c4a35a12;}
+  .sh-row .you{font-family:'IBM Plex Mono';font-size:9px;color:var(--accent-gold);border:1px solid var(--accent-gold);border-radius:2px;padding:0 5px;margin-left:6px;}
+  .sh-rest{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);padding:10px 0;}
+
+  /* サムネイル（動画・画像） */
+  .thumb{margin:0 18px;flex:0 0 auto;aspect-ratio:1/1;border-radius:3px;position:relative;overflow:hidden;border:1px solid var(--border);
+    display:flex;align-items:flex-end;padding:10px;}
+  .thumb .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
+    border:1px solid #e8e4d9aa;background:#1a1a1788;display:flex;align-items:center;justify-content:center;
+    color:var(--text-primary);font-size:14px;padding-left:3px;}
+  .thumb .cap{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-primary);background:#1a1a17aa;border-radius:2px;padding:2px 7px;position:relative;}
+
+  /* 資本と投じるボタンを一体化 */
+  .stake{display:flex;align-items:stretch;border:1px solid var(--accent-gold);border-radius:4px;overflow:hidden;}
+  .stake .have{flex:1;padding:9px 12px;background:var(--bg-surface);}
+  .stake .have .lab{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.1em;color:var(--text-muted);}
+  .stake .have .val{font-family:'IBM Plex Mono';font-size:20px;color:var(--accent-gold);line-height:1.3;display:inline-block;transition:transform .3s;}
+  .stake .have .val.bump{transform:scale(1.2);}
+  .stake .invest{width:auto;flex:0 0 118px;border-radius:0;}
+  /* 参加リクエスト（♥1消費） */
+  .join{margin-left:auto;align-self:center;flex:0 0 auto;padding:5px 9px;border-radius:3px;cursor:pointer;background:transparent;
+    border:1px solid var(--border-light);color:var(--text-primary);font-family:'Noto Serif JP';font-size:11px;line-height:1.4;
+    transition:border-color .3s,opacity .3s;display:flex;flex-direction:column;align-items:center;}
+  .join:hover{border-color:var(--text-secondary);}
+  .join .cost{font-family:'IBM Plex Mono';font-size:10px;color:var(--accent-gold);}
+  .join.done{border-style:dashed;color:var(--text-secondary);cursor:default;}
+  .join:disabled{opacity:.35;cursor:default;}
+
+  /* 資本と投じるボタンはカード下部に固定（中身をスクロールしても常に見える） */
+  .org .foot{margin-top:auto;padding:14px 18px 16px;position:sticky;bottom:0;z-index:2;
+    background:linear-gradient(to bottom,#2a292400 0%,var(--bg-card) 18%);}
+  .org .foot::before{content:'';display:block;height:10px;}
+  .invest{width:100%;padding:13px;border:none;border-radius:4px;cursor:pointer;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);
+    font-family:'Noto Serif JP';font-size:14px;font-weight:600;letter-spacing:.04em;transition:transform .15s,opacity .3s;}
+  .invest:active{transform:scale(.98);}
+  .invest .glow{position:absolute;inset:0;border-radius:4px;}
+  .invest.fired .glow{animation:glow .6s ease-out;}
+  @keyframes glow{0%{box-shadow:0 0 0 0 #c4a35aaa;}100%{box-shadow:0 0 36px 14px #c4a35a00;}}
+  .invest.done{background:var(--like-glow);color:var(--accent-gold);border:1px solid var(--accent-gold);}
+  .invest:disabled{opacity:.35;cursor:default;}
+  .note{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;}
+  .note .mine{font-family:'IBM Plex Mono';color:var(--accent-gold);}
+
+  .dots{display:flex;justify-content:center;gap:6px;padding:4px 0 18px;}
+  .dots i{width:5px;height:5px;border-radius:50%;background:var(--border-light);display:block;transition:background .3s;}
+  .dots i.on{background:var(--text-secondary);}
+
+  .toast{position:absolute;bottom:44px;left:50%;transform:translateX(-50%) translateY(16px);
+    background:var(--bg-card);border:1px solid var(--accent-gold);color:var(--text-primary);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;
+    opacity:0;transition:all .4s ease-out;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===== 文字組み：日本語の改行を文節単位にし、変な位置で折り返さない ===== */
+  body{word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .nm,.name,.g-title,.t1,.cloth,.wt,.sh-title,.on,.role,.what{text-wrap:balance;}
+  .desc,.ethos,.sense,.g-body,.note,.det,.of,.t2,.toast{text-wrap:pretty;}
+
+  /* ===== スマホで開いたとき：外枠を外して画面いっぱいに表示 ===== */
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption,.controls{display:none;}
+    .phone{width:100vw;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .topbar{padding-top:calc(env(safe-area-inset-top) + 14px);}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+
+  /* 組織カード：幅を画面に合わせる（次のカードが少しのぞく） */
+  .org{flex:0 0 calc(100% - 18px);}
+  .org .row1{gap:10px;align-items:flex-start;}
+  .org .row1>div:nth-child(2){flex:1;min-width:0;}
+  .crest{width:46px;height:46px;font-size:21px;}
+  .org .nm{font-size:20px;}
+  .join{align-self:flex-start;}
+  .stake .have{padding:9px 10px;}
+  .stake .have .lab{letter-spacing:.04em;line-height:1.4;}
+  .stake .invest{flex:0 0 104px;font-size:13px;}
+  .g-title{font-size:21px;}
+  .g-body p{margin:0 0 4px;}
+  @media (max-width:520px){
+    #v1,#v2{padding-top:env(safe-area-inset-top);}
+    .org .foot{padding-bottom:calc(env(safe-area-inset-bottom) + 14px);}
+  }
+
+  /* 組織名を途中で折り返さない：参加リクエストは業界ラベルの行（名前の右上）に置く */
+  .indrow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .join{margin-left:0;flex-direction:row;gap:4px;padding:3px 8px;font-size:10px;white-space:nowrap;}
+  .org .nm{font-size:21px;margin-top:2px;word-break:keep-all;}
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass 初回起動モック — <b>①起動 → ②いいねを3つ受け取る → ③組織が並ぶ</b>。プロフィール入力はさせない。</div>
+<div class="controls">
+  <button onclick="go(1)">① 起動</button><button onclick="go(2)">② 資本</button><button onclick="go(3)">③ 組織</button>
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- ① スプラッシュ -->
+  <div class="view active" id="v1">
+    <div class="logo">wiclass</div>
+    <div class="tagline">まだ世に出ていないもの、全部。</div>
+    <button class="start" onclick="go(2)">はじめる</button>
+    <div class="fine">登録なしで、すぐに始められます</div>
+  </div>
+
+  <!-- ② 資本の授与 -->
+  <div class="view" id="v2">
+    <div class="g-label">WELCOME</div>
+    <div class="g-title">いいねを3つ受け取りました</div>
+    <div class="coins"><div class="coin">♥</div><div class="coin">♥</div><div class="coin">♥</div></div>
+    <div class="g-body">
+      <p><em>いいね</em>は、このアプリで使う通貨です。</p>
+      <p>気に入った組織に送ると、その組織への投資になります。</p>
+      <p>投資すると、相手に通知が届きます。</p>
+    </div>
+    <button class="go" id="goBtn" onclick="go(3)">組織を見る</button>
+  </div>
+
+  <!-- ③ 組織が並ぶ -->
+  <div class="view" id="v3">
+    <div class="topbar">
+      <div class="l">wiclass</div>
+      <div class="bal"><span class="h">♥</span><span class="n" id="bal">3</span><span class="u">あなたの手持ち</span></div>
+    </div>
+    <div class="intro">
+      <div class="t1">おすすめの組織</div>
+      <div class="t2">左右にスワイプで組織を切り替え、上下にスクロールで詳細を見られます。</div>
+    </div>
+    <div class="deck" id="deck"></div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- 全体の名簿（本来はエントランス側。モックではシートで表示） -->
+  <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="sh-top">
+      <div class="x" onclick="closeSheet()">✕</div>
+      <div class="sh-org" id="shOrg"></div>
+      <div class="sh-title">出資者一覧</div>
+      <div class="sh-flag" id="shFlag"></div>
+    </div>
+    <div class="sh-body" id="shBody"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="caption" style="opacity:.75">文言はポエム調・体言止めを避け、平易な説明文にしている。組織の例も創作系に偏らないよう、ゲーム／飲食／IT／メディアを混ぜている。</div>
+
+<script>
+  // 組織データ（業界色は DESIGN.md のジャンル色を流用）
+  const orgs=[
+    {name:'夜行ゲームス',crest:'夜',ind:'ゲーム開発',col:'#3d4f6a',light:'#8aa0c0',ethos:'インディーゲームを作っている5人のチームです。',
+     flag:'2Dアクション「LUNA」を完成させ、Steamで1万本売る。',
+     backers:{count:128,top:[['高橋',142,12],['さとう',98,3],['kenta',61,40]],
+       founders:['田中','Mizuki','さとう','名無し','山本','Aya','名無し','小林','ゆうと','中村']},
+     cap:312,spent:190,thumb:{video:true,label:'LUNA 紹介動画　0:45',bg:'linear-gradient(160deg,#3d4f6a 0%,#1f2530 55%,#12141a 100%)'},post:'',when:'',
+     squad:[['創業','#8b3a3a',1],['主力','#4a6741'],['主力','#3d4f6a'],['新参','#3d3530']],more:1,
+     clips:[
+       {m:'vid',ml:'0:12',bg:'linear-gradient(150deg,#3d4f6a,#141820)',t:'ボス戦の攻撃パターンを3種類に増やしました。',by:['田中','#8b3a3a'],with:[['Mizuki','#4a6741']],ago:'5時間前',imp:'2,340'},
+       {m:null,t:'LUNAの続編を作るなら、2人で協力プレイできるようにしたい。誰か遊びたい人いますか。',by:['山本','#3d4f6a'],with:[],ago:'昨日',imp:'1,108'},
+       {m:'img',bg:'linear-gradient(135deg,#4a4455,#1c1a22)',t:'2面の背景、どっちの色がいいか迷っています。',by:['Mizuki','#4a6741'],with:[],ago:'2日前',imp:'986'},
+       {m:null,t:'ゲームのBGMって、ループの継ぎ目が気にならない長さは何秒くらいなんだろう。',by:['田中','#8b3a3a'],with:[],ago:'4日前',imp:'640'},
+       {m:'img',bg:'linear-gradient(160deg,#3d3530,#18140f)',t:'テストプレイ会、5人来てくれました。ジャンプが難しいと全員に言われた。',by:['田中','#8b3a3a'],with:[['Mizuki','#4a6741'],['山本','#3d4f6a'],['Aya','#3d3530']],ago:'1週間前',imp:'1,512'}],
+     voice:{name:'田中 健',role:'創業',col:'#8b3a3a',bio:'昼はSIerでインフラを担当。夜と週末にゲームを作っています。',text:'5人とも会社員なので、平日の夜と週末に作業しています。週1回Discordで定例をして、あとは各自のペースで進めています。作曲の方には、まず1曲試しに作ってもらい、合いそうなら一緒にやりたいと考えています。'},
+     seek:[{role:'作曲',text:'ゲーム用のBGMを作れる方を募集しています。DAWでループ曲を作った経験がある方を歓迎します。'},
+           {role:'効果音'},{role:'シナリオ'}]},
+    {name:'軒先カフェ計画',crest:'軒',ind:'飲食・地域',col:'#8b3a3a',light:'#cc9999',ethos:'地方の空き店舗を使って、週末だけのカフェを運営しています。',
+     flag:'地方の空き店舗を使って、週末だけのカフェを運営するチーム。',
+     backers:{count:74,top:[['伊藤',80,2],['名無し',44,15],['Hana',30,7]],
+       founders:['佐々木','伊藤','りょう','名無し','鈴木','Hana','tomo','名無し','松本','井上']},
+     cap:188,spent:64,thumb:{video:false,label:'1号店の店内',bg:'linear-gradient(135deg,#6b5a3e 0%,#3a3325 55%,#1c1a15 100%)'},post:'',when:'',
+     squad:[['創業','#4a6741',1],['古参','#3d4f6a'],['主力','#3d3530'],['客演','#2c3e50']],more:3,
+     clips:[
+       {m:'img',bg:'linear-gradient(135deg,#6b5a3e,#2a2318)',t:'かぼちゃのプリン、2日で売り切れました。',by:['伊藤','#3d4f6a'],with:[['佐々木','#4a6741']],ago:'3時間前',imp:'1,870'},
+       {m:null,t:'冬は温かいスープだけの日を作るのはどうだろう。',by:['佐々木','#4a6741'],with:[],ago:'昨日',imp:'720'},
+       {m:null,t:'商店街の会長さんと話して、12月にもう1店舗借りられることになりました。',by:['佐々木','#4a6741'],with:[],ago:'3日前',imp:'1,230'},
+       {m:'vid',ml:'0:30',bg:'linear-gradient(150deg,#8b3a3a,#2a1414)',t:'土曜の店の様子です。',by:['tomo','#2c3e50'],with:[],ago:'5日前',imp:'2,015'},
+       {m:null,t:'お客さんに「次はいつ開くの」と聞かれることが増えた。営業日をSNSで先に出したほうがいいのかな。',by:['りょう','#3d3530'],with:[],ago:'1週間前',imp:'534'}],
+     voice:{name:'佐々木 美穂',role:'創業',col:'#4a6741',bio:'地方銀行で働きながら、地元の空き店舗の活用に取り組んでいます。',text:'今は月2回、土日だけ店を開けています。飲食の経験がないメンバーもいますが、手順はマニュアルにまとめてあります。地元の人が気軽に立ち寄れる場所を、一緒に作ってくれる方を探しています。'},
+     seek:[{role:'店舗運営',text:'飲食店で働いた経験があり、週末に店を任せられる方を募集しています。'},
+           {role:'SNS運用'},{role:'経理'}]},
+    {name:'ハコ予約',crest:'ハ',ind:'IT・Webサービス',col:'#4a6741',light:'#8aaa82',ethos:'個人経営の美容室向けに、予約アプリを開発しています。',
+     flag:'美容室の予約を、電話からアプリに変えるチーム。',
+     backers:{count:7,top:[['木村',20,1],['Taka',9,4],['名無し',5,2]],
+       founders:['木村','名無し','林','Taka','名無し','清水','山口']},
+     cap:41,spent:12,thumb:{video:false,label:'アプリの予約画面',bg:'linear-gradient(160deg,#4a6741 0%,#26331f 55%,#161a13 100%)'},small:true,post:'',when:'',
+     squad:[['創業','#8b3a3a',1],['新参','#3d4f6a']],more:0,
+     clips:[
+       {m:'img',bg:'linear-gradient(160deg,#4a6741,#161a13)',t:'予約の確認を、LINEで送れるようにしました。',by:['木村','#8b3a3a'],with:[],ago:'6時間前',imp:'412'},
+       {m:null,t:'美容室だけでなく、整体やネイルにも使えるんじゃないかと思い始めている。',by:['木村','#8b3a3a'],with:[],ago:'2日前',imp:'358'},
+       {m:null,t:'2店舗目の美容室で、来月から使ってもらえることになりました。',by:['木村','#8b3a3a'],with:[['林','#3d4f6a']],ago:'4日前',imp:'503'},
+       {m:'img',bg:'linear-gradient(135deg,#3d4f6a,#141820)',t:'予約一覧の画面、スタッフごとに分けるか、時間ごとに並べるか。どっちが見やすいですか。',by:['林','#3d4f6a'],with:[],ago:'6日前',imp:'287'},
+       {m:null,t:'試験運用中の店で、電話予約が週に20件ほど減ったそうです。',by:['木村','#8b3a3a'],with:[],ago:'2週間前',imp:'611'}],
+     voice:{name:'木村 翔',role:'創業',col:'#8b3a3a',bio:'美容室の受付を5年経験し、独学でプログラミングを始めました。',text:'まだ2人の小さなチームです。知り合いの美容室で試験運用をしていて、来月から2店舗目に導入します。技術の判断を一緒にしてくれるエンジニアが加わると、とても助かります。'},
+     seek:[{role:'エンジニア',text:'Webアプリの開発経験があり、Next.jsかFlutterを使える方を募集しています。'},
+           {role:'営業'},{role:'デザイン'}]},
+    {name:'週刊ざつだん',crest:'雑',ind:'メディア・ポッドキャスト',col:'#2c3e50',light:'#8899bb',ethos:'会社員3人で、仕事と生活の話をするポッドキャストを配信しています。',
+     flag:'会社員3人で、仕事と生活の話をするポッドキャスト。',
+     backers:{count:23,top:[['加藤',40,5],['yui',22,1],['名無し',12,9]],
+       founders:['yui','渡辺','名無し','斎藤','加藤','森','前田','名無し','藤田','岡本']},
+     cap:96,spent:30,thumb:{video:true,label:'第48回　42:10',bg:'linear-gradient(200deg,#2c3e50 0%,#1b2430 50%,#141414 100%)'},small:true,post:'',when:'',
+     squad:[['創業','#3d4f6a',1],['主力','#8b3a3a'],['新参','#4a6741']],more:0,
+     clips:[
+       {m:'vid',ml:'1:05',bg:'linear-gradient(200deg,#2c3e50,#141414)',t:'第48回の切り抜き。転職を考えたときの話です。',by:['渡辺','#3d4f6a'],with:[['加藤','#8b3a3a']],ago:'今日',imp:'3,204'},
+       {m:null,t:'リスナーさんをゲストに呼ぶ回をやってみたい。',by:['加藤','#8b3a3a'],with:[],ago:'2日前',imp:'890'},
+       {m:'img',bg:'linear-gradient(135deg,#4a4455,#1a1820)',t:'番組のロゴを作り直しました。',by:['森','#4a6741'],with:[['渡辺','#3d4f6a']],ago:'4日前',imp:'1,045'},
+       {m:null,t:'お便りが今月だけで30通届いた。全部読みたいけど、1回では無理そう。',by:['渡辺','#3d4f6a'],with:[],ago:'1週間前',imp:'762'},
+       {m:'img',bg:'linear-gradient(160deg,#3d3530,#161310)',t:'収録は毎週日曜の夜です。',by:['加藤','#8b3a3a'],with:[],ago:'10日前',imp:'498'}],
+     voice:{name:'渡辺 由衣',role:'創業',col:'#3d4f6a',bio:'メーカーの広報担当。人の話を聞くのが好きです。',text:'毎週日曜に収録して、水曜に配信しています。いちばん手間がかかるのは編集です。リスナーからのお便りを読む回が人気なので、そこを一緒に育ててくれる方を歓迎します。'},
+     seek:[{role:'音声編集',text:'音声編集ソフトを使える方を募集しています。毎週1本の編集を担当できる方だと助かります。'},
+           {role:'広報'},{role:'ゲストの調整'}]},
+  ];
+
+  let bal=3;
+  const $=s=>document.querySelector(s);
+
+  // 名前から顔アイコンの色を決める（名無しは無地）
+  const palette=['#8b3a3a','#4a6741','#3d4f6a','#3d3530','#2c3e50','#5a4a40','#4a4455'];
+  function colorFor(n){if(n==='名無し')return '#33322c';let h=0;for(const c of n)h+=c.charCodeAt(0);return palette[h%palette.length];}
+  // 創設期（第1〜10号）の顔アイコン列
+  function favHTML(o){
+    const f=o.backers.founders;const show=f.slice(0,5);
+    const rest=f.length-show.length;const empty=10-f.length;
+    return show.map(n=>`<i style="background:${colorFor(n)}"></i>`).join('')
+      +(rest>0?`<span class="plus">＋${rest}</span>`:'')
+      +(empty>0?`<span class="plus">残り ${empty} 人</span>`:'');
+  }
+  // クリップ1件を描画（画像・動画はサムネを左に、文字だけのクリップはサムネなし）
+  function clipHTML(c){
+    const media=c.m?`<div class="c-media" style="background:${c.bg}">${c.m==='vid'?`<span class="c-play">▶</span><span class="c-len">${c.ml}</span>`:''}</div>`:'';
+    const withs=c.with.length?`<span class="c-with">${c.with.map(w=>`<i style="background:${w[1]}"></i>`).join('')}<span>${c.with.map(w=>w[0]).join('・')}と一緒に</span></span>`:''; // 一緒に関わった人（「〜と一緒に」と添えて意味を分かるようにする）
+    return `<div class="clip${c.m?'':' textonly'}">${media}<div class="c-body">
+      <div class="c-text">${c.t}</div>
+      <div class="c-cred"><span class="c-by"><i style="background:${c.by[1]}"></i>${c.by[0]}</span>${withs}</div>
+      <div class="c-ago">${c.ago}<span class="c-imp">インプ ${c.imp}</span></div></div></div>`;
+  }
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',2400);}
+
+  // 画面遷移
+  function go(n){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    $('#v'+n).classList.add('active');
+    if(n===2) playCoins();
+  }
+  // 資本が3つ降りてくる演出
+  function playCoins(){
+    const coins=document.querySelectorAll('.coin');
+    coins.forEach(c=>c.classList.remove('in'));
+    $('#goBtn').classList.remove('show');
+    coins.forEach((c,i)=>setTimeout(()=>{void c.offsetWidth;c.classList.add('in');},300+i*380));
+    setTimeout(()=>$('#goBtn').classList.add('show'),300+3*380+400);
+  }
+
+  // 組織カードを描画
+  orgs.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='org';
+    const sq=o.squad.map(s=>`<div class="m ${s[2]?'lead':''}"><div class="av" style="background:${s[1]}"></div><div class="r">${s[0]}</div></div>`).join('')
+      +(o.more?`<div class="m more"><div class="av">+${o.more}</div><div class="r">&nbsp;</div></div>`:'');
+    el.innerHTML=`
+      <div class="head">
+        <div class="band" style="background:${o.col}"></div>
+        <div class="row1">
+          <div class="crest" style="background:linear-gradient(150deg,${o.col},#1a1a17)">${o.crest}</div>
+          <div>
+            <div class="indrow">
+              <div class="ind" style="color:${o.light}">${o.ind}${o.small?'<span class="badge">伸び盛り</span>':''}</div>
+              <button class="join" data-i="${i}">参加リクエスト<span class="cost">♥1</span></button>
+            </div>
+            <div class="nm">${o.name}</div>
+          </div>
+        </div>
+        <div class="flag">
+          <div class="pole"></div>
+          <div class="lab">ミッション</div>
+          <div class="cloth" style="background:linear-gradient(120deg,${o.col},${o.col}99)">${o.flag}</div>
+        </div>
+      </div>
+      <div class="thumb" style="background:${o.thumb.bg}">
+        ${o.thumb.video?'<div class="play">▶</div>':''}
+        <span class="cap">${o.thumb.label}</span>
+      </div>
+      <!-- メンバーの一言（仮称）：採用担当の一言・会社紹介にあたる欄。2026-10-18 追加 -->
+      <div class="sec">メンバーの一言</div>
+      <div class="voice">
+        <div class="v-who">
+          <div class="v-av" style="background:${o.voice.col}"></div>
+          <div class="v-id">
+            <div class="v-nm">${o.voice.name}<span class="v-role">${o.voice.role}</span></div>
+            <div class="v-bio">${o.voice.bio}</div>
+          </div>
+        </div>
+        <div class="v-text">${o.voice.text}</div>
+      </div>
+      <div class="sec">メンバー</div>
+      <div class="squad">${sq}</div>
+      <div class="sec">募集中</div>
+      <div class="seek">
+        <div class="seat" data-org="${o.name}" data-role="${o.seek[0].role}">
+          <div class="role">＋ ${o.seek[0].role}</div>
+          <div class="desc">${o.seek[0].text}</div>
+        </div>
+        ${o.seek.length>1?`<div class="more">ほか ${o.seek.length-1} 件：${o.seek.slice(1).map(s=>s.role).join('・')}</div>`:''}
+      </div>
+      <!-- 出資者（募集中の下に配置：2026-10-18） -->
+      <div class="roster-wrap">
+        <div class="roster" data-i="${i}">
+          <div class="r-head">出資者 <b data-cnt>${o.backers.count}</b>人<span class="r-more">一覧を見る ›</span></div>
+          <div class="r-line"><span class="k">筆頭</span>${o.backers.top[0][0]}<span class="amt">♥${o.backers.top[0][1]}</span></div>
+          <div class="r-line"><span class="k">初期</span><span class="fav" data-fav>${favHTML(o)}</span></div>
+          <div class="r-new" data-new><div class="ink"></div></div>
+        </div>
+      </div>
+      <!-- クリップ（組織の発信。進捗・アイデア・相談・つぶやきなど何でもよい）：2026-10-18 追加 -->
+      <div class="sec">クリップ</div>
+      <div class="clips">
+        ${o.clips.slice(0,5).map(clipHTML).join('')}
+        <a class="clip-all">クリップをすべて見る ›</a>
+      </div>
+      <div class="foot">
+        <div class="stake">
+          <div class="have">
+            <div class="st"><div class="lab">${o.name}が受け取った資本</div><div class="val" data-cap>♥ ${o.cap}</div></div>
+          </div>
+          <button class="invest" data-i="${i}"><span class="glow"></span>♥1 投資する</button>
+        </div>
+        <div class="note">手持ちの <span class="mine">♥<span data-mine>${bal}</span></span> から1つ使います</div>
+      </div>`;
+    $('#deck').appendChild(el);
+    const d=document.createElement('i');if(i===0)d.className='on';$('#dots').appendChild(d);
+  });
+
+  // 投資
+  document.querySelectorAll('.invest').forEach(b=>b.addEventListener('click',()=>{
+    if(bal<=0||b.classList.contains('done'))return;
+    const o=orgs[b.dataset.i];const card=b.closest('.org');
+    bal--;o.cap++;
+    const n=$('#bal');n.textContent=bal;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),300);
+    const v=card.querySelector('[data-cap]');v.textContent='♥ '+o.cap;v.classList.add('bump');setTimeout(()=>v.classList.remove('bump'),300);
+    b.classList.remove('fired');void b.offsetWidth;b.classList.add('fired');
+    setTimeout(()=>{b.classList.add('done');b.innerHTML='<span class="glow"></span>投資済み';},350);
+    // 各カードの「あなたの手持ち」も更新
+    document.querySelectorAll('[data-mine]').forEach(m=>m.textContent=bal);
+    // 名簿に名を連ねる
+    o.backers.count++;const no=o.backers.count;o.me=no;
+    const early=no<=10;if(early)o.backers.founders.push('名無し');
+    const rc=card.querySelector('[data-cnt]');rc.textContent=no;rc.classList.add('bump');setTimeout(()=>rc.classList.remove('bump'),300);
+    if(early)card.querySelector('[data-fav]').innerHTML=favHTML(o);
+    const nw=card.querySelector('[data-new]');
+    nw.querySelector('.ink').innerHTML=`<span class="no">第${no}号</span>　名無し（あなた）が出資しました${early?'（初期出資者）':''}`;
+    setTimeout(()=>nw.classList.add('show'),150);
+    // 名簿は募集中の下にあるので、出資者になった瞬間が見えるようにカード内をスクロール
+    {const r=card.querySelector('.roster');const top=r.getBoundingClientRect().top-card.getBoundingClientRect().top+card.scrollTop;
+     card.scrollTo({top:top-card.clientHeight/2+r.offsetHeight/2,behavior:'smooth'});} // カードの中だけ動かす（ページ全体は動かさない）
+    toast(early
+      ? `${o.name} の<b>第${no}号</b>の出資者になりました。<br>初期出資者（第1〜10号）に入りました。`
+      : `${o.name} の<b>第${no}号</b>の出資者になりました。<br>${o.name}に通知が届きます。`);
+    if(bal===0) lockAll();
+  }));
+
+  // 手持ちが尽きたら、まだ押していないボタンを押せなくする
+  function lockAll(){document.querySelectorAll('.invest:not(.done), .join:not(.done)').forEach(x=>x.disabled=true);}
+
+  // 参加リクエスト（♥1消費）
+  document.querySelectorAll('.join').forEach(b=>b.addEventListener('click',()=>{
+    if(bal<=0||b.classList.contains('done'))return;
+    const o=orgs[b.dataset.i];
+    bal--;
+    const n=$('#bal');n.textContent=bal;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),300);
+    document.querySelectorAll('[data-mine]').forEach(m=>m.textContent=bal);
+    b.classList.add('done');b.innerHTML='リクエスト済<span class="cost">♥1</span>';
+    toast(`${o.name} に参加リクエストを送りました。<br>返事が来たら通知します。`);
+    if(bal===0) lockAll();
+  }));
+
+  // 全体の名簿を開く
+  function row(inner,me){return `<div class="sh-row${me?' me':''}">${inner}</div>`;}
+  function openSheet(i){
+    const o=orgs[i];const b=o.backers;
+    $('#shOrg').textContent=o.name.toUpperCase()+'　・　'+b.count+'名';
+    $('#shFlag').textContent='ミッション：'+o.flag;
+    let h='<div class="sh-sec">筆頭出資者（投資額の上位3人）</div>';
+    b.top.forEach((t,k)=>{h+=row(`<span class="rank">${k+1}</span><div class="av" style="background:${colorFor(t[0])}"></div><span class="nm">${t[0]}</span><span class="no" style="margin-left:6px">第${t[2]}号</span><span class="amt">♥${t[1]}</span>`);});
+    h+='<div class="sh-sec">初期出資者（第1〜10号）</div>';
+    b.founders.forEach((n,k)=>{const me=o.me===k+1;
+      h+=row(`<span class="no">第${k+1}号</span><div class="av" style="background:${colorFor(n)}"></div><span class="nm">${n}</span>${me?'<span class="you">あなた</span>':''}`,me);});
+    if(b.founders.length<10) h+=`<div class="sh-rest">初期出資者の枠は、残り ${10-b.founders.length} 人です。</div>`;
+    h+='<div class="sh-sec">その他の出資者（番号順）</div>';
+    if(b.count>10){
+      const names=['名無し','西村','名無し','ken','原田','名無し','まい','石井'];
+      const shown=[];for(let n=Math.max(11,b.count-5);n<=b.count;n++)shown.push(n);
+      if(shown[0]>11) h+=`<div class="sh-rest">第11号〜第${shown[0]-1}号　ほか ${shown[0]-11} 名</div>`;
+      shown.forEach((n,k)=>{const me=o.me===n;const nm=me?'名無し':names[k%names.length];
+        h+=row(`<span class="no">第${n}号</span><div class="av" style="background:${colorFor(nm)}"></div><span class="nm">${nm}</span>${me?'<span class="you">あなた</span>':''}`,me);});
+    } else h+='<div class="sh-rest">まだ初期出資者のみです。</div>';
+    $('#shBody').innerHTML=h;$('#shBody').scrollTop=0;
+    $('#sheetBg').classList.add('show');$('#sheet').classList.add('show');
+  }
+  function closeSheet(){$('#sheetBg').classList.remove('show');$('#sheet').classList.remove('show');}
+  document.querySelectorAll('.roster').forEach(r=>r.addEventListener('click',()=>openSheet(r.dataset.i)));
+
+  // いま探している席をタップ
+  document.querySelectorAll('.seat').forEach(s=>s.addEventListener('click',()=>{
+    toast(`${s.dataset.org} は「${s.dataset.role}」の人を募集しています。<br>投資すると、あなたのことが${s.dataset.org}に通知されます。`);
+  }));
+
+  // めくり位置のドット
+  $('#deck').addEventListener('scroll',()=>{
+    const dk=$('#deck');const c0=dk.querySelector('.org');const step=c0?c0.offsetWidth+14:314;const idx=Math.round(dk.scrollLeft/step);
+    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===idx));
+  });
+</script>
+</body>
+</html>
