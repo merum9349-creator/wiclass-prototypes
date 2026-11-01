@@ -7,42 +7,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  color-scheme: light;
-  --bg: #F7F5F0;
-  --bg-card: #FFFFFF;
-  --border: #E8E4DC;
-  --border-light: #F0EDE8;
-  --text-primary: #1A1815;
-  --text-secondary: #6B6560;
-  --text-muted: #9E998F;
-  --accent-gold: #B8960C;
-  --accent-green: #3B7A57;
-  --accent-blue: #2C5F8A;
-  --tag-bg: #F0EDE8;
+  --bg-deep:     #0D0C0A;
+  --bg-surface:  #141210;
+  --bg-card:     #1C1A16;
+  --bg-hover:    #242018;
+  --border:      #2E2A24;
+  --border-light:#252118;
+  --text-primary:#E8E0D0;
+  --text-secondary:#A09080;
+  --text-muted:  #5E5648;
+  --accent-gold: #C8A840;
+  --accent-green:#4A9060;
+  --accent-blue: #4A7AAA;
+  --tag-bg:      #1E1C18;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Serif JP',serif;background:var(--bg);color:var(--text-primary);max-width:430px;margin:0 auto;min-height:100vh;}
+body{
+  font-family:'Noto Serif JP',serif;
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  max-width:430px;
+  margin:0 auto;
+  min-height:100vh;
+}
 
-/* HEADER */
+/* ─── HEADER ─── */
 .header{
   position:sticky;top:0;z-index:100;
-  background:var(--bg);
+  background:var(--bg-deep);
   border-bottom:1px solid var(--border);
   padding:12px 16px 10px;
 }
 .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.header-title{font-family:'Noto Serif JP';font-size:20px;font-weight:700;letter-spacing:.06em;}
+.header-title{font-family:'Noto Serif JP';font-size:20px;font-weight:700;letter-spacing:.08em;}
 .header-right{display:flex;align-items:center;gap:12px;}
 .heart-balance{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono';font-size:13px;color:var(--accent-gold);}
-.filter-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;}
+.filter-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-secondary);}
 
 /* TABS */
-.tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex:0 0 auto;padding:5px 14px;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
 .tab.active{color:var(--text-primary);border-bottom:2px solid var(--text-primary);}
 
-/* FEED */
+/* ─── FEED ─── */
 .feed{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
 
 /* CARD BASE */
@@ -51,58 +59,59 @@ body{font-family:'Noto Serif JP',serif;background:var(--bg);color:var(--text-pri
 /* ── 個人カード ── */
 .person-card{padding:14px;}
 .person-header{display:flex;align-items:flex-start;gap:10px;}
-.person-avatar{width:44px;height:44px;border-radius:50%;background:#DDD;flex:0 0 44px;border:1px solid var(--border);overflow:hidden;}
-.person-avatar img{width:100%;height:100%;object-fit:cover;}
+.person-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg-hover);flex:0 0 44px;border:1px solid var(--border);}
 .person-info{flex:1;min-width:0;}
 .person-name{font-size:14px;font-weight:500;letter-spacing:.02em;margin-bottom:2px;}
-.person-bio{font-size:11px;color:var(--text-secondary);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.status-badge{flex:0 0 auto;display:flex;align-items:center;gap:3px;font-family:'IBM Plex Mono';font-size:9px;padding:3px 7px;border-radius:3px;border:1px solid var(--border-light);}
-.status-badge.available{color:var(--accent-green);border-color:#C8E6D4;background:#F0FAF4;}
-.status-badge.newbie{color:var(--accent-blue);border-color:#C4D9F0;background:#EEF5FC;}
+.person-bio{font-size:11px;color:var(--text-secondary);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.status-badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono';font-size:9px;padding:3px 7px;border-radius:2px;}
+.status-badge.available{color:var(--accent-green);border:1px solid #2A5038;background:#0E2018;}
+.status-badge.newbie{color:var(--accent-blue);border:1px solid #243850;background:#0A1820;}
+
 .person-orgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
-.org-tag{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-secondary);background:var(--tag-bg);padding:2px 7px;border-radius:2px;}
+.org-tag{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-secondary);background:var(--tag-bg);padding:2px 7px;border-radius:2px;border:1px solid var(--border-light);}
 .org-dot{width:7px;height:7px;border-radius:2px;display:inline-block;}
+
 .skills{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
-.skill{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);background:var(--tag-bg);padding:2px 8px;border-radius:10px;}
+.skill{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);background:var(--tag-bg);padding:2px 8px;border-radius:10px;border:1px solid var(--border-light);}
+
 .person-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
 .last-seen{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
 .offer-btn{font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);border:1px solid var(--border);border-radius:3px;padding:4px 10px;background:transparent;cursor:pointer;}
 
-/* ── プレスリリースカード ── */
-.press-card{}
-.press-org-bar{display:flex;align-items:center;gap:8px;padding:10px 14px 8px;}
-.org-icon{width:28px;height:28px;border-radius:4px;background:#EEE;border:1px solid var(--border);flex:0 0 28px;}
+/* ── プレスリリース・求人 共通 ── */
+.org-bar{display:flex;align-items:center;gap:8px;padding:10px 14px 8px;}
+.org-icon{width:28px;height:28px;border-radius:4px;background:var(--bg-hover);border:1px solid var(--border);flex:0 0 28px;}
 .org-name{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-secondary);flex:1;}
-.card-type-label{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);background:var(--tag-bg);padding:2px 6px;border-radius:2px;}
+.card-label{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);background:var(--tag-bg);padding:2px 6px;border-radius:2px;border:1px solid var(--border-light);}
+
+/* ── プレスリリース ── */
 .press-body{padding:0 14px 12px;}
-.press-title{font-family:'Noto Serif JP';font-size:14px;font-weight:500;line-height:1.6;letter-spacing:.03em;margin-bottom:6px;}
+.press-title{font-family:'Noto Serif JP';font-size:14px;font-weight:500;line-height:1.65;letter-spacing:.03em;margin-bottom:6px;}
 .press-preview{font-size:11px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .press-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
-.press-date{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+.date{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
 .heart-btn{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);border:1px solid var(--border-light);border-radius:3px;padding:4px 10px;background:transparent;cursor:pointer;transition:color .15s,border-color .15s;}
 .heart-btn.liked{color:var(--accent-gold);border-color:var(--accent-gold);}
 
-/* ── 求人カード ── */
-.job-card{}
-.job-body{padding:12px 14px;}
+/* ── 求人 ── */
+.job-body{padding:0 14px 12px;}
 .job-position{font-family:'Noto Serif JP';font-size:16px;font-weight:500;letter-spacing:.03em;margin-bottom:6px;}
 .job-desc{font-size:11px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px;}
 .job-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
-.apply-btn{font-family:'Noto Serif JP';font-size:11px;color:var(--text-primary);border:1px solid var(--border);border-radius:3px;padding:5px 12px;background:transparent;cursor:pointer;}
+.detail-btn{font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);border:1px solid var(--border);border-radius:3px;padding:4px 12px;background:transparent;cursor:pointer;}
 
-/* SEPARATOR */
-.feed-end{text-align:center;padding:20px 0 32px;font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);}
+/* FEED END */
+.feed-end{text-align:center;padding:20px 0 40px;font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);}
 .feed-end span{display:block;margin-bottom:4px;}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-top">
     <div class="header-title">戦場</div>
     <div class="header-right">
-      <div class="heart-balance" id="balance">♥ <span id="bal-num">3</span></div>
+      <div class="heart-balance">♥ <span id="bal">3</span></div>
       <div class="filter-btn">⊞</div>
     </div>
   </div>
@@ -114,26 +123,23 @@ body{font-family:'Noto Serif JP',serif;background:var(--bg);color:var(--text-pri
   </div>
 </div>
 
-<!-- FEED -->
 <div class="feed" id="feed">
 
-  <!-- 1. 個人（ニュービー） -->
+  <!-- 1. 個人・ニュービー -->
   <div class="card person-card" data-type="person">
     <div class="person-header">
-      <div class="person-avatar" style="background:#D4E8F5;"></div>
+      <div class="person-avatar" style="background:#1E2832;"></div>
       <div class="person-info">
         <div class="person-name">田中 海斗</div>
-        <div class="person-bio">映像ディレクター。ドキュメンタリーと音楽MVを中心に活動中。最近ナレーションの仕事も始めた。</div>
+        <div class="person-bio">映像ディレクター。ドキュメンタリーと音楽MVを中心に活動中。最近ナレーションも。</div>
       </div>
-      <div class="status-badge newbie">★ ニュービー</div>
+      <span class="status-badge newbie">★ ニュービー</span>
     </div>
     <div class="person-orgs">
-      <span class="org-tag"><span class="org-dot" style="background:#4A90D9;"></span>Lighthouse Films</span>
+      <span class="org-tag"><span class="org-dot" style="background:#4A7AAA;"></span>Lighthouse Films</span>
     </div>
     <div class="skills">
-      <span class="skill">映像編集</span>
-      <span class="skill">ドローン撮影</span>
-      <span class="skill">After Effects</span>
+      <span class="skill">映像編集</span><span class="skill">ドローン撮影</span><span class="skill">After Effects</span>
     </div>
     <div class="person-footer">
       <div class="last-seen">joined 3d ago</div>
@@ -141,41 +147,38 @@ body{font-family:'Noto Serif JP',serif;background:var(--bg);color:var(--text-pri
   </div>
 
   <!-- 2. プレスリリース -->
-  <div class="card press-card" data-type="press">
-    <div class="press-org-bar">
-      <div class="org-icon" style="background:#E8D4F0;"></div>
+  <div class="card" data-type="press">
+    <div class="org-bar">
+      <div class="org-icon" style="background:#28183A;"></div>
       <div class="org-name">Studio ARCH</div>
-      <div class="card-type-label">プレスリリース</div>
+      <span class="card-label">プレスリリース</span>
     </div>
     <div class="press-body">
-      <div class="press-title">新しいプロジェクト「RESONANCE」始動 ── 音と建築の境界を溶かす試み</div>
-      <div class="press-preview">空間デザイナーと音楽家が組み、音響体験と建築の実験的な融合を目指す新プロジェクト。来春の発表に向けてメンバーを募集中です。</div>
+      <div class="press-title">新プロジェクト「RESONANCE」始動 ── 音と建築の境界を溶かす試み</div>
+      <div class="press-preview">空間デザイナーと音楽家が組み、音響体験と建築の実験的な融合を目指す新プロジェクト。来春の発表に向けメンバーを募集中。</div>
       <div class="press-footer">
-        <div class="press-date">2026-10-28</div>
-        <button class="heart-btn" onclick="pressLike(this)">♥ <span class="cnt">24</span></button>
+        <div class="date">2026-10-28</div>
+        <button class="heart-btn" onclick="like(this)">♥ <span>24</span></button>
       </div>
     </div>
   </div>
 
-  <!-- 3. 個人（オファー可） -->
+  <!-- 3. 個人・オファー可 -->
   <div class="card person-card" data-type="person">
     <div class="person-header">
-      <div class="person-avatar" style="background:#F0D4C8;"></div>
+      <div class="person-avatar" style="background:#321E18;"></div>
       <div class="person-info">
         <div class="person-name">佐久間 亮</div>
         <div class="person-bio">ベース奏者。ジャズとポストロックを行き来しながら、編曲の仕事も受けている。</div>
       </div>
-      <div class="status-badge available">◎ オファー可</div>
+      <span class="status-badge available">◎ オファー可</span>
     </div>
     <div class="person-orgs">
-      <span class="org-tag"><span class="org-dot" style="background:#E8844A;"></span>SPOOL</span>
-      <span class="org-tag"><span class="org-dot" style="background:#5A9A6F;"></span>晩鐘楽団</span>
+      <span class="org-tag"><span class="org-dot" style="background:#A05030;"></span>SPOOL</span>
+      <span class="org-tag"><span class="org-dot" style="background:#3A6A50;"></span>晩鐘楽団</span>
     </div>
     <div class="skills">
-      <span class="skill">ベース</span>
-      <span class="skill">編曲</span>
-      <span class="skill">レコーディング</span>
-      <span class="skill">作曲</span>
+      <span class="skill">ベース</span><span class="skill">編曲</span><span class="skill">レコーディング</span><span class="skill">作曲</span>
     </div>
     <div class="person-footer">
       <div class="last-seen">2h ago</div>
@@ -184,97 +187,84 @@ body{font-family:'Noto Serif JP',serif;background:var(--bg);color:var(--text-pri
   </div>
 
   <!-- 4. 求人 -->
-  <div class="card job-card" data-type="job">
-    <div class="press-org-bar">
-      <div class="org-icon" style="background:#D4F0E4;"></div>
+  <div class="card" data-type="job">
+    <div class="org-bar">
+      <div class="org-icon" style="background:#182820;"></div>
       <div class="org-name">Atelier NONA</div>
-      <div class="card-type-label">求人</div>
+      <span class="card-label">求人</span>
     </div>
     <div class="job-body">
       <div class="job-position">グラフィックデザイナー（週2〜）</div>
       <div class="job-desc">小規模なアート出版を続けているチームです。本の装丁と展覧会の告知物を中心に、一緒に手を動かしてくれる人を探しています。</div>
       <div class="skills">
-        <span class="skill">Illustrator</span>
-        <span class="skill">タイポグラフィ</span>
-        <span class="skill">印刷入稿</span>
+        <span class="skill">Illustrator</span><span class="skill">タイポグラフィ</span><span class="skill">印刷入稿</span>
       </div>
       <div class="job-footer">
-        <div class="press-date">2026-10-25</div>
-        <button class="apply-btn">詳しく見る →</button>
+        <div class="date">2026-10-25</div>
+        <button class="detail-btn">詳しく見る →</button>
       </div>
     </div>
   </div>
 
-  <!-- 5. 個人（オファー可・長期ログインなし） -->
+  <!-- 5. 個人・長期未ログイン -->
   <div class="card person-card" data-type="person">
     <div class="person-header">
-      <div class="person-avatar" style="background:#E8E4D4;"></div>
+      <div class="person-avatar" style="background:#242020;"></div>
       <div class="person-info">
         <div class="person-name">森下 遥</div>
         <div class="person-bio">イラストレーター。絵本と子ども向け媒体を得意とする。最近は絵本の文章も書き始めた。</div>
       </div>
-      <div class="status-badge available">◎ オファー可</div>
+      <span class="status-badge available">◎ オファー可</span>
     </div>
     <div class="person-orgs">
-      <span class="org-tag"><span class="org-dot" style="background:#A08060;"></span>絵本工房 tane</span>
+      <span class="org-tag"><span class="org-dot" style="background:#806040;"></span>絵本工房 tane</span>
     </div>
     <div class="skills">
-      <span class="skill">イラスト</span>
-      <span class="skill">Procreate</span>
-      <span class="skill">絵本制作</span>
+      <span class="skill">イラスト</span><span class="skill">Procreate</span><span class="skill">絵本制作</span>
     </div>
     <div class="person-footer">
-      <div class="last-seen" style="color:#C8B8A0;">12d ago</div>
+      <div class="last-seen" style="color:#3E3428;">12d ago</div>
     </div>
   </div>
 
   <!-- 6. プレスリリース -->
-  <div class="card press-card" data-type="press">
-    <div class="press-org-bar">
-      <div class="org-icon" style="background:#F0E8D4;"></div>
+  <div class="card" data-type="press">
+    <div class="org-bar">
+      <div class="org-icon" style="background:#28220E;"></div>
       <div class="org-name">晩鐘楽団</div>
-      <div class="card-type-label">プレスリリース</div>
+      <span class="card-label">プレスリリース</span>
     </div>
     <div class="press-body">
       <div class="press-title">2027年春ツアー「余白」開催決定 ── 5都市、全席指定、静聴形式</div>
-      <div class="press-preview">3年ぶりのツアーを来春に行います。「余白」をテーマに、ノイズと静寂を往き来する90分のセットを届けます。チケットは12月から。</div>
+      <div class="press-preview">3年ぶりのツアーを来春に行います。「余白」をテーマに、ノイズと静寂を往き来する90分を届けます。チケットは12月から。</div>
       <div class="press-footer">
-        <div class="press-date">2026-10-30</div>
-        <button class="heart-btn" onclick="pressLike(this)">♥ <span class="cnt">41</span></button>
+        <div class="date">2026-10-30</div>
+        <button class="heart-btn" onclick="like(this)">♥ <span>41</span></button>
       </div>
     </div>
   </div>
 
-  <!-- END -->
-  <div class="feed-end">
-    <span>ここまでです</span>
-    <span>6件 表示中</span>
-  </div>
+  <div class="feed-end"><span>ここまでです</span><span>6件</span></div>
 
-</div><!-- /feed -->
+</div>
 
 <script>
-let balance = 3;
+let bal = 3;
 
-function pressLike(btn) {
+function like(btn) {
   if (btn.classList.contains('liked')) return;
   btn.classList.add('liked');
-  const cnt = btn.querySelector('.cnt');
-  cnt.textContent = parseInt(cnt.textContent) + 1;
-  balance = Math.max(0, balance - 1);
-  document.getElementById('bal-num').textContent = balance;
+  const span = btn.querySelector('span');
+  span.textContent = parseInt(span.textContent) + 1;
+  bal = Math.max(0, bal - 1);
+  document.getElementById('bal').textContent = bal;
 }
 
 function filter(type, tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
-  const cards = document.querySelectorAll('#feed .card');
-  cards.forEach(c => {
-    if (type === 'all') {
-      c.style.display = '';
-    } else {
-      c.style.display = c.dataset.type === type ? '' : 'none';
-    }
+  document.querySelectorAll('#feed .card').forEach(c => {
+    c.style.display = (type === 'all' || c.dataset.type === type) ? '' : 'none';
   });
 }
 </script>
