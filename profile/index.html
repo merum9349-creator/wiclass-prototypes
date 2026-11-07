@@ -102,7 +102,8 @@
   .org-carousel{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
   .org-carousel::-webkit-scrollbar{display:none;}
   .org-chip{flex:0 0 auto;width:72px;border-radius:6px;border:1px solid var(--border-light);padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
-  .org-chip span{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:18px;font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  /* 組織のアイコンは四角（DESIGN.md「アイコンの形」2026-11-07） */
+  .org-chip span{width:40px;height:40px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:18px;font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
   .org-chip p{font-family:'Noto Serif JP';font-size:9px;color:var(--text-secondary);text-align:center;line-height:1.4;padding:0 4px;}
 
   /* ⑤ 資本 */
@@ -191,7 +192,7 @@
 </head>
 <body>
 
-<div class="caption">Wiclass プロトタイプ — <b>他人のプロフィール</b>（組織の顔ぶれでアイコンをタップしたとき）。ファーストビューに受け取った資本と目標、所属組織。その下にキャリア／スキル／成果物／出資先。</div>
+<div class="caption">Wiclass プロトタイプ — <b>他人のプロフィール</b>（組織の顔ぶれでアイコンをタップしたとき）。ファーストビューに名前とミッション、所属組織（個人は資本を受け取らないので、受け取った資本は出さない）。その下にキャリア／スキル／成果物／出資先。</div>
 
 <div class="phone">
   <div class="notch"></div>
@@ -199,16 +200,12 @@
 
   <div class="body">
 
-    <!-- ファーストビュー：顔・資本・名前・志（肩書きと統合） -->
+    <!-- ファーストビュー：顔・名前・ミッション -->
     <div class="cover"></div>
     <div class="who">
       <div class="face">佐</div>
       <div class="namerow">
         <div class="name">佐久間 亮<small>Ryo Sakuma</small></div>
-        <div class="cap">
-          <div class="ck">佐久間が受け取った資本</div>
-          <div>♥ <span id="recv">486</span></div>
-        </div>
       </div>
       <div class="mission">
         <div class="pole"></div>
@@ -326,11 +323,7 @@
     <div class="end"></div>
   </div>
 
-  <!-- 個人にも資本を投じる（画面下に固定） -->
-  <div class="give">
-    <button class="invest" id="invest"><span class="glow"></span>♥1 佐久間に投資する</button>
-    <div class="note">手持ちの <span class="mine">♥<span id="mine">3</span></span> から1つ使います</div>
-  </div>
+  <!-- 2026-11-07：いいねは組織の持ち物。個人には投資できず、個人は資本を受け取らないので「受け取った資本」と「投資する」ボタンを外した -->
 
   <div class="toast" id="toast"></div>
 </div>
@@ -340,18 +333,6 @@
 <script>
   function toast(m){const t=document.getElementById('toast');t.innerHTML=m;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',1800);}
 
-  // 個人に資本を投じる（チュートリアル後なので何度でも押せる。手持ちが尽きるまで）
-  let mine=3,recv=486;
-  const btn=document.getElementById('invest');
-  btn.addEventListener('click',()=>{
-    if(mine<=0)return;
-    mine--;recv++;
-    document.getElementById('mine').textContent=mine;
-    const r=document.getElementById('recv');r.textContent=recv;r.classList.add('bump');setTimeout(()=>r.classList.remove('bump'),300);
-    btn.classList.remove('fired');void btn.offsetWidth;btn.classList.add('fired');
-    toast('佐久間に投資しました。<br>佐久間に通知が届きます。');
-    if(mine===0){btn.disabled=true;btn.lastChild.textContent='手持ちのいいねがありません（明日3つ補充）';}
-  });
 </script>
 </body>
 </html>
