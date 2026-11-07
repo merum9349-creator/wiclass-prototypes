@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Wiclass プロトタイプ — 戦場（2026-11-07 界隈ブロック型）</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{
     /* DESIGN.md のトークン */
@@ -25,15 +25,16 @@
   .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;
     background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
 
-  /* ヘッダー：タイトルと手持ちのいいね（一番目立たせる） */
+  /* ヘッダー：ロゴと、今日押せるいいねの回数（一番目立たせる） */
   .topbar{flex:0 0 auto;z-index:20;display:flex;align-items:center;gap:12px;padding:34px 16px 0;height:82px;
     background:var(--bg-surface);border-bottom:1px solid var(--border);}
-  .topbar .t{font-family:'Noto Serif JP';font-size:20px;font-weight:500;letter-spacing:.05em;line-height:1.4;}
+  /* 左上はロゴ（初回起動と同じ書体）。2026-11-07「戦場」から変更 */
+  .topbar .t{font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:.06em;line-height:1.4;}
   .topbar .bal{margin-left:auto;display:flex;align-items:center;gap:8px;padding:5px 14px 5px 10px;border-radius:22px;
     background:linear-gradient(135deg,#c4a35a2e,#b873332e);border:1px solid var(--accent-gold);box-shadow:0 0 16px #c4a35a33;}
   .topbar .bal .hh{font-size:20px;color:var(--accent-gold);line-height:1;}
   .topbar .bal .num{font-family:'IBM Plex Mono';font-size:22px;font-weight:500;color:var(--accent-gold);line-height:1;}
-  .topbar .bal .lab{font-family:'Noto Serif JP';font-size:10px;color:var(--text-secondary);line-height:1.2;}
+  .topbar .bal .lab{font-family:'Noto Serif JP';font-size:10px;color:var(--text-secondary);line-height:1.2;order:-1;margin-right:2px;text-align:right;}
   .topbar .bal.bump .num{animation:bump .5s ease-out;}
   @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
 
@@ -52,7 +53,16 @@
     background:linear-gradient(180deg,#2e2523,#28231f);border:1px solid #5a3a36;border-left:4px solid var(--accent-wine);border-radius:4px;padding:14px;}
   .offer .o-msg{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .offer .o-btns{margin-top:auto;padding-top:12px;}
-  .offer .o-who{display:flex;align-items:center;gap:10px;}
+  .offer .o-who{display:flex;align-items:center;gap:12px;}
+  /* アイコンのルール（2026-11-07）：個人＝丸／組織＝四角。
+     組織の誰かが動いたときは、組織の四角の右下に、その人の丸を重ねる */
+  .stack{position:relative;flex:0 0 auto;}
+  .stack .pav{position:absolute;right:-6px;bottom:-6px;width:58%;height:58%;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-weight:500;color:var(--text-primary);
+    border:2px solid var(--bg-deep);font-size:9px;}
+  /* オファーもクリップと同じ比率（丸＝四角の約83%、右下に少しはみ出す）2026-11-07 */
+  .offer .o-who{gap:18px;}
+  .offer .stack .pav{width:27px;height:27px;right:-12px;bottom:-9px;border-color:#2b2420;font-size:12px;}
   .offer .o-line{font-family:'Noto Serif JP';font-size:14px;line-height:1.55;}
   .offer .o-when{margin-left:auto;align-self:flex-start;flex:0 0 auto;padding-top:2px;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
   .offer .o-msg{margin-top:10px;font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);line-height:1.75;padding-left:10px;border-left:1px solid #5a3a36;}
@@ -96,8 +106,12 @@
   .oc .tag.up{color:var(--text-secondary);border:1px solid var(--border-light);}
 
   /* ② その界隈のクリップ（ざっくばらんに。2列で高さの違うタイルを交互に積む。文字だけのクリップもタイルにする） */
-  .clips{display:flex;gap:8px;padding:4px 16px 0;align-items:flex-start;}
-  .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+  /* クリップ：パネル状のグリッド（2段）のまま、右へどんどん続くカルーセル（2026-11-07）
+     2枚ずつ縦に積んだ列を横に並べる。列の幅は画面の約45%で、3列目の端が見える */
+  .clips{display:flex;gap:8px;padding:4px 16px 2px;align-items:flex-start;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;}
+  .clips::-webkit-scrollbar{display:none;}
+  .col{flex:0 0 44%;min-width:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start;}
+  /* 列は上揃え（2026-11-07 Tatsuya。列ごとにずらす案はやめた） */
   .tile{background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;}
   .tile .media{position:relative;}
   .tile .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;border:1px solid #e8e4d9aa;
@@ -105,8 +119,18 @@
   .tile .len{position:absolute;right:5px;bottom:4px;font-family:'IBM Plex Mono';font-size:9px;background:#0009;padding:0 4px;border-radius:2px;}
   .tile .tx{padding:9px 10px 0;font-family:'Noto Serif JP';font-size:12.5px;line-height:1.65;}
   .tile.text .tx{font-size:14px;padding-top:12px;}
-  .tile .who{display:flex;align-items:center;gap:6px;padding:8px 10px 0;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);}
-  .tile .who i{width:16px;height:16px;border-radius:50%;flex:0 0 16px;}
+  /* 長い文は行数で切り、「続きを見る」でクリップ単体の画面へ（画像つきは2行、文字だけは4行まで） */
+  .tile .tx{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:2;}
+  .tile.text .tx{-webkit-line-clamp:4;}
+  .tile .more{display:none;padding:2px 10px 0;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);cursor:pointer;}
+  .tile .more.show{display:block;}
+  .tile .who{display:flex;align-items:center;gap:9px;padding:9px 10px 0;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);}
+  /* クリップの書き手：組織の四角＋右下に個人の丸。丸は小さいと見えないので大きめにする（2026-11-07） */
+  .tile .who{gap:12px;}
+  .tile .who .crest{width:24px;height:24px;flex:0 0 24px;font-size:11px;border-radius:3px;}
+  .tile .who .pav{right:-9px;bottom:-7px;width:20px;height:20px;font-size:9.5px;border-width:2px;border-color:var(--bg-surface);}
+  .tile .who .nm{color:var(--text-primary);}
+  .tile .who .on{color:var(--text-muted);margin-left:4px;}
   .tile .who span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .tile .ft{display:flex;align-items:center;gap:8px;padding:7px 10px 9px;}
   .tile .rep{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);}
@@ -115,9 +139,14 @@
   .like.done{background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);border-color:transparent;cursor:default;}
 
   /* ③ その界隈の求人（点線の空席。コンパクトに並べる） */
-  .jobs{display:flex;flex-direction:column;gap:8px;padding:4px 16px 0;}
+  /* 求人：3件ずつ縦に並べた列。3件を超えると次の列が右に続くカルーセルになる（2026-11-07） */
+  .jobs{display:flex;gap:10px;padding:4px 16px 0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;align-items:flex-start;}
+  .jobs::-webkit-scrollbar{display:none;}
+  .jcol{flex:0 0 100%;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start;}
+  .jobs.multi .jcol{flex-basis:88%;} /* 2列以上あるときは、次の列の端が見える幅にする */
   .job{border:1px dashed var(--border-light);border-radius:4px;background:#1e1f1b;cursor:pointer;}
-  .job .jrow{display:flex;align-items:center;gap:10px;padding:10px 12px;}
+  /* 求人の1行は高さ固定。役割名・組織名は1行に収め、はみ出したら「…」で切る（2026-11-07） */
+  .job .jrow{display:flex;align-items:center;gap:10px;padding:0 12px;height:58px;}
   .job .chev{flex:0 0 auto;font-size:11px;color:var(--text-muted);transition:transform .3s;}
   .job.open .chev{transform:rotate(180deg);}
   /* 詳細：押すと下に開く（プルダウン） */
@@ -128,22 +157,37 @@
   .job .jsk span{font-size:11px;border:1px solid var(--border-light);border-radius:2px;padding:0 7px;}
   .job .crest{width:26px;height:26px;flex:0 0 26px;font-size:12px;}
   .job .jb{flex:1;min-width:0;}
-  .job .role{font-family:'Noto Serif JP';font-size:14px;font-weight:600;line-height:1.4;}
-  .job .org{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);}
+  .job .role{font-family:'Noto Serif JP';font-size:14px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .job .org{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .job .join{flex:0 0 auto;font-family:'Noto Serif JP';font-size:11.5px;color:#a9c2a0;background:transparent;border:1px solid #6a8a61;border-radius:3px;padding:5px 9px;cursor:pointer;}
   .job .join b{font-family:'IBM Plex Mono';font-weight:500;color:var(--accent-gold);margin-left:4px;}
   .job .join.done{background:#4a674133;cursor:default;}
 
+  /* ===== 検索の入力欄（フッターの上に下から出る） ===== */
+  .sbar{position:absolute;left:0;right:0;bottom:68px;z-index:19;display:flex;align-items:center;gap:8px;padding:10px 12px;
+    background:var(--bg-surface);border-top:1px solid var(--border-light);transform:translateY(100%);opacity:0;pointer-events:none;
+    transition:transform .3s ease-out,opacity .3s ease-out;}
+  .sbar.open{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .sbar.open ~ .toast{bottom:140px;} /* 入力欄が出ているときは、お知らせをその上に出す */
+  .sbar svg{width:18px;height:18px;flex:0 0 18px;stroke:var(--text-secondary);fill:none;stroke-width:1.6;stroke-linecap:round;}
+  .sbar input{flex:1;min-width:0;background:var(--bg-card);border:1px solid var(--border-light);border-radius:18px;padding:8px 14px;
+    color:var(--text-primary);font-family:'Noto Serif JP';font-size:14px;outline:none;}
+  .sbar .sx{font-size:18px;color:var(--text-secondary);cursor:pointer;padding:0 4px;}
+  /* 検索結果のブロック：見出しの右に × で消せる */
+  .zone.search .z-head{align-items:center;}
+  .zone .z-x{margin-left:auto;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:0 4px;}
+  .zone .none{padding:6px 16px 0;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
+
   /* ===== フッター：左＝ホーム／中央＝所属している組織のカルーセル／右＝DM ===== */
-  .foot{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:68px;padding:0 12px;background:var(--bg-surface);border-top:1px solid var(--border);z-index:20;}
-  .foot .fb{flex:0 0 auto;width:52px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;
+  .foot{flex:0 0 auto;display:flex;align-items:center;gap:4px;height:68px;padding:0 12px;background:var(--bg-surface);border-top:1px solid var(--border);z-index:20;}
+  .foot .fb{flex:0 0 auto;width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;
     font-family:'Noto Serif JP';font-size:9.5px;color:var(--text-muted);}
   .foot .fb svg{width:22px;height:22px;stroke:var(--text-muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
   .foot .fb.on{color:var(--text-primary);} .foot .fb.on svg{stroke:var(--text-primary);}
   .foot .fb .dot{position:absolute;top:-3px;right:8px;min-width:16px;height:16px;border-radius:8px;padding:0 4px;background:var(--accent-wine);
     color:var(--text-primary);font-family:'IBM Plex Mono';font-size:9px;display:flex;align-items:center;justify-content:center;}
   /* 中央：所属組織の紋章を横に並べる（多いときは横にスクロール） */
-  .foot .myorgs{flex:1;min-width:0;display:flex;gap:10px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:0 4px;
+  .foot .myorgs{flex:1;min-width:0;display:flex;gap:10px;justify-content:flex-start;padding-left:10px !important;overflow-x:auto;scrollbar-width:none;padding:0 4px;
     border-left:1px solid var(--border);border-right:1px solid var(--border);height:44px;align-items:center;}
   .foot .myorgs::-webkit-scrollbar{display:none;}
   .foot .mo{flex:0 0 auto;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;
@@ -167,20 +211,22 @@
     .topbar{height:auto;padding:calc(env(safe-area-inset-top) + 14px) 16px 12px;}
     .end{padding-bottom:40px;}
     .foot{height:auto;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);}
+    .sbar{bottom:calc(env(safe-area-inset-bottom) + 68px);}
     .toast{width:auto;max-width:calc(100% - 40px);}
   }
 </style>
 </head>
 <body>
 
-<div class="caption">Wiclass プロトタイプ — <b>戦場</b>（2026-11-07 界隈ブロック型）。1ブロック＝①その界隈の組織（左から影響力順）②その界隈のクリップ ③その界隈の求人。自分が所属する組織の界隈が上に、関係のない界隈はその下にどんどん続く。求人は押すと詳細が開く。フッター：左ホーム／中央に所属組織／右DM。一番上の届いたオファーは横にめくるカルーセル。</div>
+<div class="caption">Wiclass プロトタイプ — <b>戦場</b>（2026-11-07 界隈ブロック型）。1ブロック＝①その界隈の組織（左から影響力順）②その界隈のクリップ（パネル状のまま右へ続くカルーセル） ③その界隈の求人。自分が所属する組織の界隈が上に、関係のない界隈はその下にどんどん続く。求人は押すと詳細が開く。フッター：左にホーム・検索（押すと入力欄が出て、結果は今の界隈の下に新しいブロックで出る）／中央に所属組織（左寄せ）／右DM。一番上の届いたオファーは横にめくるカルーセル。</div>
 
 <div class="phone" id="phone">
   <div class="notch"></div>
 
   <div class="topbar">
-    <div class="t">戦場</div>
-    <div class="bal" id="balBox"><span class="hh">♥</span><span class="num" id="bal">12</span><span class="lab">手持ち</span></div>
+    <div class="t">Wiclass</div>
+    <!-- いいねは組織の持ち物。個人が持つのは「今日押せる回数」だけ（毎日3回＋課金で追加）。残高はない（2026-11-07） -->
+    <div class="bal" id="balBox"><span class="hh">♥</span><span class="num" id="bal">3</span><span class="lab">今日<br>あと</span></div>
   </div>
 
   <div class="body" id="body">
@@ -189,19 +235,19 @@
     <div class="shead">あなたに届いているオファー <span class="n">3</span></div>
     <div class="offers">
       <div class="offer">
-        <div class="o-who"><div class="crest" style="background:#2c3e50">通</div><div class="o-line"><b>通勤ラジオ</b>が、あなたを気になっています</div><span class="o-when">2時間前</span></div>
+        <div class="o-who"><div class="stack"><div class="crest" style="background:#2c3e50">通</div><span class="pav" style="background:#6b5a3e">小</span></div><div class="o-line"><b>通勤ラジオ</b>の小川が、あなたを気になっています</div><span class="o-when">2時間前</span></div>
         <div class="o-msg">効果音のジングルを作れる人を探しています。まずは話だけでもどうですか。</div>
         <div class="gift"><div class="box"></div><div class="g-txt"><b>♥5</b> のプレゼント</div></div>
         <div class="o-btns"><button class="go" onclick="takeAndReply(this,5)">♥5 を受け取って話を聞く</button><button class="later" onclick="toast('あとで見るに残しました')">あとで</button></div>
       </div>
       <div class="offer">
-        <div class="o-who"><div class="crest" style="background:#4a4455">ピ</div><div class="o-line"><b>ピクセル工房</b>が、あなたを気になっています</div><span class="o-when">昨日</span></div>
+        <div class="o-who"><div class="stack"><div class="crest" style="background:#4a4455">ピ</div><span class="pav" style="background:#8b3a3a">R</span></div><div class="o-line"><b>ピクセル工房</b>のRinが、あなたを気になっています</div><span class="o-when">昨日</span></div>
         <div class="o-msg">ドット絵の効果音、一緒にやりませんか。</div>
         <div class="gift"><div class="box"></div><div class="g-txt"><b>♥2</b> のプレゼント</div></div>
         <div class="o-btns"><button class="go" onclick="takeAndReply(this,2)">♥2 を受け取って話を聞く</button><button class="later" onclick="toast('あとで見るに残しました')">あとで</button></div>
       </div>
       <div class="offer">
-        <div class="o-who"><div class="crest" style="background:#8b3a3a">軒</div><div class="o-line"><b>軒先カフェ計画</b>が、あなたを気になっています</div><span class="o-when">3日前</span></div>
+        <div class="o-who"><div class="stack"><div class="crest" style="background:#8b3a3a">軒</div><span class="pav" style="background:#4a6741">佐</span></div><div class="o-line"><b>軒先カフェ計画</b>の佐々木 美穂が、あなたを気になっています</div><span class="o-when">3日前</span></div>
         <div class="o-btns"><button class="go" onclick="toast('「話を聞きたい」と返しました')">話を聞く</button><button class="later" onclick="toast('あとで見るに残しました')">あとで</button></div>
       </div>
     </div>
@@ -213,9 +259,18 @@
   </div>
 
   <!-- フッター（2026-11-07）：左＝ホーム／中央＝所属組織のカルーセル／右＝DM -->
+  <!-- 検索の入力欄：検索を押すとフッターの上にニュッと出る（2026-11-07） -->
+  <div class="sbar" id="sbar">
+    <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+    <input id="sIn" placeholder="組織・クリップ・求人を探す" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();doSearch();}">
+    <span class="sx" onclick="toggleSearch(false)">×</span>
+  </div>
   <nav class="foot">
     <div class="fb on" onclick="document.getElementById('body').scrollTo({top:0,behavior:'smooth'})">
       <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>ホーム</div>
+    <!-- 検索（2026-11-07 追加：ホームの右） -->
+    <div class="fb" id="searchBtn" onclick="toggleSearch()">
+      <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>検索</div>
     <div class="myorgs">
       <div class="mo" style="background:#3d4f6a" onclick="toast('夜行ゲームスの中へ（モックでは省略）')">夜<span class="nd"></span></div>
       <div class="mo" style="background:#2c3e50" onclick="toast('週刊ざつだんの中へ（モックでは省略）')">雑</div>
@@ -240,15 +295,20 @@
        {nm:'三日月インタラクティブ',c:'三',col:'#2c3e50',mis:'短編ホラーを3か月に1本出す。',cap:96,up:true},
        {nm:'あおぞらノベル',c:'青',col:'#4a6741',mis:'ノベルゲームの立ち絵と背景を作るチーム。',cap:41,up:true}],
      clips:[
-       {who:'田中 健',org:'夜行ゲームス',col:'#8b3a3a',tx:'「LUNA」、今日からSteamで早期アクセスを始めました。2年かかった。',media:{h:120,bg:'linear-gradient(150deg,#3d4f6a,#141820)',vid:'0:45'},likes:128,rep:3},
-       {who:'Rin',org:'ピクセル工房',col:'#4a4455',tx:'ドット絵の歩きモーション、8コマから6コマに減らしても違和感がないか試してる。',likes:44,rep:6,text:true},
+       {who:'田中 健',org:'夜行ゲームス',col:'#8b3a3a',tx:'「LUNA」、今日からSteamで早期アクセスを始めました。2年かかった。最初は3人で始めて、途中で2人増えて、ようやくここまで来ました。',media:{h:120,bg:'linear-gradient(150deg,#3d4f6a,#141820)',vid:'0:45'},likes:128,rep:3},
+       {who:'Rin',org:'ピクセル工房',col:'#4a4455',tx:'ドット絵の歩きモーション、8コマから6コマに減らしても違和感がないか試してる。コマを減らすと描く量は25%減るけど、走りの勢いが落ちる気がする。みんなは何コマで作ってますか。',likes:44,rep:6,text:true},
        {who:'大野',org:'深夜バグ部',col:'#5a4a40',tx:'テストプレイ会、日曜にやります。',media:{h:160,bg:'linear-gradient(160deg,#5a4a40,#1c1814)'},likes:21,rep:2},
        {who:'Mizuki',org:'夜行ゲームス',col:'#4a6741',tx:'2面の背景、どっちの色がいいか迷っています。',media:{h:90,bg:'linear-gradient(135deg,#4a4455,#1c1a22)'},likes:36,rep:9},
-       {who:'森田',org:'三日月インタラクティブ',col:'#2c3e50',tx:'ホラーの効果音って、無音の時間のほうが怖い気がする。',likes:18,rep:4,text:true}],
+       {who:'森田',org:'三日月インタラクティブ',col:'#2c3e50',tx:'ホラーの効果音って、無音の時間のほうが怖い気がする。',likes:18,rep:4,text:true},
+       {who:'Aya',org:'夜行ゲームス',col:'#3d3530',tx:'ジャンプの着地、硬直を短くしました。',media:{h:110,bg:'linear-gradient(150deg,#3d3530,#14110e)',vid:'0:08'},likes:25,rep:1},
+       {who:'青木',org:'あおぞらノベル',col:'#4a6741',tx:'背景を1枚描くのに3日。早く描ける人のやり方を知りたい。',likes:12,rep:8,text:true},
+       {who:'Rin',org:'ピクセル工房',col:'#4a4455',tx:'新作のタイトル画面。',media:{h:150,bg:'linear-gradient(135deg,#4a4455,#121018)'},likes:61,rep:5}],
      jobs:[
        {role:'BGMを作れる人',org:'夜行ゲームス',c:'夜',col:'#3d4f6a',d:'ゲーム用のBGMを作れる方を探しています。ループ曲を作った経験がある方を歓迎します。週1回、Discordで定例があります。',sk:['DAW','ループ制作','効果音']},
        {role:'ドット絵のアニメーター',org:'ピクセル工房',c:'ピ',col:'#4a4455',d:'キャラクターの歩き・攻撃モーションをドット絵で描ける方を探しています。',sk:['Aseprite','ドット絵']},
-       {role:'シナリオを書ける人',org:'三日月インタラクティブ',c:'三',col:'#2c3e50',d:'30分で遊び終わる短編ホラーのシナリオを書ける方を探しています。',sk:['シナリオ','ホラー']}]},
+       {role:'シナリオを書ける人',org:'三日月インタラクティブ',c:'三',col:'#2c3e50',d:'30分で遊び終わる短編ホラーのシナリオを書ける方を探しています。',sk:['シナリオ','ホラー']},
+       {role:'Steamのストアページを作る人',org:'深夜バグ部',c:'深',col:'#5a4a40',d:'ストアページの文章とスクリーンショットを整えてくれる方を探しています。',sk:['文章','画像編集']},
+       {role:'背景を描ける人',org:'あおぞらノベル',c:'青',col:'#4a6741',d:'ノベルゲームの背景（教室・街並み）を描ける方を探しています。',sk:['背景','厚塗り']}]},
     {name:'ポッドキャスト', why:'週刊ざつだんの界隈',
      orgs:[
        {nm:'通勤ラジオ',c:'通',col:'#2c3e50',mis:'朝7時に15分、毎日ニュースを話す番組。',cap:410},
@@ -258,7 +318,9 @@
      clips:[
        {who:'渡辺 由衣',org:'週刊ざつだん',col:'#3d4f6a',tx:'リスナーさんをゲストに呼ぶ回をやってみたい。',likes:31,rep:4,text:true},
        {who:'小川',org:'通勤ラジオ',col:'#2c3e50',tx:'今日で放送500回目でした。',media:{h:140,bg:'linear-gradient(200deg,#2c3e50,#141414)',vid:'1:12'},likes:96,rep:12},
-       {who:'佐野',org:'ゆるっと経済',col:'#4a6741',tx:'収録用のマイク、結局いちばん安いのに落ち着いた。',media:{h:100,bg:'linear-gradient(160deg,#3d3530,#161310)'},likes:27,rep:5}],
+       {who:'佐野',org:'ゆるっと経済',col:'#4a6741',tx:'収録用のマイク、結局いちばん安いのに落ち着いた。',media:{h:100,bg:'linear-gradient(160deg,#3d3530,#161310)'},likes:27,rep:5},
+       {who:'加藤',org:'週刊ざつだん',col:'#8b3a3a',tx:'お便りが今月だけで30通。全部読みたい。',likes:22,rep:3,text:true},
+       {who:'本間',org:'深夜の本棚',col:'#5a4a40',tx:'今週の1冊。',media:{h:130,bg:'linear-gradient(160deg,#5a4a40,#16130f)'},likes:9,rep:2}],
      jobs:[
        {role:'切り抜き動画を作る人',org:'週刊ざつだん',c:'雑',col:'#2c3e50',d:'毎週の配信から、1分前後の切り抜きを2〜3本作ってほしいです。',sk:['Premiere Pro','テロップ']},
        {role:'番組のサムネイルを作る人',org:'通勤ラジオ',c:'通',col:'#2c3e50',d:'毎日の配信のサムネイルを、決まった型で作ってほしいです。',sk:['Figma','Canva']}]}
@@ -279,7 +341,8 @@
   const $=s=>document.querySelector(s);
   function toast(m){const el=$('#toast');el.textContent=m;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
   function bump(){const x=$('#balBox');x.classList.remove('bump');void x.offsetWidth;x.classList.add('bump');}
-  function spend(){const b=$('#bal');const v=parseInt(b.textContent,10);if(v<=0){toast('♥が足りません');return false;}b.textContent=v-1;bump();return true;}
+  // 今日押せるいいねを1回使う。0なら押せない（課金で回数を増やせる）
+  function spend(){const b=$('#bal');const v=parseInt(b.textContent,10);if(v<=0){toast('今日のいいねを使い切りました（回数は課金で増やせます）');return false;}b.textContent=v-1;bump();return true;}
 
   // ===== 界隈ブロックの描画 =====
   function orgCard(o){
@@ -290,45 +353,83 @@
       +(o.mine?'<span class="tag me">あなたの所属</span>':o.up?'<span class="tag up">伸び盛り</span>':'')
       +'</div></div>';
   }
+  // 組織名 → 紋章の文字と色（界隈データから引く）
+  function orgInfo(name){for(const z of zones)for(const o of z.orgs)if(o.nm===name)return {c:o.c,col:o.col};return {c:name[0],col:'#33322c'};}
   function tile(c){
     const media=c.media?'<div class="media" style="height:'+c.media.h+'px;background:'+c.media.bg+'">'+(c.media.vid?'<span class="play">▶</span><span class="len">'+c.media.vid+'</span>':'')+'</div>':'';
     return '<div class="tile'+(c.text?' text':'')+'" onclick="toast(\'クリップの詳細へ（モックでは省略）\')">'+media
-      +'<div class="tx">'+c.tx+'</div>'
-      +'<div class="who"><i style="background:'+c.col+'"></i><span>'+c.who+'・'+c.org+'</span></div>'
+      +'<div class="tx">'+c.tx+'</div><div class="more" onclick="more(event,this)">続きを見る</div>'
+      +'<div class="who"><div class="stack"><div class="crest" style="background:'+orgInfo(c.org).col+'">'+orgInfo(c.org).c+'</div><span class="pav" style="background:'+c.col+'">'+c.who[0]+'</span></div><span><span class="nm">'+c.who+'</span><span class="on">'+c.org+'</span></span></div>'
       +'<div class="ft"><span class="rep">返信 '+c.rep+'</span><button class="like" onclick="like(event,this)">♥ <span>'+c.likes+'</span></button></div></div>';
   }
   // 求人：1行で並べ、押すと下に詳細が開く（もう一度押すと閉じる）
   function jobRow(j){
     return '<div class="job" onclick="this.classList.toggle(\'open\')"><div class="jrow"><div class="crest" style="background:'+j.col+'">'+j.c+'</div>'
       +'<div class="jb"><div class="role">'+j.role+'</div><div class="org">'+j.org+'</div></div>'
-      +'<button class="join" onclick="join(event,this)">参加リクエスト<b>♥1</b></button><span class="chev">▼</span></div>'
+      +'<button class="join" onclick="join(event,this)">参加リクエスト</button><span class="chev">▼</span></div>'
       +'<div class="jd"><div class="jd-in">'+(j.d||'')+(j.sk?'<div class="jsk">'+j.sk.map(x=>'<span>'+x+'</span>').join('')+'</div>':'')+'</div></div></div>';
   }
-  function renderZones(){
-    $('#zones').innerHTML=zones.map(z=>{
-      // クリップを左右の列に交互に振り分ける（ざっくばらんな積み方）
-      const L=[],R=[];z.clips.forEach((c,i)=>(i%2?R:L).push(tile(c)));
-      return '<section class="zone">'
-        // 所属組織の界隈は「◯◯の界隈」だけを見出しにする（ジャンル名は付けない）。関係のない界隈はジャンル名のまま
-        +'<div class="z-head"><span class="z-name">'+(z.why||z.name)+'</span></div>'
-        +'<div class="orgs">'+z.orgs.map(orgCard).join('')+'</div>'
-        +'<div class="z-sec">クリップ</div>'
-        +'<div class="clips"><div class="col">'+L.join('')+'</div><div class="col">'+R.join('')+'</div></div>'
-        +'<div class="z-sec">求人</div>'
-        +'<div class="jobs">'+z.jobs.map(jobRow).join('')+'</div>'
-        +'</section>';
-    }).join('');
+  // 界隈ブロック1つ分のHTML（通常の界隈と検索結果で共通）
+  function zoneHTML(z){
+    // クリップを2枚ずつの列にまとめ、列を横に並べる（右へ続くカルーセル）
+    const cols=[];z.clips.forEach((c,i)=>{if(i%2===0)cols.push([]);cols[cols.length-1].push(tile(c));});
+    const jcols=[];z.jobs.forEach((j,i)=>{if(i%3===0)jcols.push([]);jcols[jcols.length-1].push(jobRow(j));});
+    const none='<div class="none">見つかりませんでした</div>';
+    return '<section class="zone'+(z.search?' search':'')+'">'
+      // 所属組織の界隈は「◯◯の界隈」、関係のない界隈は「あなたにおすすめの界隈」、検索は「検索結果「◯◯」」
+      +'<div class="z-head"><span class="z-name">'+(z.why||'あなたにおすすめの界隈')+'</span>'+(z.search?'<span class="z-x" onclick="this.closest(\'.zone\').remove()">×</span>':'')+'</div>'
+      +(z.orgs.length?'<div class="orgs">'+z.orgs.map(orgCard).join('')+'</div>':'')
+      +'<div class="z-sec">クリップ</div>'
+      +(z.clips.length?'<div class="clips">'+cols.map(c=>'<div class="col">'+c.join('')+'</div>').join('')+'</div>':none)
+      +'<div class="z-sec">求人</div>'
+      +(z.jobs.length?'<div class="jobs'+(jcols.length>1?' multi':'')+'">'+jcols.map(c=>'<div class="jcol">'+c.join('')+'</div>').join('')+'</div>':none)
+      +'</section>';
   }
+  function renderZones(){$('#zones').innerHTML=zones.map(zoneHTML).join('');}
+
 
   // ===== 操作 =====
-  function like(e,btn){e.stopPropagation();if(btn.classList.contains('done')||!spend())return;const n=btn.querySelector('span');n.textContent=parseInt(n.textContent,10)+1;btn.classList.add('done');}
-  function join(e,btn){e.stopPropagation();if(btn.classList.contains('done')||!spend())return;btn.classList.add('done');btn.textContent='リクエスト済み';toast('参加リクエストを送りました');}
-  // プレゼントつきのオファー：話を聞くと同封のいいねが手持ちに入る（受け取り＝返事）
+  // クリップへのいいね：今日の回数を1つ使い、いいねはそのクリップの組織に入る
+  function like(e,btn){e.stopPropagation();if(btn.classList.contains('done'))return;if(!spend())return;const n=btn.querySelector('span');n.textContent=parseInt(n.textContent,10)+1;btn.classList.add('done');}
+  // 参加リクエスト：いいねは使わない（2026-11-07）
+  function join(e,btn){e.stopPropagation();if(btn.classList.contains('done'))return;btn.classList.add('done');btn.textContent='リクエスト済み';toast('参加リクエストを送りました');}
+  // プレゼントつきのオファー：話を聞くと、今日押せるいいねの回数が増える（受け取り＝返事。個人はいいねを持たない）
   function takeAndReply(btn,n){const o=btn.closest('.offer');const g=o.querySelector('.gift');if(g.classList.contains('opened'))return;
-    const b=$('#bal');b.textContent=parseInt(b.textContent,10)+n;bump();g.classList.add('opened');g.querySelector('.g-txt').innerHTML='<b>♥'+n+'</b> 受け取りました';
-    btn.textContent='話を聞くと返しました';toast('♥'+n+' を受け取り、「話を聞きたい」と返しました');}
+    const b=$('#bal');b.textContent=parseInt(b.textContent,10)+n;bump();g.classList.add('opened');g.querySelector('.g-txt').innerHTML='今日のいいねが <b>+'+n+'</b> 回';
+    btn.textContent='話を聞くと返しました';toast('今日のいいねが'+n+'回増えました。「話を聞きたい」と返しました');}
 
   renderZones();
+
+  // ===== 検索 =====
+  function toggleSearch(force){const bar=$('#sbar');const open=force===undefined?!bar.classList.contains('open'):force;
+    bar.classList.toggle('open',open);$('#searchBtn').classList.toggle('on',open);if(open)setTimeout(()=>$('#sIn').focus(),250);}
+  // 全部の界隈から、組織・クリップ・求人をまとめて探す（同じものは1回だけ）
+  function doSearch(){
+    const q=$('#sIn').value.trim();if(!q)return;
+    const hit=t=>(t||'').toLowerCase().includes(q.toLowerCase());
+    const uniq=(arr,key)=>{const m=new Map();arr.forEach(x=>{if(!m.has(key(x)))m.set(key(x),x);});return [...m.values()];};
+    const all=zones.filter(z=>!z.search);
+    const res={search:true,why:'検索結果「'+q.replace(/</g,'&lt;')+'」',
+      orgs:uniq(all.flatMap(z=>z.orgs).filter(o=>hit(o.nm)||hit(o.mis)),o=>o.nm),
+      clips:uniq(all.flatMap(z=>z.clips).filter(c=>hit(c.tx)||hit(c.org)||hit(c.who)),c=>c.tx),
+      jobs:uniq(all.flatMap(z=>z.jobs).filter(j=>hit(j.role)||hit(j.org)||hit(j.d)),j=>j.role)};
+    // 今見えている界隈のすぐ下に、検索結果の界隈を差し込む
+    const body=$('#body');const top=body.getBoundingClientRect().top;
+    const secs=[...document.querySelectorAll('#zones .zone')];
+    let cur=secs[0];secs.forEach(z=>{if(z.getBoundingClientRect().top-top<=body.clientHeight/2)cur=z;});
+    cur.insertAdjacentHTML('afterend',zoneHTML(res));
+    const added=cur.nextElementSibling;
+    added.querySelectorAll('.tile .tx').forEach(t=>{if(t.scrollHeight>t.clientHeight+2)t.nextElementSibling.classList.add('show');});
+    toggleSearch(false);
+    // 検索結果の見出しが画面の一番上に来るようにスクロール（スクロール領域の中での位置で計算する）
+    body.scrollTo({top:added.getBoundingClientRect().top-body.getBoundingClientRect().top+body.scrollTop,behavior:'smooth'});
+    toast('「'+q+'」：組織'+res.orgs.length+'・クリップ'+res.clips.length+'・求人'+res.jobs.length);
+  }
+  // 文が切れているタイルにだけ「続きを見る」を出す
+  function markLong(){document.querySelectorAll('.tile .tx').forEach(t=>{if(t.scrollHeight>t.clientHeight+2)t.nextElementSibling.classList.add('show');});}
+  // 「続きを見る」：その場では開かず、クリップ単体の画面へ移る（画面は未作成）
+  function more(e,el){e.stopPropagation();toast('クリップの画面へ（未作成）');}
+  requestAnimationFrame(markLong);
 </script>
 </body>
 </html>
