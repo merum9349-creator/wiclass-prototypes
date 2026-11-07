@@ -217,7 +217,7 @@
   .stake .have .val{font-family:'IBM Plex Mono';font-size:20px;color:var(--accent-gold);line-height:1.3;display:inline-block;transition:transform .3s;}
   .stake .have .val.bump{transform:scale(1.2);}
   .stake .invest{width:auto;flex:0 0 118px;border-radius:0;}
-  /* 参加リクエスト（♥1消費） */
+  /* 参加リクエスト（いいねは使わない） */
   .join{margin-left:auto;align-self:center;flex:0 0 auto;padding:5px 9px;border-radius:3px;cursor:pointer;background:transparent;
     border:1px solid var(--border-light);color:var(--text-primary);font-family:'Noto Serif JP';font-size:11px;line-height:1.4;
     transition:border-color .3s,opacity .3s;display:flex;flex-direction:column;align-items:center;}
@@ -285,6 +285,74 @@
   }
 
   /* 組織名を途中で折り返さない：参加リクエストは業界ラベルの行（名前の右上）に置く */
+
+  /* ③：3回押し終えたら出る「次へ」 */
+  .next{position:absolute;left:20px;right:20px;bottom:22px;z-index:25;padding:14px;border-radius:4px;border:none;cursor:pointer;
+    font-family:'Noto Serif JP';font-size:15px;color:var(--bg-deep);background:var(--text-primary);
+    opacity:0;transform:translateY(12px);pointer-events:none;transition:all .4s ease-out;}
+  .next.show{opacity:1;transform:none;pointer-events:auto;}
+  /* ④：関連する組織 */
+  .rel-body{flex:1;overflow-y:auto;scrollbar-width:none;padding:6px 0 30px;}
+  .rel-body::-webkit-scrollbar{display:none;}
+  .rel-q{padding:10px 20px 4px;font-family:'Noto Serif JP';font-size:20px;font-weight:600;line-height:1.55;text-wrap:balance;}
+  .rel-s{padding:2px 20px 6px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .rel-zone{padding:14px 0 4px;}
+  .rel-zh{padding:0 20px 8px;font-family:'Noto Serif JP';font-size:14px;font-weight:600;}
+  /* ④の組織は2列のグリッドで並べる（2026-11-07 Tatsuya：縦並びからグリッドへ） */
+  .rel-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 20px;}
+  .rel-org{display:flex;flex-direction:column;align-items:flex-start;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:12px;}
+  .rel-org .rc{width:34px;height:34px;flex:0 0 34px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif JP';font-size:15px;font-weight:500;border:1px solid var(--border-light);}
+  .rel-org .rb{width:100%;min-width:0;flex:1;}
+  .rel-org .rn{font-family:'Noto Serif JP';font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rel-org .rm{margin-top:3px;font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);line-height:1.6;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:37px;}
+  .rel-org .rj{width:100%;text-align:center;white-space:nowrap;margin-top:auto;font-family:'Noto Serif JP';font-size:11.5px;color:#a9c2a0;background:transparent;border:1px solid #6a8a61;border-radius:3px;padding:6px 10px;cursor:pointer;}
+  .rel-org .rj.done{background:#4a674133;cursor:default;}
+  /* ④の2つの入口：上＝自分で始める（組織をつくる）／下＝この中の組織に入る */
+  /* 入口1は画面の一番下に固定（2026-11-07 Tatsuya） */
+  .rel-make{flex:0 0 auto;display:flex;align-items:center;gap:12px;margin:0;padding:14px 20px 20px;border-top:1px solid var(--border-light);cursor:pointer;background:var(--bg-surface);}
+  .rel-make .plus{width:38px;height:38px;flex:0 0 38px;border-radius:4px;border:1px dashed var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);}
+  .rel-make .mt{font-family:'Noto Serif JP';font-size:14px;font-weight:600;line-height:1.45;}
+  .rel-make .ms{font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);margin-top:2px;}
+  .rel-make .ar{margin-left:auto;color:var(--text-muted);}
+  .rel-org{cursor:pointer;}
+  .rel-org .see{margin-top:auto;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);}
+  /* 組織のプロフィール：マスを押すと大きく開く */
+  .op{position:absolute;inset:0;z-index:45;background:var(--bg-deep);display:flex;flex-direction:column;
+    opacity:0;transform:scale(.92);pointer-events:none;transition:opacity .3s ease-out,transform .3s ease-out;}
+  .op.show{opacity:1;transform:none;pointer-events:auto;}
+  .op .op-top{display:flex;align-items:center;padding:40px 16px 8px;}
+  .op .op-top .x{font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0 4px;}
+  .op .op-body{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 20px 24px;}
+  .op .op-band{height:120px;border-radius:4px;margin-top:4px;}
+  .op .op-head{display:flex;align-items:center;gap:12px;margin-top:-26px;padding:0 10px;}
+  .op .op-crest{width:56px;height:56px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:24px;font-weight:600;border:3px solid var(--bg-deep);}
+  .op .op-name{font-family:'Noto Serif JP';font-size:20px;font-weight:600;margin-top:22px;}
+  .op .op-mis{margin-top:14px;padding:12px 14px;border-left:3px solid var(--text-secondary);background:var(--bg-surface);font-family:'Noto Serif JP';font-size:15px;font-weight:600;line-height:1.6;}
+  .op .op-sec{margin-top:18px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
+  .op .op-mem{display:flex;gap:6px;margin-top:8px;}
+  .op .op-mem i{width:30px;height:30px;border-radius:50%;border:1px solid var(--border-light);display:block;}
+  .op .op-seek{margin-top:8px;border:1px dashed var(--border-light);border-radius:3px;padding:10px 12px;font-family:'Noto Serif JP';font-size:13px;line-height:1.7;}
+  .op .op-cap{margin-top:16px;font-family:'IBM Plex Mono';font-size:15px;color:var(--accent-gold);}
+  .op .op-cap small{font-family:'Noto Serif JP';font-size:10px;color:var(--text-muted);margin-left:6px;}
+  .op .op-foot{padding:12px 20px 22px;border-top:1px solid var(--border);}
+  .op .op-join{width:100%;padding:13px;border-radius:4px;border:1px solid #6a8a61;background:transparent;color:#a9c2a0;font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
+  .op .op-join.done{background:#4a674133;cursor:default;}
+  /* 参加方法のしるし（フリーイン／承認制） */
+  .rel-org .mode{font-size:10px;padding:1px 6px;border-radius:2px;}
+  .rel-org .mode.fr{color:#a9c2a0;border:1px solid #6a8a61;}
+  .rel-org .mode.ap{color:var(--text-secondary);border:1px solid var(--border-light);}
+  .op .op-join.free{background:#4a6741;color:var(--text-primary);border-color:#4a6741;}
+  /* 参加完了 */
+  .joined{position:absolute;inset:0;z-index:48;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;
+    opacity:0;pointer-events:none;transition:opacity .4s ease-out;}
+  .joined.show{opacity:1;pointer-events:auto;}
+  .joined .jd-t{font-family:'Noto Serif JP';font-size:21px;font-weight:600;line-height:1.6;}
+  .joined .jd-s{margin-top:8px;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);}
+  .joined .jd-go{margin-top:28px;padding:12px 40px;border-radius:4px;border:none;background:var(--text-primary);color:var(--bg-deep);font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
+  .rel-done{display:block;margin:24px 20px 0;width:calc(100% - 40px);padding:13px;border-radius:4px;border:1px solid var(--border-light);
+    background:transparent;color:var(--text-secondary);font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
   .indrow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .join{margin-left:0;flex-direction:row;gap:4px;padding:3px 8px;font-size:10px;white-space:nowrap;}
   .org .nm{font-size:21px;margin-top:2px;word-break:keep-all;}
@@ -292,9 +360,9 @@
 </head>
 <body>
 
-<div class="caption">Wiclass 初回起動モック — <b>①起動 → ②いいねを3つ受け取る → ③組織が並ぶ</b>。プロフィール入力はさせない。</div>
+<div class="caption">Wiclass 初回起動モック — <b>①起動 → ②いいねを3つプレゼント → ③組織にいいねを3回押す（必須。組織は右に無限に続く）→ ④おすすめの組織（下に「仲間がほしい？」が固定）</b>。プロフィール入力はさせない。</div>
 <div class="controls">
-  <button onclick="go(1)">① 起動</button><button onclick="go(2)">② 資本</button><button onclick="go(3)">③ 組織</button>
+  <button onclick="go(1)">① 起動</button><button onclick="go(2)">② 資本</button><button onclick="go(3)">③ 組織</button><button onclick="buildRelated();go(4)">④ 関連する組織</button>
 </div>
 
 <div class="phone">
@@ -302,7 +370,7 @@
 
   <!-- ① スプラッシュ -->
   <div class="view active" id="v1">
-    <div class="logo">wiclass</div>
+    <div class="logo">Wiclass</div>
     <div class="tagline">まだ世に出ていないもの、全部。</div>
     <button class="start" onclick="go(2)">はじめる</button>
     <div class="fine">登録なしで、すぐに始められます</div>
@@ -310,29 +378,47 @@
 
   <!-- ② 資本の授与 -->
   <div class="view" id="v2">
-    <div class="g-label">WELCOME</div>
-    <div class="g-title">いいねを3つ受け取りました</div>
+    <div class="g-title">あなたに、いいねを3つ<br>プレゼントします</div>
     <div class="coins"><div class="coin">♥</div><div class="coin">♥</div><div class="coin">♥</div></div>
-    <div class="g-body">
-      <p><em>いいね</em>は、このアプリで使う通貨です。</p>
-      <p>気に入った組織に送ると、その組織への投資になります。</p>
-      <p>投資すると、相手に通知が届きます。</p>
-    </div>
-    <button class="go" id="goBtn" onclick="go(3)">組織を見る</button>
+    <button class="go" id="goBtn" onclick="go(3)">次へ</button>
   </div>
 
   <!-- ③ 組織が並ぶ -->
   <div class="view" id="v3">
     <div class="topbar">
-      <div class="l">wiclass</div>
-      <div class="bal"><span class="h">♥</span><span class="n" id="bal">3</span><span class="u">あなたの手持ち</span></div>
+      <div class="l">Wiclass</div>
+      <div class="bal"><span class="h">♥</span><span class="n" id="bal">3</span><span class="u">のこり</span></div>
     </div>
     <div class="intro">
-      <div class="t1">おすすめの組織</div>
-      <div class="t2">左右にスワイプで組織を切り替え、上下にスクロールで詳細を見られます。</div>
+      <div class="t1">気になる組織に、いいねを3回押してください</div>
     </div>
     <div class="deck" id="deck"></div>
-    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- ③で3回押したら出る「次へ」 -->
+  <button class="next" id="nextBtn" onclick="buildRelated();go(4)">次へ</button>
+
+  <!-- ④ いいねした組織の界隈から、関連する組織が並ぶ（2026-11-07） -->
+  <div class="view" id="v4">
+    <div class="topbar">
+      <div class="l">Wiclass</div>
+    </div>
+    <div class="rel-body" id="relBody"></div>
+    <!-- 入口1：自分で何か始めたい → 組織をつくる（画面の一番下にずっと固定） -->
+    <div class="rel-make" onclick="toast('組織をつくる（画面は未作成）')"><div class="plus">＋</div>
+      <div><div class="mt">始めたいことがあって、仲間がほしいですか？</div><div class="ms">組織をつくって、仲間を集める</div></div><span class="ar">›</span></div>
+    <!-- 組織のプロフィール（マスを押すと大きく開く） -->
+    <div class="op" id="op">
+      <div class="op-top"><span class="x" onclick="closeOrg()">×</span></div>
+      <div class="op-body" id="opBody"></div>
+      <div class="op-foot"><button class="op-join" id="opJoin" onclick="opJoin()">参加リクエスト</button></div>
+    </div>
+    <!-- 参加できたら：チュートリアル完了。必ずどこかの組織に所属した状態でホームへ -->
+    <div class="joined" id="joined">
+      <div class="jd-t"><span id="doneOrg"></span>のメンバーになりました</div>
+      <div class="jd-s">ホームに、この組織の界隈が並びます</div>
+      <button class="jd-go" onclick="toast('ホームへ（戦場）')">ホームへ</button>
+    </div>
   </div>
 
   <!-- 全体の名簿（本来はエントランス側。モックではシートで表示） -->
@@ -444,6 +530,7 @@
 
   // 画面遷移
   function go(n){
+    if(n!==3)$('#nextBtn').classList.remove('show');
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     $('#v'+n).classList.add('active');
     if(n===2) playCoins();
@@ -457,8 +544,8 @@
     setTimeout(()=>$('#goBtn').classList.add('show'),300+3*380+400);
   }
 
-  // 組織カードを描画
-  orgs.forEach((o,i)=>{
+  // 組織カードを1枚描画（あとから足すカードも同じ関数で描く）
+  function addCard(o,i){
     const el=document.createElement('div');el.className='org';
     const sq=o.squad.map(s=>`<div class="m ${s[2]?'lead':''}"><div class="av" style="background:${s[1]}"></div><div class="r">${s[0]}</div></div>`).join('')
       +(o.more?`<div class="m more"><div class="av">+${o.more}</div><div class="r">&nbsp;</div></div>`:'');
@@ -470,7 +557,6 @@
           <div>
             <div class="indrow">
               <div class="ind" style="color:${o.light}">${o.ind}${o.small?'<span class="badge">伸び盛り</span>':''}</div>
-              <button class="join" data-i="${i}">参加リクエスト<span class="cost">♥1</span></button>
             </div>
             <div class="nm">${o.name}</div>
           </div>
@@ -529,14 +615,14 @@
           </div>
           <button class="invest" data-i="${i}"><span class="glow"></span>♥1 投資する</button>
         </div>
-        <div class="note">手持ちの <span class="mine">♥<span data-mine>${bal}</span></span> から1つ使います</div>
+        <div class="note">いいね のこり <span class="mine"><span data-mine>${bal}</span></span></div>
       </div>`;
     $('#deck').appendChild(el);
-    const d=document.createElement('i');if(i===0)d.className='on';$('#dots').appendChild(d);
-  });
+  }
+  orgs.forEach(addCard);
 
   // 投資
-  document.querySelectorAll('.invest').forEach(b=>b.addEventListener('click',()=>{
+  function onInvest(b){
     if(bal<=0||b.classList.contains('done'))return;
     const o=orgs[b.dataset.i];const card=b.closest('.org');
     bal--;o.cap++;
@@ -544,10 +630,10 @@
     const v=card.querySelector('[data-cap]');v.textContent='♥ '+o.cap;v.classList.add('bump');setTimeout(()=>v.classList.remove('bump'),300);
     b.classList.remove('fired');void b.offsetWidth;b.classList.add('fired');
     setTimeout(()=>{b.classList.add('done');b.innerHTML='<span class="glow"></span>投資済み';},350);
-    // 各カードの「あなたの手持ち」も更新
+    // 各カードの「のこり」も更新
     document.querySelectorAll('[data-mine]').forEach(m=>m.textContent=bal);
     // 名簿に名を連ねる
-    o.backers.count++;const no=o.backers.count;o.me=no;
+    o.backers.count++;const no=o.backers.count;o.me=no;likeOrder.push(o.name);
     const early=no<=10;if(early)o.backers.founders.push('名無し');
     const rc=card.querySelector('[data-cnt]');rc.textContent=no;rc.classList.add('bump');setTimeout(()=>rc.classList.remove('bump'),300);
     if(early)card.querySelector('[data-fav]').innerHTML=favHTML(o);
@@ -560,23 +646,84 @@
     toast(early
       ? `${o.name} の<b>第${no}号</b>の出資者になりました。<br>初期出資者（第1〜10号）に入りました。`
       : `${o.name} の<b>第${no}号</b>の出資者になりました。<br>${o.name}に通知が届きます。`);
-    if(bal===0) lockAll();
-  }));
+    if(bal===0){lockAll();setTimeout(()=>{if($("#v3").classList.contains("active"))$("#nextBtn").classList.add("show");},900);}
+  }
 
-  // 手持ちが尽きたら、まだ押していないボタンを押せなくする
-  function lockAll(){document.querySelectorAll('.invest:not(.done), .join:not(.done)').forEach(x=>x.disabled=true);}
+  // いいねを使い切ったら、まだ押していない投資ボタンを押せなくする（参加リクエストはいいね不要なので押せる）
+  function lockAll(){document.querySelectorAll('.invest:not(.done)').forEach(x=>x.disabled=true);}
 
-  // 参加リクエスト（♥1消費）
+  // 参加リクエスト（いいねは使わない。2026-11-07）
   document.querySelectorAll('.join').forEach(b=>b.addEventListener('click',()=>{
-    if(bal<=0||b.classList.contains('done'))return;
+    if(b.classList.contains('done'))return;
     const o=orgs[b.dataset.i];
-    bal--;
-    const n=$('#bal');n.textContent=bal;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),300);
-    document.querySelectorAll('[data-mine]').forEach(m=>m.textContent=bal);
-    b.classList.add('done');b.innerHTML='リクエスト済<span class="cost">♥1</span>';
+    b.classList.add('done');b.textContent='リクエスト済';
     toast(`${o.name} に参加リクエストを送りました。<br>返事が来たら通知します。`);
-    if(bal===0) lockAll();
   }));
+
+
+  // ===== ④ あなたへのおすすめ =====
+  // 並べ方（2026-11-07 Tatsuya）：①1回目にいいねした組織の関連（同じ界隈）を4つまで → ②それと関係ない、人気の組織をその後にずらっと
+  // 界隈ごとに区切らない（1つの「あなたへのおすすめ」として並べる）
+  const likeOrder=[];
+  // 各組織の界隈にいる別の組織（モック用の例。cap＝受け取った資本＝人気の目安）
+  const related={
+    '夜行ゲームス':[{n:'ピクセル工房',c:'ピ',col:'#4a4455',m:'ドット絵の横スクロールを年1本出すチーム。',cap:540},{n:'深夜バグ部',c:'深',col:'#5a4a40',m:'会社員4人で、週末だけパズルゲームを作っている。',cap:205},{n:'三日月インタラクティブ',c:'三',col:'#2c3e50',m:'短編ホラーを3か月に1本出す。',cap:96},{n:'あおぞらノベル',c:'青',col:'#4a6741',m:'ノベルゲームの立ち絵と背景を作るチーム。',cap:41},{n:'ねこ鍋スタジオ',c:'猫',col:'#6b5a3e',m:'猫が主人公のスマホゲームを作る。',cap:30}],
+    '軒先カフェ計画':[{n:'まちのパン部',c:'パ',col:'#6b5a3e',m:'商店街で、週末だけパンを焼いて売る。',cap:380},{n:'畑とごはん',c:'畑',col:'#4a6741',m:'市民農園の野菜で、月1回の食堂をひらく。',cap:62},{n:'夜のおでん屋',c:'お',col:'#8b3a3a',m:'冬の金曜だけ、駅前でおでんを出す。',cap:150},{n:'古民家シェア',c:'古',col:'#5a4a40',m:'空き家を、週末だけのシェアスペースにする。',cap:120}],
+    'ハコ予約':[{n:'シフトメモ',c:'シ',col:'#3d4f6a',m:'飲食店のシフト表を、LINEで回せるようにする。',cap:220},{n:'請求かんたん',c:'請',col:'#5a4a40',m:'フリーランスの請求書づくりを1分にする。',cap:310},{n:'町内会アプリ',c:'町',col:'#4a6741',m:'回覧板をスマホで回せるようにする。',cap:88},{n:'こども食堂マップ',c:'こ',col:'#8b3a3a',m:'近くのこども食堂を地図で探せるようにする。',cap:175}],
+    '週刊ざつだん':[{n:'通勤ラジオ',c:'通',col:'#2c3e50',m:'朝7時に15分、毎日ニュースを話す番組。',cap:410},{n:'ゆるっと経済',c:'ゆ',col:'#4a6741',m:'経済のニュースを、会社員の目線で話す。',cap:288},{n:'深夜の本棚',c:'本',col:'#5a4a40',m:'毎週1冊、読んだ本の話をする。',cap:33},{n:'転職のはなし',c:'転',col:'#3d4f6a',m:'転職した人に、毎週1人話を聞く。',cap:140}]
+  };
+  // マスには参加リクエストを置かない（この情報量では決められないため）。押すと組織のプロフィールが大きく開く
+  let relAll=[];
+  // 組織の参加方法：基本はフリーイン（押せばすぐ参加）。組織があとから承認制（参加リクエスト）に切り替えられる
+  const approvalOrgs=new Set(['ピクセル工房','通勤ラジオ','請求かんたん']);
+  function relCard(r,i){return '<div class="rel-org" onclick="openOrg('+i+')"><div class="rc" style="background:'+r.col+'">'+r.c+'</div>'
+    +'<div class="rb"><div class="rn">'+r.n+'</div><div class="rm">'+r.m+'</div></div>'
+    +'<div class="see">'+(approvalOrgs.has(r.n)?'':'<span class="mode fr">すぐ参加できる</span>')+'</div></div>';} // 印は「すぐ参加できる」だけ出す（2026-11-07）
+  function buildRelated(){
+    const first=likeOrder[0]||orgs[0].name;   // 1回目にいいねした組織（未操作で開いたときは先頭の組織）
+    const near=(related[first]||[]).slice(0,4); // その関連を4つまで
+    const shown=new Set(near.map(r=>r.n));
+    // それと関係ない界隈の組織を、人気（受け取った資本）の多い順に
+    const popular=Object.entries(related).filter(([k])=>k!==first).flatMap(([,v])=>v)
+      .filter(r=>!shown.has(r.n)).sort((a,b)=>b.cap-a.cap);
+    relAll=near.concat(popular);
+    $('#nextBtn').classList.remove('show');
+    $('#relBody').innerHTML=
+       // 入口2：この中の組織に入る（入口1「組織をつくる」は画面下に固定。HTML側）
+      '<div class="rel-q">この中に、一緒にやってみたいことはありますか？</div>'
+      +'<div class="rel-zone"><div class="rel-list">'+relAll.map(relCard).join('')+'</div></div>'
+      +'<button class="rel-done" onclick="toast(\'ホームへ（戦場）\')">あとで</button>'; // 所属しないまま進んでもよい（2026-11-07 再変更）
+  }
+  // 組織のプロフィールを大きく開く（モック用に、メンバー・募集・資本は仮の値）
+  let opCur=null;
+  function openOrg(i){
+    const r=relAll[i];opCur=r;
+    const mem=['#8b3a3a','#4a6741','#3d4f6a','#3d3530'].slice(0,2+(r.cap%3)).map(c=>'<i style="background:'+c+'"></i>').join('');
+    $('#opBody').innerHTML='<div class="op-band" style="background:linear-gradient(150deg,'+r.col+',#141410)"></div>'
+      +'<div class="op-head"><div class="op-crest" style="background:'+r.col+'">'+r.c+'</div></div>'
+      +'<div class="op-name">'+r.n+'</div>'
+      +'<div class="op-mis">'+r.m+'</div>'
+      +'<div class="op-cap">♥ '+r.cap+'<small>'+r.n+'が受け取った資本</small></div>'
+      +'<div class="op-sec">メンバー</div><div class="op-mem">'+mem+'</div>'
+      +'<div class="op-sec">募集中</div><div class="op-seek">一緒に手を動かしてくれる方を探しています。週に数時間から関われます。</div>'
+      +'<div class="op-sec">クリップ</div><div class="op-seek" style="border-style:solid">最近の活動がここに並びます（モックでは省略）</div>';
+    const ap=approvalOrgs.has(r.n);const j=$('#opJoin');j.classList.toggle('done',!!r.req);j.classList.toggle('free',!ap);
+    j.textContent=r.req?'リクエスト済み':(ap?'参加リクエスト（承認制）':'この組織に参加する');
+    $('#op').classList.add('show');
+  }
+  function closeOrg(){$('#op').classList.remove('show');}
+  // 参加：フリーインならその場で所属してチュートリアル完了。承認制なら参加リクエスト（承認されるまでは所属にならない）
+  function opJoin(){
+    if(!opCur||opCur.req)return;
+    const j=$('#opJoin');
+    if(approvalOrgs.has(opCur.n)){
+      opCur.req=true;j.classList.add('done');j.textContent='リクエスト済み';
+      toast(opCur.n+' に参加リクエストを送りました。<br>承認されるまでの間に入る組織も選んでください。');
+    }else{
+      j.classList.add('done');j.textContent=opCur.n+'に参加しました';
+      $('#doneOrg').textContent=opCur.n;setTimeout(()=>$('#joined').classList.add('show'),400);
+    }
+  }
 
   // 全体の名簿を開く
   function row(inner,me){return `<div class="sh-row${me?' me':''}">${inner}</div>`;}
@@ -602,17 +749,38 @@
     $('#sheetBg').classList.add('show');$('#sheet').classList.add('show');
   }
   function closeSheet(){$('#sheetBg').classList.remove('show');$('#sheet').classList.remove('show');}
-  document.querySelectorAll('.roster').forEach(r=>r.addEventListener('click',()=>openSheet(r.dataset.i)));
 
   // いま探している席をタップ
-  document.querySelectorAll('.seat').forEach(s=>s.addEventListener('click',()=>{
+  function onSeat(s){
     toast(`${s.dataset.org} は「${s.dataset.role}」の人を募集しています。<br>投資すると、あなたのことが${s.dataset.org}に通知されます。`);
-  }));
+  }
 
-  // めくり位置のドット
+  // デッキ全体でクリックを受ける（あとから足したカードでも動く）
+  $('#deck').addEventListener('click',e=>{
+    const b=e.target.closest('.invest');if(b){onInvest(b);return;}
+    const r=e.target.closest('.roster');if(r){openSheet(r.dataset.i);return;}
+    const st=e.target.closest('.seat');if(st){onSeat(st);return;}
+  });
+
+  // ===== ③の組織は無限に出る（右端に近づいたら次の組織を足す）2026-11-07 =====
+  // 足す組織の元（モック用。④の related の組織を使い、一巡したら繰り返す）
+  let poolIdx=0;
+  function makeOrg(r){
+    return {name:r.n,crest:r.c,ind:'',col:r.col,light:'#a09a8a',ethos:r.m,flag:r.m,
+      backers:{count:r.cap%60+6,top:[['名無し',Math.max(3,Math.round(r.cap/8)),1]],founders:['名無し','名無し','名無し','名無し']},
+      cap:r.cap,spent:0,thumb:{video:false,label:r.n,bg:'linear-gradient(150deg,'+r.col+' 0%,#1c1a17 60%,#121210 100%)'},post:'',when:'',
+      squad:[['創業',r.col,1],['主力','#3d3530']],more:0,
+      clips:[{m:null,t:r.m,by:['メンバー','#3d3530'],with:[],ago:'昨日',imp:'120'}],
+      voice:{name:'メンバー',role:'創業',col:'#3d3530',bio:'',text:r.m},
+      seek:[{role:'メンバー',text:'一緒に手を動かしてくれる方を探しています。'}]};
+  }
+  function addMore(n){
+    const pool=Object.values(related).flat();
+    for(let k=0;k<n;k++){const o=makeOrg(pool[poolIdx%pool.length]);poolIdx++;orgs.push(o);addCard(o,orgs.length-1);
+      if(bal===0)$('#deck').lastElementChild.querySelector('.invest').disabled=true;}
+  }
   $('#deck').addEventListener('scroll',()=>{
-    const dk=$('#deck');const c0=dk.querySelector('.org');const step=c0?c0.offsetWidth+14:314;const idx=Math.round(dk.scrollLeft/step);
-    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===idx));
+    const dk=$('#deck');if(dk.scrollLeft+dk.clientWidth>dk.scrollWidth-dk.clientWidth*1.5)addMore(3);
   });
 </script>
 </body>
