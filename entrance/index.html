@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiclass プロトタイプ — 組織エントランス</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;--text-dark:#2a2924;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
+    --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:380px;}
+  .caption b{color:var(--accent-gold);font-weight:500;}
+
+  .phone{width:360px;height:760px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;
+    background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
+  .screen{height:100%;display:flex;flex-direction:column;}
+
+  .topbar{display:flex;align-items:center;gap:12px;padding:34px 16px 10px;background:var(--bg-surface);
+    border-bottom:1px solid var(--border);z-index:20;}
+  .topbar .back{font-size:18px;color:var(--text-secondary);cursor:pointer;}
+  .topbar .t{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);letter-spacing:.16em;}
+  .topbar .bal{margin-left:auto;font-family:'IBM Plex Mono';font-size:13px;color:var(--accent-gold);}
+
+  .body{flex:1;overflow-y:auto;}
+  .body::-webkit-scrollbar{display:none;}
+
+  /* ===== 主役：アイデンティティ（HERO） ===== */
+  .hero{padding:26px 20px 22px;border-bottom:1px solid var(--border);
+    background:radial-gradient(120% 90% at 50% -10%, #2b2d33 0%, #1a1a17 62%);position:relative;text-align:center;}
+  .hero .crest{width:74px;height:74px;border-radius:12px;margin:0 auto 14px;
+    background:linear-gradient(150deg,var(--accent-navy),#161616);border:1px solid var(--border-light);
+    display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:34px;color:var(--accent-gold);
+    box-shadow:0 6px 22px rgba(0,0,0,.5);}
+  .hero .industry{display:inline-block;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;
+    color:#8aa0c0;border:1px solid #3d4f6a;border-radius:2px;padding:3px 10px;margin-bottom:12px;}
+  .hero .name{font-family:'Noto Serif JP';font-weight:600;font-size:30px;color:var(--text-primary);letter-spacing:.04em;}
+  .hero .ethos{font-family:'Cormorant Garamond','Noto Serif JP',serif;font-size:16px;color:var(--text-secondary);
+    margin-top:8px;font-style:italic;}
+  .hero .stats{display:flex;justify-content:center;gap:18px;margin-top:16px;font-family:'IBM Plex Mono';font-size:11px;}
+  .hero .stats .s{color:var(--text-muted);}
+  .hero .stats .s b{color:var(--accent-gold);font-weight:500;}
+  .hero .rank{color:var(--text-secondary);}
+
+  .seclabel{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.16em;color:var(--text-muted);
+    padding:18px 20px 0;}
+
+  /* ===== 顔ぶれ（スカッド。組織図にしない） ===== */
+  .squad{display:flex;gap:14px;overflow-x:auto;padding:12px 20px 16px;}
+  .squad::-webkit-scrollbar{display:none;}
+  .mem{flex:0 0 auto;width:60px;text-align:center;cursor:pointer;}
+  .mem .av{width:52px;height:52px;border-radius:50%;margin:0 auto 6px;position:relative;}
+  .mem.founder .av{box-shadow:0 0 0 2px var(--accent-gold);}
+  .mem .role{font-family:'IBM Plex Mono';font-size:8px;letter-spacing:.06em;color:var(--accent-gold);}
+  .mem .nm{font-family:'Noto Serif JP';font-size:12px;color:var(--text-primary);margin-top:1px;}
+  .mem.open .av{background:transparent!important;border:1px dashed var(--accent-gold);
+    display:flex;align-items:center;justify-content:center;color:var(--accent-gold);font-size:20px;}
+  .mem.open .role{color:var(--text-secondary);}
+
+  /* ===== 掲げているもの（看板：方針・成果物。反応が起きる生きた面） ===== */
+  .pin{margin:8px 20px 0;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .pin .tag{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;padding:11px 14px 0;}
+  .pin.policy .tag{color:var(--accent-copper);}
+  .pin.work .tag{color:var(--text-muted);}
+  .pin .ttl{font-family:'Noto Serif JP';font-size:16px;color:var(--text-primary);font-weight:500;padding:4px 14px 0;line-height:1.5;}
+  .pin .desc{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);padding:6px 14px 0;}
+  .pin .cover{height:120px;margin:12px 14px 0;border-radius:3px;display:flex;align-items:flex-end;padding:10px;}
+  .pin .foot{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+  .pin .foot .by{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .likepill{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:4px;cursor:pointer;
+    background:var(--like-glow);border:1px solid var(--accent-gold);color:var(--accent-gold);
+    font-family:'IBM Plex Mono';font-size:12px;position:relative;overflow:hidden;transition:transform .15s;}
+  .likepill:active{transform:scale(.94);}
+  .likepill .glow{position:absolute;inset:0;border-radius:4px;}
+  .likepill.fired .glow{animation:glow .6s ease-out;}
+  @keyframes glow{0%{box-shadow:0 0 0 0 #c4a35aaa;}100%{box-shadow:0 0 32px 12px #c4a35a00;}}
+
+  /* ===== 生きた活動：迎え ===== */
+  .welcome{margin:14px 20px 0;padding:11px 14px;border-left:3px solid var(--accent-gold);background:var(--bg-surface);
+    border-radius:0 3px 3px 0;}
+  .welcome .w1{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .welcome .w1 b{color:var(--text-primary);}
+  .welcome .w2{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-top:3px;}
+
+  /* ===== 支え：募集（フッター・主要アクション1つ） ===== */
+  .recruit{margin:18px 20px 22px;padding:16px 16px 18px;border:1px dashed var(--accent-gold);border-radius:6px;
+    background:#c4a35a08;text-align:center;}
+  .recruit .r1{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;color:var(--accent-gold);}
+  .recruit .r2{font-family:'Noto Serif JP';font-size:15px;color:var(--text-primary);margin-top:6px;}
+  .recruit .cta{margin-top:14px;width:100%;padding:14px;border:none;border-radius:5px;cursor:pointer;
+    background:var(--accent-gold);color:var(--bg-deep);font-family:'Noto Serif JP';font-size:15px;font-weight:600;
+    transition:transform .15s;}
+  .recruit .cta:active{transform:scale(.98);}
+  .recruit .sub{margin-top:9px;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+
+  .toast{position:absolute;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--bg-card);border:1px solid var(--accent-gold);color:var(--text-primary);
+    padding:9px 18px;border-radius:5px;font-size:12px;font-family:'Noto Serif JP';z-index:50;
+    opacity:0;transition:all .4s ease;pointer-events:none;white-space:nowrap;max-width:320px;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織エントランス</b>。序列＝主役：アイデンティティ（紋章・理念・到達）／次：掲げるもの＋迎え（生きた反応）／支え：顔ぶれ（スカッド＝組織図にしない）・募集。Slackの雑多はここに出さない。</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <div class="topbar">
+      <div class="back" id="back">←</div>
+      <div class="t">ENTRANCE</div>
+      <div class="bal">♥ <span id="bal">24</span></div>
+    </div>
+
+    <div class="body">
+
+      <!-- 主役：アイデンティティ -->
+      <div class="hero">
+        <div class="crest">夜</div>
+        <div class="industry">ゲーム / インタラクティブ</div>
+        <div class="name">夜行</div>
+        <div class="ethos">夜しか動かない、5人の制作班。</div>
+        <div class="stats">
+          <span class="s">到達 <b>♥312</b></span>
+          <span class="rank">・ ゲーム領域 12位</span>
+          <span class="s">・ 企て <b>3</b></span>
+        </div>
+      </div>
+
+      <!-- 掲げているもの（看板） -->
+      <div class="seclabel">掲げているもの</div>
+
+      <div class="pin policy">
+        <div class="tag">一大方針</div>
+        <div class="ttl">「LUNA」を年内に完成させ、次は音楽班を立ち上げる。</div>
+        <div class="foot">
+          <span class="by">founder・朔</span>
+          <span class="likepill" data-like="18"><span class="glow"></span>♥ 18</span>
+        </div>
+      </div>
+
+      <div class="pin work">
+        <div class="tag">成果物</div>
+        <div class="ttl">2Dアクション「LUNA」ティザー</div>
+        <div class="cover" style="background:linear-gradient(135deg,var(--accent-navy),#1a1a17);">
+          <span style="font-family:'IBM Plex Mono';font-size:9px;color:#fff;background:#0005;border-radius:2px;padding:2px 7px;">45秒 / 映像</span>
+        </div>
+        <div class="foot">
+          <span class="by">澪(客演)・凪</span>
+          <span class="likepill" data-like="34"><span class="glow"></span>♥ 34</span>
+        </div>
+      </div>
+
+      <!-- 生きた活動：迎え -->
+      <div class="welcome">
+        <div class="w1">3日前、<b>澪</b> を客演として迎えた。</div>
+        <div class="w2">朔・灯・凪 が歓迎 ・ ♥ 6</div>
+      </div>
+
+      <!-- 支え：顔ぶれ（スカッド） -->
+      <div class="seclabel">顔ぶれ</div>
+      <div class="squad">
+        <div class="mem founder"><div class="av" style="background:var(--accent-wine)"></div><div class="role">創業</div><div class="nm">朔</div></div>
+        <div class="mem"><div class="av" style="background:var(--accent-forest)"></div><div class="role">主力</div><div class="nm">灯</div></div>
+        <div class="mem"><div class="av" style="background:var(--accent-navy)"></div><div class="role">古参</div><div class="nm">凪</div></div>
+        <div class="mem"><div class="av" style="background:#3d3530"></div><div class="role">客演</div><div class="nm">澪</div></div>
+        <div class="mem"><div class="av" style="background:var(--bg-hover)"></div><div class="role">新参</div><div class="nm">昏</div></div>
+        <div class="mem open" id="joinSlot"><div class="av">＋</div><div class="role">募集中</div><div class="nm">作曲</div></div>
+      </div>
+
+      <!-- 支え：募集（主要アクション1つ） -->
+      <div class="recruit">
+        <div class="r1">この組が探している</div>
+        <div class="r2">作曲ができる人</div>
+        <button class="cta" id="cta">参加をリクエスト</button>
+        <div class="sub">※ 向こうから「オファー」が届くこともある</div>
+      </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<div class="caption" style="opacity:.7">人事構造は「組織図」でなくスカッド（顔ぶれ＋役）。看板と成果物には♥が付く＝生きた反応の場。雑多なやり取りはSlack、看板だけがここ。</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  let bal=24;
+  function toast(m){const t=$('#toast');t.textContent=m;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',1700);}
+  document.querySelectorAll('.likepill').forEach(p=>p.addEventListener('click',()=>{
+    if(bal<=0){toast('いいねが足りない');return;}
+    bal--;$('#bal').textContent=bal;
+    let n=parseInt(p.dataset.like)+1;p.dataset.like=n;
+    p.classList.remove('fired');void p.offsetWidth;p.classList.add('fired');
+    p.childNodes[p.childNodes.length-1].textContent='♥ '+n;
+    toast('♥ を夜行に渡した（外からの到達＝組の成長）');
+  }));
+  $('#cta').addEventListener('click',()=>toast('参加をリクエストした（いいねを消費）'));
+  $('#joinSlot').addEventListener('click',()=>toast('募集中の枠：作曲。客演でも参加できる'));
+  $('#back').addEventListener('click',()=>toast('戻る（プロトタイプでは省略）'));
+  document.querySelectorAll('.squad .mem:not(.open)').forEach(m=>m.addEventListener('click',()=>toast('メンバーの個人ページへ（所属組と各組での立ち位置が見える）')));
+</script>
+</body>
+</html>
