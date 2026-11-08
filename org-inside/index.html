@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織の中（やること版）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
+    --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;--member:#8fa886;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;
+    word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:450px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
+
+  /* ヘッダー */
+  .topbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:34px 14px 10px;background:var(--bg-surface);border-bottom:1px solid var(--border);z-index:20;}
+  .crest{width:32px;height:32px;flex:0 0 32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:15px;font-weight:600;border:1px solid var(--border-light);}
+  .topbar .nm{font-family:'Noto Serif JP';font-size:15px;font-weight:600;line-height:1.3;}
+  .topbar .pub{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);cursor:pointer;}
+  .topbar .tools{margin-left:auto;display:flex;gap:6px;}
+  .tool{position:relative;width:32px;height:32px;border-radius:4px;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .tool svg{width:17px;height:17px;stroke:var(--member);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .tool .bd{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;border-radius:8px;padding:0 3px;background:var(--accent-wine);font-family:'IBM Plex Mono';font-size:9px;display:flex;align-items:center;justify-content:center;}
+
+  .body{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:24px;}
+  .body::-webkit-scrollbar{display:none;}
+  .sec{display:flex;align-items:center;gap:8px;padding:20px 16px 8px;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+  .sec .n{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);}
+  .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';border:1px solid var(--border-light);flex:0 0 auto;}
+
+  /* ===== 1. おかえり＋あなたがいない間に ===== */
+  .hello{margin:12px 16px 0;padding:14px;border-radius:6px;background:linear-gradient(160deg,#2a2c30,#22211d);border:1px solid var(--border-light);}
+  .hello .h1{font-family:'Noto Serif JP';font-size:17px;font-weight:600;}
+  .hello .h2{font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+  .since{margin-top:10px;display:flex;flex-direction:column;gap:7px;}
+  .since .it{display:flex;align-items:flex-start;gap:8px;font-family:'Noto Serif JP';font-size:12.5px;line-height:1.6;}
+  .since .ic{flex:0 0 18px;text-align:center;color:var(--text-secondary);}
+  .since .it b{font-weight:600;}
+  .since .g{color:var(--accent-gold);font-family:'IBM Plex Mono';}
+  .since .up{color:#a9c2a0;}
+  .since .go{color:var(--member);cursor:pointer;white-space:nowrap;}
+
+  /* ===== 2. あなたの持ち場 ===== */
+  .mine{display:flex;flex-direction:column;gap:8px;padding:0 16px;}
+  .task{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer;}
+  .task.mineT{border-left:3px solid var(--member);}
+  .task .tt{font-family:'Noto Serif JP';font-size:14.5px;font-weight:600;line-height:1.5;}
+  .task .tm{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);}
+  .task .st{font-size:10px;padding:0 7px;border-radius:2px;border:1px solid var(--border-light);}
+  .task .st.doing{color:var(--member);border-color:#6a8a61;}
+  .task .st.open{color:var(--text-secondary);border-style:dashed;}
+  .task .talk{margin-left:auto;font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);}
+  .task .btns{display:flex;gap:8px;margin-top:10px;}
+  .task .btns button{flex:1;padding:8px 0;border-radius:4px;font-family:'Noto Serif JP';font-size:13px;cursor:pointer;}
+  .b-done{background:var(--text-primary);color:var(--bg-deep);border:1px solid var(--text-primary);}
+  .b-sub{background:transparent;color:var(--text-secondary);border:1px solid var(--border-light);}
+  .b-take{background:#4a6741;color:var(--text-primary);border:1px solid #4a6741;}
+  /* 任されたこと（依頼が届いている） */
+  .ask{border:1px solid #6a8a61;background:#4a674114;border-radius:6px;padding:12px;}
+  .ask .from{display:flex;align-items:center;gap:8px;font-family:'Noto Serif JP';font-size:11.5px;color:var(--member);}
+  .ask .from .av{width:22px;height:22px;font-size:10px;}
+  .ask .tt{font-family:'Noto Serif JP';font-size:14.5px;font-weight:600;margin-top:6px;line-height:1.5;}
+  .ask .msg{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:3px;line-height:1.7;}
+
+  /* ===== 3. ミッションの道のり ===== */
+  .road{margin:0 16px;padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;}
+  .road .mis{font-family:'Noto Serif JP';font-size:13.5px;font-weight:600;line-height:1.6;}
+  .stops{position:relative;display:flex;justify-content:space-between;margin-top:16px;}
+  .stops::before{content:'';position:absolute;left:8px;right:8px;top:7px;height:2px;background:var(--border-light);}
+  .stops .fill{position:absolute;left:8px;top:7px;height:2px;background:var(--accent-gold);transition:width .8s ease-out;}
+  .stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:64px;}
+  .stop i{width:16px;height:16px;border-radius:50%;background:var(--bg-deep);border:2px solid var(--border-light);display:block;}
+  .stop.ok i{background:var(--accent-gold);border-color:var(--accent-gold);}
+  .stop.now i{border-color:var(--accent-gold);box-shadow:0 0 0 4px #c4a35a33;}
+  .stop span{margin-top:6px;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);text-align:center;line-height:1.4;}
+  .stop.now span{color:var(--text-primary);}
+  .road .pct{margin-top:12px;font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);}
+  .road .pct b{font-family:'IBM Plex Mono';color:var(--accent-gold);font-weight:500;}
+
+  /* ===== 4. やることボード ===== */
+  .board-h{display:flex;gap:6px;padding:0 16px 8px;}
+  .tab{font-family:'Noto Serif JP';font-size:12px;padding:4px 12px;border-radius:14px;border:1px solid var(--border-light);color:var(--text-secondary);cursor:pointer;}
+  .tab.on{color:var(--text-primary);border-color:var(--text-secondary);background:var(--bg-card);}
+  .tab b{font-family:'IBM Plex Mono';font-weight:500;margin-left:3px;}
+  .board{display:flex;flex-direction:column;gap:8px;padding:0 16px;}
+  .who{display:flex;align-items:center;gap:6px;}
+  .who .av{width:22px;height:22px;font-size:10px;}
+  .addtask{margin:10px 16px 0;padding:11px;border:1px dashed var(--border-light);border-radius:6px;text-align:center;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);cursor:pointer;}
+
+  /* ===== 5. 最近できたこと（記録） ===== */
+  .log{display:flex;flex-direction:column;padding:0 16px;}
+  .rec{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .rec .av{width:30px;height:30px;font-size:12px;}
+  .rec .rb{flex:1;min-width:0;font-family:'Noto Serif JP';}
+  .rec .rt{font-size:13px;line-height:1.5;}
+  .rec .rs{font-size:10.5px;color:var(--text-muted);}
+  .clap{flex:0 0 auto;font-family:'Noto Serif JP';font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border-light);background:transparent;color:var(--text-secondary);cursor:pointer;}
+  .clap.done{border-color:var(--member);color:var(--member);}
+  .rec.new{animation:pop .7s ease-out;}
+  @keyframes pop{0%{background:#4a674144}100%{background:transparent}}
+
+  /* できた！のお祝い */
+  .party{position:absolute;inset:0;z-index:48;background:#1a1a17ee;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;
+    opacity:0;pointer-events:none;transition:opacity .35s;}
+  .party.show{opacity:1;pointer-events:auto;}
+  .party .big{font-family:'Noto Serif JP';font-size:30px;font-weight:600;}
+  .party .what{font-family:'Noto Serif JP';font-size:14px;color:var(--text-secondary);margin-top:6px;}
+  .party .plus{margin-top:14px;font-family:'Noto Serif JP';font-size:13px;color:var(--accent-gold);}
+  .party .pb{display:flex;flex-direction:column;gap:8px;margin-top:24px;width:100%;max-width:280px;}
+  .party .pb button{padding:12px;border-radius:4px;font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
+  .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent-gold);opacity:0;}
+  .party.show .spark{animation:fly 1.1s ease-out forwards;}
+  @keyframes fly{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+
+  /* やることの中（話はここでする） */
+  .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;max-height:80%;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;
+    transform:translateY(100%);transition:transform .35s ease-out;z-index:41;display:flex;flex-direction:column;}
+  .open-sheet .scrim{opacity:1;pointer-events:auto;}
+  .sheet.show{transform:none;}
+  .sheet .sh{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+  .sheet .sh .x{float:right;font-size:18px;color:var(--text-secondary);cursor:pointer;}
+  .sheet .sh .tt{font-family:'Noto Serif JP';font-size:16px;font-weight:600;line-height:1.5;}
+  .sheet .sh .tm{display:flex;align-items:center;gap:8px;margin-top:4px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);}
+  .sheet .sb{flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none;}
+  .cm{display:flex;gap:8px;}
+  .cm .av{width:26px;height:26px;font-size:11px;}
+  .cm .cn{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);}
+  .cm .ct{font-family:'Noto Serif JP';font-size:13px;line-height:1.65;background:var(--bg-card);border:1px solid var(--border);border-radius:2px 10px 10px 10px;padding:6px 10px;margin-top:2px;}
+  .sheet .si{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);}
+  .sheet .si input{flex:1;min-width:0;background:var(--bg-card);border:1px solid var(--border-light);border-radius:18px;padding:8px 14px;color:var(--text-primary);font-family:'Noto Serif JP';font-size:13px;outline:none;}
+  .sheet .si button{font-family:'Noto Serif JP';font-size:13px;padding:0 14px;border-radius:18px;border:none;background:var(--text-primary);color:var(--bg-deep);cursor:pointer;}
+
+  /* フッター */
+  .foot{flex:0 0 auto;display:flex;align-items:center;gap:4px;height:64px;padding:0 12px;background:var(--bg-surface);border-top:1px solid var(--border);}
+  .foot .fb{flex:0 0 auto;width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;font-family:'Noto Serif JP';font-size:9.5px;color:var(--text-muted);}
+  .foot .fb svg{width:22px;height:22px;stroke:var(--text-muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .foot .fb .dot{position:absolute;top:-3px;right:6px;min-width:16px;height:16px;border-radius:8px;padding:0 4px;background:var(--accent-wine);color:var(--text-primary);font-family:'IBM Plex Mono';font-size:9px;display:flex;align-items:center;justify-content:center;}
+  .foot .myorgs{flex:1;min-width:0;display:flex;gap:10px;padding-left:10px;border-left:1px solid var(--border);border-right:1px solid var(--border);height:44px;align-items:center;}
+  .foot .mo{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:15px;border:1px solid var(--border-light);cursor:pointer;opacity:.55;}
+  .foot .mo.on{opacity:1;box-shadow:0 0 0 2px var(--text-primary);}
+
+  .toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .topbar{padding-top:calc(env(safe-area-inset-top) + 12px);}
+    .foot{height:auto;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織の中（やること版）</b>。感じてもらう4つ（任される・貢献・認められる・ワクワク）から作った叩き台。上から ①おかえり＋あなたがいない間に ②あなたの持ち場 ③ミッションの道のり ④やることボード ⑤最近できたこと。会話は、それぞれのやることの中でする。あなた＝佐久間。</div>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+
+  <div class="topbar">
+    <div class="crest" style="background:#3d4f6a">夜</div>
+    <div><div class="nm">夜行ゲームス</div><div class="pub" onclick="toast('外向けのページへ')">外向けのページ ›</div></div>
+    <div class="tools">
+      <div class="tool" title="人を探す" onclick="toast('人を探す（オファー可の人に「気になっています」）')"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></div>
+      <div class="tool" title="参加の受け付け" onclick="toast('参加の受け付け')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M17 8v6M14 11h6"/></svg><span class="bd">2</span></div>
+    </div>
+  </div>
+
+  <div class="body" id="body">
+
+    <!-- ① おかえり＋あなたがいない間に（存在の承認・ワクワク・外からの反応） -->
+    <div class="hello">
+      <div class="h1">おかえりなさい、佐久間さん</div>
+      <div class="h2">あなたがいない間に（2日）</div>
+      <div class="since">
+        <div class="it"><span class="ic">✓</span><span><b>Mizuki</b>さんが「2面の背景」をできたにしました</span></div>
+        <div class="it"><span class="ic">→</span><span><b>田中 健</b>さんから、あなたに任せたいことが届いています</span><span class="go" onclick="document.getElementById('askCard').scrollIntoView({behavior:'smooth',block:'center'})">見る ›</span></div>
+        <div class="it"><span class="ic">♥</span><span>外から <span class="g">♥26</span> の投資がありました（通勤ラジオの小川さん ほか）</span></div>
+        <div class="it"><span class="ic">↑</span><span>戦場で、夜行ゲームスの界隈の順位が <span class="up">3位 → 2位</span> に上がりました</span></div>
+      </div>
+    </div>
+
+    <!-- ② あなたの持ち場（任される） -->
+    <div class="sec">あなたの持ち場</div>
+    <div class="mine" id="mine"></div>
+
+    <!-- ③ ミッションの道のり（ワクワク・貢献が動く） -->
+    <div class="sec">ミッションまでの道のり</div>
+    <div class="road">
+      <div class="mis">2Dアクション「LUNA」を完成させ、Steamで1万本売る。</div>
+      <div class="stops" id="stops">
+        <div class="fill" id="fill"></div>
+        <div class="stop ok"><i></i><span>体験版</span></div>
+        <div class="stop ok"><i></i><span>早期アクセス</span></div>
+        <div class="stop now"><i></i><span>正式版</span></div>
+        <div class="stop"><i></i><span>1万本</span></div>
+      </div>
+      <div class="pct">正式版まで：やること <b id="doneN">14</b> / <b>22</b> できた</div>
+    </div>
+
+    <!-- ④ やることボード（任される・貢献） -->
+    <div class="sec">やること</div>
+    <div class="board-h" id="tabs"></div>
+    <div class="board" id="board"></div>
+    <div class="addtask" onclick="toast('やることを書く（モックでは省略）')">＋ やることを書く</div>
+
+    <!-- ⑤ 最近できたこと＝記録（認められる） -->
+    <div class="sec">最近できたこと</div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <nav class="foot">
+    <div class="fb" onclick="toast('ホームへ（戦場）')"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>ホーム</div>
+    <div class="fb" onclick="toast('検索（戦場で開く）')"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>検索</div>
+    <div class="myorgs">
+      <div class="mo on" style="background:#3d4f6a">夜</div>
+      <div class="mo" style="background:#2c3e50" onclick="toast('週刊ざつだんの中へ')">雑</div>
+    </div>
+    <div class="fb" onclick="toast('DMへ（組織の外の人と1対1）')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>DM<span class="dot">2</span></div>
+  </nav>
+
+  <!-- やることの中（話はここでする） -->
+  <div class="scrim" onclick="closeTask()"></div>
+  <div class="sheet" id="sheet">
+    <div class="sh"><span class="x" onclick="closeTask()">×</span><div class="tt" id="tTitle"></div><div class="tm" id="tMeta"></div></div>
+    <div class="sb" id="tBody"></div>
+    <div class="si"><input id="tIn" placeholder="このやることについて話す" onkeydown="if(event.key==='Enter'){event.preventDefault();say();}"><button onclick="say()">送る</button></div>
+  </div>
+
+  <!-- できた！のお祝い -->
+  <div class="party" id="party">
+    <div class="big">できた！</div>
+    <div class="what" id="pWhat"></div>
+    <div class="plus">ミッションへの道のりが、1つ進みました</div>
+    <div class="pb">
+      <button class="b-done" onclick="toClip()">クリップにして外に出す</button>
+      <button class="b-sub" onclick="closeParty()">閉じる</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+
+  // メンバー（個人＝丸）
+  const P={佐久間:'#6b5a3e',田中:'#8b3a3a',Mizuki:'#4a6741',山本:'#3d4f6a',Aya:'#3d3530',小林:'#5a4a40'};
+  const ME='佐久間';
+  function av(n,s){return '<div class="av" style="width:'+s+'px;height:'+s+'px;font-size:'+Math.round(s*.42)+'px;background:'+(P[n]||P[n.split(' ')[0]])+'">'+n[0]+'</div>';}
+
+  // やること（状態は「だれか募集／やってる／できた」の3つだけ）
+  let tasks=[
+    {id:1,t:'ボス戦の効果音',st:'doing',who:'佐久間',talk:[['田中','金属っぽい重さがほしい'],['佐久間','3層重ねてみました。明日上げます']]},
+    {id:2,t:'タイトル画面のジングル',st:'ask',who:'佐久間',from:'田中 健',msg:'効果音の雰囲気に合わせて、10秒くらいのジングルをお願いしたいです。',talk:[]},
+    {id:3,t:'2章のシナリオ',st:'open',who:null,talk:[['山本','1章の続きから。誰か一緒に考えませんか']]},
+    {id:4,t:'Steamのストアページの文章',st:'open',who:null,talk:[]},
+    {id:5,t:'3面のボスのドット絵',st:'doing',who:'Mizuki',talk:[['Mizuki','ラフはできた']]},
+    {id:6,t:'セーブ機能',st:'doing',who:'Aya',talk:[]},
+    {id:7,t:'2面の背景',st:'done',who:'Mizuki',talk:[],when:'昨日',clap:3},
+    {id:8,t:'体験版の不具合報告まとめ',st:'done',who:'山本',talk:[],when:'3日前',clap:5}
+  ];
+  let tab='open',doneN=14;
+  const label={open:'だれか募集',doing:'やってる',done:'できた'};
+
+  function stTag(t){return '<span class="st '+(t.st==='doing'?'doing':t.st==='open'?'open':'')+'">'+(label[t.st]||'')+'</span>';}
+  function render(){
+    // ② あなたの持ち場：任されたこと（依頼）と、自分がやっていること
+    $('#mine').innerHTML=tasks.filter(t=>t.who===ME&&(t.st==='ask'||t.st==='doing')).map(t=>t.st==='ask'
+      ?'<div class="ask" id="askCard"><div class="from">'+av(t.from,22)+'<span>'+t.from+'さんから、あなたに任せたいこと</span></div><div class="tt">'+t.t+'</div><div class="msg">'+t.msg+'</div>'
+        +'<div class="task" style="padding:0;border:none;background:none;cursor:default"><div class="btns"><button class="b-take" onclick="accept('+t.id+')">引き受ける</button><button class="b-sub" onclick="decline('+t.id+')">今回は見送る</button></div></div></div>'
+      :'<div class="task mineT" onclick="openTask('+t.id+')"><div class="tt">'+t.t+'</div><div class="tm">'+stTag(t)+'<span>あなたが担当</span><span class="talk">話 '+t.talk.length+'</span></div>'
+        +'<div class="btns"><button class="b-done" onclick="event.stopPropagation();done('+t.id+')">できた</button></div></div>').join('')
+      ||'<div class="addtask" style="margin:0" onclick="setTab(\'open\')">いまは持ち場がありません。だれか募集のやることを見る ›</div>';
+    // ④ やることボード
+    const cnt=s=>tasks.filter(t=>t.st===s).length;
+    $('#tabs').innerHTML=['open','doing','done'].map(s=>'<span class="tab'+(tab===s?' on':'')+'" onclick="setTab(\''+s+'\')">'+label[s]+'<b>'+cnt(s)+'</b></span>').join('');
+    $('#board').innerHTML=tasks.filter(t=>t.st===tab).map(t=>'<div class="task" onclick="openTask('+t.id+')"><div class="tt">'+t.t+'</div><div class="tm">'+stTag(t)
+      +(t.who?'<span class="who">'+av(t.who,22)+t.who+'</span>':'<span>まだ誰も</span>')+'<span class="talk">話 '+t.talk.length+'</span></div>'
+      +(t.st==='open'?'<div class="btns"><button class="b-take" onclick="event.stopPropagation();take('+t.id+')">わたしがやる</button><button class="b-sub" onclick="event.stopPropagation();toast(\'メンバーを選んで「任せたい」と頼む（モックでは省略）\')">誰かに任せたい</button></div>':'')+'</div>').join('');
+    // ⑤ 最近できたこと
+    $('#log').innerHTML=tasks.filter(t=>t.st==='done').map(t=>'<div class="rec'+(t.fresh?' new':'')+'">'+av(t.who,30)+'<div class="rb"><div class="rt"><b>'+t.who+'</b>さんが「'+t.t+'」をできたにしました</div><div class="rs">'+t.when+'</div></div>'
+      +'<button class="clap'+(t.clapped?' done':'')+'" onclick="clap('+t.id+')">拍手 '+t.clap+'</button></div>').join('');
+    // ③ 道のりのバー（正式版の点までのうち、どこまで来たか）
+    $('#doneN').textContent=doneN;
+    const stops=$('#stops');const w=stops.clientWidth-16;const seg=w/3;
+    $('#fill').style.width=(seg*1+seg*(doneN/22))+'px';
+  }
+  function setTab(s){tab=s;render();}
+  const byId=id=>tasks.find(t=>t.id===id);
+  function accept(id){const t=byId(id);t.st='doing';render();toast('引き受けました。「'+t.t+'」はあなたの持ち場です。田中さんに届きます');}
+  function decline(id){const t=byId(id);t.st='open';t.who=null;render();toast('今回は見送りました。「だれか募集」に戻ります');}
+  function take(id){const t=byId(id);t.st='doing';t.who=ME;render();toast('「'+t.t+'」を引き受けました。あなたの持ち場に入りました');}
+  function clap(id){const t=byId(id);if(t.clapped)return;t.clapped=true;t.clap++;render();toast(t.who+'さんに拍手が届きます');}
+  // できた：お祝い → 道のりが進む → 記録に残る → クリップにして外に出せる
+  let lastDone=null;
+  function done(id){const t=byId(id);t.st='done';t.when='いま';t.clap=0;t.fresh=true;doneN++;lastDone=t;
+    tasks=[t].concat(tasks.filter(x=>x!==t));render();
+    $('#pWhat').textContent='「'+t.t+'」';const p=$('#party');p.querySelectorAll('.spark').forEach(s=>s.remove());
+    for(let k=0;k<18;k++){const s=document.createElement('i');s.className='spark';const a=k/18*Math.PI*2;s.style.setProperty('--dx',Math.cos(a)*130+'px');s.style.setProperty('--dy',Math.sin(a)*130+'px');
+      s.style.left='50%';s.style.top='42%';p.appendChild(s);}
+    p.classList.add('show');}
+  function closeParty(){$('#party').classList.remove('show');}
+  function toClip(){closeParty();toast('「'+lastDone.t+'」をクリップにして外に出しました。戦場と外向けのページに並びます');}
+  // やることの中（話）
+  let cur=null;
+  function openTask(id){cur=byId(id);
+    $('#tTitle').textContent=cur.t;
+    $('#tMeta').innerHTML=stTag(cur)+(cur.who?'<span class="who">'+av(cur.who,20)+cur.who+'</span>':'<span>まだ誰も</span>');
+    renderTalk();$('#phone').classList.add('open-sheet');$('#sheet').classList.add('show');}
+  function renderTalk(){$('#tBody').innerHTML=cur.talk.length?cur.talk.map(c=>'<div class="cm">'+av(c[0],26)+'<div><div class="cn">'+c[0]+'</div><div class="ct">'+c[1]+'</div></div></div>').join('')
+    :'<div style="font-family:Noto Serif JP;font-size:12px;color:var(--text-muted)">まだ話はありません。最初のひとことをどうぞ。</div>';}
+  function say(){const v=$('#tIn').value.trim();if(!v||!cur)return;cur.talk.push([ME,v.replace(/</g,'&lt;')]);$('#tIn').value='';renderTalk();render();}
+  function closeTask(){$('#phone').classList.remove('open-sheet');$('#sheet').classList.remove('show');}
+
+  render();window.addEventListener('resize',render);
+</script>
+</body>
+</html>
