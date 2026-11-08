@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織ページ（A案：外向けページ＋メンバーだけのボタン）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
+    --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;
+    --member:#8fa886; /* メンバーだけに見えるものの目印（深緑系） */
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.7;
+    word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:440px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);
+    border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:30;}
+
+  /* ヘッダー：戻る・組織名・今日あと◯回 */
+  .topbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:34px 16px 0;height:82px;background:var(--bg-surface);border-bottom:1px solid var(--border);z-index:20;}
+  .topbar .back{font-size:20px;color:var(--text-secondary);cursor:pointer;}
+  .topbar .t{font-family:'Noto Serif JP';font-size:16px;font-weight:600;}
+  .topbar .bal{margin-left:auto;display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;border:1px solid var(--accent-gold);
+    background:linear-gradient(135deg,#c4a35a2e,#b873332e);}
+  .topbar .bal .lab{font-family:'Noto Serif JP';font-size:9.5px;color:var(--text-secondary);line-height:1.2;text-align:right;}
+  .topbar .bal .hh{color:var(--accent-gold);font-size:16px;line-height:1;}
+  .topbar .bal .num{font-family:'IBM Plex Mono';font-size:18px;color:var(--accent-gold);line-height:1;}
+
+  .body{flex:1;overflow-y:auto;scrollbar-width:none;}
+  .body::-webkit-scrollbar{display:none;}
+
+  /* ===== メンバーだけに見える帯（A案のかなめ） ===== */
+  .mbar{margin:12px 16px 0;border:1px solid #6a8a61;border-radius:6px;background:#4a674114;padding:10px 12px 12px;}
+  .mbar .mh{display:flex;align-items:center;gap:8px;font-family:'Noto Serif JP';font-size:11px;color:var(--member);}
+  .mbar .mh .dot{width:6px;height:6px;border-radius:50%;background:var(--member);}
+  .mbar .mh .sw{margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-secondary);}
+  .mbar .mh .sw i{width:28px;height:16px;border-radius:8px;background:var(--border-light);position:relative;display:block;transition:background .3s;}
+  .mbar .mh .sw i.on::after{left:14px;}
+  .mbar .mh .sw i::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text-primary);transition:left .3s;}
+  .mbar .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+  .mbar .act{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;border-radius:4px;background:var(--bg-card);
+    border:1px solid var(--border);cursor:pointer;position:relative;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-primary);text-align:center;line-height:1.3;}
+  .mbar .act svg{width:20px;height:20px;stroke:var(--member);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .mbar .act .bd{position:absolute;top:-6px;right:-4px;min-width:17px;height:17px;border-radius:9px;padding:0 4px;background:var(--accent-wine);
+    font-family:'IBM Plex Mono';font-size:10px;display:flex;align-items:center;justify-content:center;}
+  /* 「外からの見え方」にしたとき：メンバー専用のものを隠す */
+  .outside .member-only{display:none !important;}
+  .outside .mbar .acts{display:none;}
+  .outside .mbar{border-style:dashed;background:transparent;}
+
+  /* ===== 外向けのページ ===== */
+  .hero{position:relative;margin:12px 16px 0;}
+  .hero .band{height:110px;border-radius:6px;background:linear-gradient(150deg,#3d4f6a,#1a1d24 70%);}
+  .hero .crest{position:absolute;left:14px;bottom:-26px;width:60px;height:60px;border-radius:6px;background:#3d4f6a;border:3px solid var(--bg-deep);
+    display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:26px;font-weight:600;}
+  .idrow{margin:32px 16px 0;display:flex;align-items:flex-end;gap:10px;}
+  .idrow .nm{font-family:'Noto Serif JP';font-size:22px;font-weight:600;line-height:1.3;}
+  .idrow .ind{font-family:'Noto Serif JP';font-size:11px;color:#8aa0c0;}
+  .idrow .mode{margin-left:auto;font-family:'Noto Serif JP';font-size:10px;padding:1px 7px;border-radius:2px;color:#a9c2a0;border:1px solid #6a8a61;white-space:nowrap;}
+  .stats{margin:10px 16px 0;display:flex;align-items:baseline;gap:16px;}
+  .stats .cap{font-family:'IBM Plex Mono';font-size:18px;color:var(--accent-gold);}
+  .stats .cap small,.stats .bk small{font-family:'Noto Serif JP';font-size:10px;color:var(--text-muted);margin-left:5px;}
+  .stats .bk{font-family:'IBM Plex Mono';font-size:14px;color:var(--text-primary);cursor:pointer;}
+  .stats .bk .more{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);margin-left:6px;}
+
+  .mission{margin:14px 16px 0;padding:12px 14px;border-left:3px solid var(--text-secondary);background:var(--bg-surface);border-radius:0 4px 4px 0;}
+  .mission .k{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;color:var(--text-muted);}
+  .mission .v{font-family:'Noto Serif JP';font-size:15px;font-weight:600;line-height:1.6;margin-top:2px;}
+
+  .sec{display:flex;align-items:center;gap:8px;padding:22px 16px 8px;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+  .sec .edit{order:3;font-size:11px;color:var(--member);cursor:pointer;margin-left:4px;}
+
+  /* メンバーの一言 */
+  .voice{margin:0 16px;padding:12px;background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;display:flex;gap:10px;}
+  .voice .av{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:13px;border:1px solid var(--border-light);}
+  .voice .vn{font-family:'Noto Serif JP';font-size:12.5px;font-weight:600;}
+  .voice .vn span{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);margin-left:6px;font-weight:400;}
+  .voice .vt{font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);line-height:1.75;margin-top:2px;}
+
+  /* メンバー（個人＝丸。役割は組織側で見せる） */
+  .members{display:flex;gap:14px;padding:0 16px;overflow-x:auto;scrollbar-width:none;}
+  .members::-webkit-scrollbar{display:none;}
+  .mem{flex:0 0 auto;width:58px;text-align:center;cursor:pointer;}
+  .mem .av{width:44px;height:44px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:16px;border:1px solid var(--border-light);}
+  .mem .n{font-family:'Noto Serif JP';font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mem .r{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .mem.me .av{box-shadow:0 0 0 2px var(--member);}
+
+  /* 募集中 */
+  .seek{margin:0 16px;display:flex;flex-direction:column;gap:8px;}
+  .seat{border:1px dashed var(--border-light);border-radius:4px;padding:10px 12px;background:#1e1f1b;}
+  .seat .role{font-family:'Noto Serif JP';font-size:14px;font-weight:600;}
+  .seat .d{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);line-height:1.7;margin-top:2px;}
+
+  /* クリップ（組織の四角＋右下に個人の丸、「田中 健 夜行ゲームス」） */
+  .clips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 16px;align-items:start;}
+  .tile{background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .tile .media{position:relative;}
+  .tile .tx{padding:9px 10px 0;font-family:'Noto Serif JP';font-size:12.5px;line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .tile.text .tx{font-size:13.5px;-webkit-line-clamp:4;}
+  .tile .who{display:flex;align-items:center;gap:12px;padding:9px 10px 0;font-family:'Noto Serif JP';font-size:10.5px;}
+  .stack{position:relative;flex:0 0 auto;}
+  .stack .crest{width:24px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:11px;border:1px solid var(--border-light);}
+  .stack .pav{position:absolute;right:-9px;bottom:-7px;width:20px;height:20px;border-radius:50%;border:2px solid var(--bg-surface);
+    display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:9.5px;}
+  .tile .who .on{color:var(--text-muted);margin-left:4px;}
+  .tile .ft{display:flex;align-items:center;gap:8px;padding:7px 10px 9px;}
+  .tile .ft .imp{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-muted);}
+  .like{margin-left:auto;font-family:'IBM Plex Mono';font-size:11px;color:var(--accent-gold);background:var(--like-glow);border:1px solid var(--accent-gold);border-radius:3px;padding:1px 8px;cursor:pointer;}
+  .like.done{background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);border-color:transparent;}
+  .tile.new{animation:pop .6s ease-out;}
+  @keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
+
+  .pad{height:30px;}
+
+  /* 外の人向けの下部ボタン（外からの見え方のときだけ出る） */
+  .outer-cta{display:none;flex:0 0 auto;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--bg-surface);}
+  .outside .outer-cta{display:flex;}
+  .outer-cta button{flex:1;padding:11px;border-radius:4px;font-family:'Noto Serif JP';font-size:13.5px;cursor:pointer;}
+  .outer-cta .inv{border:none;background:linear-gradient(135deg,var(--accent-gold),var(--accent-copper));color:var(--bg-deep);}
+  .outer-cta .join{background:#4a6741;border:1px solid #4a6741;color:var(--text-primary);}
+
+  /* フッター（戦場と同じ。中央の所属組織は、今いる組織が選ばれている） */
+  .foot{flex:0 0 auto;display:flex;align-items:center;gap:4px;height:68px;padding:0 12px;background:var(--bg-surface);border-top:1px solid var(--border);z-index:20;}
+  .foot .fb{flex:0 0 auto;width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;font-family:'Noto Serif JP';font-size:9.5px;color:var(--text-muted);}
+  .foot .fb svg{width:22px;height:22px;stroke:var(--text-muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .foot .fb .dot{position:absolute;top:-3px;right:6px;min-width:16px;height:16px;border-radius:8px;padding:0 4px;background:var(--accent-wine);color:var(--text-primary);font-family:'IBM Plex Mono';font-size:9px;display:flex;align-items:center;justify-content:center;}
+  .foot .myorgs{flex:1;min-width:0;display:flex;gap:10px;justify-content:flex-start;padding-left:10px;border-left:1px solid var(--border);border-right:1px solid var(--border);height:44px;align-items:center;}
+  .foot .mo{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:15px;border:1px solid var(--border-light);cursor:pointer;opacity:.55;}
+  .foot .mo.on{opacity:1;box-shadow:0 0 0 2px var(--text-primary);}
+
+  /* ===== 下から出るシート（クリップを書く・人を探す・参加の受け付け） ===== */
+  .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;
+    transform:translateY(100%);transition:transform .35s ease-out;z-index:41;display:flex;flex-direction:column;}
+  .open-sheet .scrim{opacity:1;pointer-events:auto;}
+  .sheet.show{transform:none;}
+  .sheet .sh{display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--border);font-family:'Noto Serif JP';font-size:15px;font-weight:600;}
+  .sheet .sh .x{margin-left:auto;font-size:18px;color:var(--text-secondary);cursor:pointer;}
+  .sheet .sb{overflow-y:auto;padding:12px 16px 20px;scrollbar-width:none;}
+  .sheet .note{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+
+  /* クリップを書く */
+  .w-ta{width:100%;min-height:110px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:4px;padding:10px 12px;color:var(--text-primary);
+    font-family:'Noto Serif JP';font-size:14px;line-height:1.7;resize:none;outline:none;}
+  .w-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .w-row .chip{border:1px solid var(--border-light);border-radius:14px;padding:3px 10px;cursor:pointer;}
+  .w-row .chip.on{border-color:var(--member);color:var(--member);}
+  .w-post{width:100%;margin-top:14px;padding:12px;border:none;border-radius:4px;background:var(--text-primary);color:var(--bg-deep);font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
+
+  /* 人を探す（オファー可の人） */
+  .person{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .person .av{width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:15px;border:1px solid var(--border-light);}
+  .person .pb{flex:1;min-width:0;}
+  .person .pn{font-family:'Noto Serif JP';font-size:13.5px;font-weight:600;}
+  .person .pn .st{font-family:'IBM Plex Mono';font-size:9px;font-weight:400;margin-left:6px;color:#8fa886;}
+  .person .pn .st.nb{color:var(--text-muted);}
+  .person .po{font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);line-height:1.6;}
+  .person .sk{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+  .person .sk span{font-family:'Noto Serif JP';font-size:10px;border:1px solid var(--border-light);border-radius:2px;padding:0 6px;color:var(--text-secondary);}
+  .person .ofr{align-self:center;flex:0 0 auto;font-family:'Noto Serif JP';font-size:11.5px;padding:6px 10px;border-radius:3px;cursor:pointer;
+    background:var(--accent-wine);border:1px solid var(--accent-wine);color:var(--text-primary);}
+  .person .ofr.done{background:transparent;color:var(--text-secondary);border-color:var(--border-light);cursor:default;}
+
+  /* 参加の受け付け */
+  .modebox{display:flex;gap:6px;margin-bottom:12px;}
+  .modebox button{flex:1;padding:9px 4px;border-radius:4px;font-family:'Noto Serif JP';font-size:12px;cursor:pointer;background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border-light);line-height:1.4;}
+  .modebox button.on{border-color:var(--member);color:var(--text-primary);background:#4a674126;}
+  .modebox button small{display:block;font-size:10px;color:var(--text-muted);}
+  .req{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .req .av{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:14px;border:1px solid var(--border-light);}
+  .req .rb{flex:1;min-width:0;font-family:'Noto Serif JP';}
+  .req .rb b{font-size:13px;}
+  .req .rb div{font-size:11px;color:var(--text-secondary);}
+  .req button{font-family:'Noto Serif JP';font-size:11.5px;padding:5px 9px;border-radius:3px;cursor:pointer;}
+  .req .ok{background:#4a6741;border:1px solid #4a6741;color:var(--text-primary);}
+  .req .ng{background:transparent;border:1px solid var(--border-light);color:var(--text-secondary);}
+  .req.done{opacity:.5;}
+
+  .toast{position:absolute;bottom:84px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:50;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .topbar{height:auto;padding:calc(env(safe-area-inset-top) + 14px) 16px 12px;}
+    .foot{height:auto;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織ページ（A案）</b>。外の人が見る組織のページと同じ画面に、<b>メンバーだけに見えるボタン</b>（クリップを書く・人を探す・参加の受け付け・設定）を足した形。緑の帯の「外からの見え方」で、外の人にどう見えているかを確かめられる。あなた＝夜行ゲームスのメンバー（佐久間）。</div>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+
+  <div class="topbar">
+    <span class="back" onclick="toast('ホームへ（戦場）')">←</span>
+    <span class="t">夜行ゲームス</span>
+    <div class="bal"><span class="lab">今日<br>あと</span><span class="hh">♥</span><span class="num" id="bal">3</span></div>
+  </div>
+
+  <div class="body" id="body">
+
+    <!-- ===== メンバーだけに見える帯 ===== -->
+    <div class="mbar">
+      <div class="mh"><span class="dot"></span><span id="mhText">メンバーだけに見えています</span>
+        <span class="sw" onclick="toggleOutside()"><span>外からの見え方</span><i id="swi"></i></span></div>
+      <div class="acts">
+        <div class="act" onclick="openSheet('write')"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>クリップを<br>書く</div>
+        <div class="act" onclick="openSheet('scout')"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>人を<br>探す</div>
+        <div class="act" onclick="openSheet('req')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M17 8v6M14 11h6"/></svg>参加の<br>受け付け<span class="bd" id="reqBadge">2</span></div>
+        <div class="act" onclick="toast('組織の設定（ミッション・紹介文・帯の画像など）。モックでは省略')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>設定</div>
+      </div>
+    </div>
+
+    <!-- ===== ここから外向けのページ（外の人も同じものを見る） ===== -->
+    <div class="hero"><div class="band"></div><div class="crest">夜</div></div>
+    <div class="idrow">
+      <div><div class="ind">ゲーム開発</div><div class="nm">夜行ゲームス</div></div>
+      <span class="mode" id="modeTag">すぐ参加できる</span>
+    </div>
+    <div class="stats">
+      <span class="cap">♥ 312<small>夜行ゲームスが受け取った資本</small></span>
+      <span class="bk" onclick="toast('出資者一覧（モックでは省略）')">128人<small>出資者</small><span class="more">一覧 ›</span></span>
+    </div>
+    <div class="mission"><div class="k">ミッション</div><div class="v">2Dアクション「LUNA」を完成させ、Steamで1万本売る。</div></div>
+
+    <div class="sec">メンバーの一言<span class="edit member-only" onclick="toast('メンバーの一言を書き換える（モックでは省略）')">書き換える</span></div>
+    <div class="voice">
+      <div class="av" style="background:#8b3a3a">田</div>
+      <div><div class="vn">田中 健<span>創業</span></div>
+        <div class="vt">5人とも会社員なので、平日の夜と週末に作業しています。作曲の方を探しています。</div></div>
+    </div>
+
+    <div class="sec">メンバー 5人</div>
+    <div class="members">
+      <div class="mem"><div class="av" style="background:#8b3a3a">田</div><div class="n">田中 健</div><div class="r">創業</div></div>
+      <div class="mem me"><div class="av" style="background:#6b5a3e">佐</div><div class="n">佐久間</div><div class="r">サウンド</div></div>
+      <div class="mem"><div class="av" style="background:#4a6741">M</div><div class="n">Mizuki</div><div class="r">ドット絵</div></div>
+      <div class="mem"><div class="av" style="background:#3d4f6a">山</div><div class="n">山本</div><div class="r">企画</div></div>
+      <div class="mem"><div class="av" style="background:#3d3530">A</div><div class="n">Aya</div><div class="r">プログラム</div></div>
+    </div>
+
+    <div class="sec">募集中<span class="edit member-only" onclick="toast('募集を追加・編集する（モックでは省略）')">編集</span></div>
+    <div class="seek">
+      <div class="seat"><div class="role">BGMを作れる人</div><div class="d">ゲーム用のBGMを作れる方を探しています。ループ曲を作った経験がある方を歓迎します。</div></div>
+      <div class="seat"><div class="role">シナリオを書ける人</div><div class="d">2章以降のシナリオを一緒に書いてくれる方を探しています。</div></div>
+    </div>
+
+    <div class="sec">クリップ</div>
+    <div class="clips" id="clips"></div>
+    <div class="pad"></div>
+  </div>
+
+  <!-- 外の人向けのボタン（「外からの見え方」のときだけ出る） -->
+  <div class="outer-cta"><button class="inv" onclick="toast('♥1 を夜行ゲームスに投資（外から見たとき）')">♥1 投資する</button><button class="join" onclick="toast('この組織に参加する（外から見たとき）')">この組織に参加する</button></div>
+
+  <nav class="foot">
+    <div class="fb" onclick="toast('ホームへ（戦場）')"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>ホーム</div>
+    <div class="fb" onclick="toast('検索（戦場の画面で開く）')"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>検索</div>
+    <div class="myorgs">
+      <div class="mo on" style="background:#3d4f6a">夜</div>
+      <div class="mo" style="background:#2c3e50" onclick="toast('週刊ざつだんのページへ')">雑</div>
+    </div>
+    <div class="fb" onclick="toast('DMへ')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>DM<span class="dot">2</span></div>
+  </nav>
+
+  <!-- シート -->
+  <div class="scrim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="sh"><span id="shTitle"></span><span class="x" onclick="closeSheet()">×</span></div>
+    <div class="sb" id="shBody"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+
+  // ===== クリップ =====
+  const clips=[
+    {who:'田中 健',c:'田',col:'#8b3a3a',tx:'「LUNA」、今日からSteamで早期アクセスを始めました。2年かかった。',media:{h:110,bg:'linear-gradient(150deg,#3d4f6a,#141820)'},likes:128,imp:'2,340'},
+    {who:'Mizuki',c:'M',col:'#4a6741',tx:'2面の背景、どっちの色がいいか迷っています。',media:{h:90,bg:'linear-gradient(135deg,#4a4455,#1c1a22)'},likes:36,imp:'986'},
+    {who:'山本',c:'山',col:'#3d4f6a',tx:'LUNAの続編を作るなら、2人で協力プレイできるようにしたい。誰か遊びたい人いますか。',likes:22,imp:'1,108',text:true},
+    {who:'佐久間',c:'佐',col:'#6b5a3e',tx:'ボス戦の効果音、金属音を3層重ねてみた。',likes:18,imp:'640',text:true}
+  ];
+  function tile(c,isNew){
+    const media=c.media?'<div class="media" style="height:'+c.media.h+'px;background:'+c.media.bg+'"></div>':'';
+    return '<div class="tile'+(c.text?' text':'')+(isNew?' new':'')+'">'+media+'<div class="tx">'+c.tx+'</div>'
+      +'<div class="who"><div class="stack"><div class="crest" style="background:#3d4f6a">夜</div><span class="pav" style="background:'+c.col+'">'+c.c+'</span></div>'
+      +'<span>'+c.who+'<span class="on">夜行ゲームス</span></span></div>'
+      +'<div class="ft"><span class="imp">インプ '+c.imp+'</span><button class="like" onclick="like(this)">♥ <span>'+c.likes+'</span></button></div></div>';
+  }
+  function renderClips(newFirst){$('#clips').innerHTML=clips.map((c,i)=>tile(c,newFirst&&i===0)).join('');}
+  renderClips();
+  function like(b){if(b.classList.contains('done'))return;const n=$('#bal');const v=+n.textContent;if(v<=0){toast('今日のいいねを使い切りました');return;}
+    n.textContent=v-1;const s=b.querySelector('span');s.textContent=+s.textContent+1;b.classList.add('done');}
+
+  // ===== 外からの見え方（メンバー専用のものを隠し、外の人の下部ボタンを出す） =====
+  function toggleOutside(){
+    const on=$('#phone').classList.toggle('outside');
+    $('#swi').style.background=on?'#6a8a61':'';
+    $('#swi').classList.toggle('on',on);
+    $('#mhText').textContent=on?'外の人にはこう見えています':'メンバーだけに見えています';
+  }
+
+  // ===== シート =====
+  // 人を探す：オファー可の人（ニュービーは意思表示ではないので印を分ける）
+  const people=[
+    {n:'早瀬 みのり',c:'早',col:'#4a6741',one:'イラストと、小さなアニメーションを作っています。',sk:['イラスト','Live2D'],st:'ニュービー'},
+    {n:'小林 蓮',c:'小',col:'#3d4f6a',one:'DAWで、ゲーム用のループ曲を作っています。',sk:['作曲','ループ制作','Cubase'],st:'オファー可'},
+    {n:'Hana',c:'H',col:'#8b3a3a',one:'短編小説を書いています。会話文が得意です。',sk:['シナリオ','会話文'],st:'オファー可'},
+    {n:'石井 大地',c:'石',col:'#5a4a40',one:'Unityで、2Dアクションの当たり判定を作るのが好きです。',sk:['Unity','C#'],st:'オファー可'}
+  ];
+  const reqs=[
+    {n:'森田',c:'森',col:'#2c3e50',m:'効果音を作っています。LUNAのボス戦の音を聞いて応募しました。'},
+    {n:'yui',c:'y',col:'#4a6741',m:'ドット絵の背景を手伝えます。'}
+  ];
+  let approval=false;
+  function openSheet(kind){
+    let t='',h='';
+    if(kind==='write'){
+      t='クリップを書く';
+      h='<div class="note">夜行ゲームスのクリップとして出ます。進捗でも、アイデアでも、つぶやきでもかまいません。</div>'
+       +'<textarea class="w-ta" id="wTa" placeholder="今日やったこと、考えていること"></textarea>'
+       +'<div class="w-row"><span class="chip" onclick="this.classList.toggle(\'on\')">＋ 画像・動画</span><span class="chip" onclick="this.classList.toggle(\'on\')">＋ 一緒に関わった人</span></div>'
+       +'<button class="w-post" onclick="postClip()">出す</button>';
+    }else if(kind==='scout'){
+      t='人を探す';
+      h='<div class="note">オファー可の人です。「気になっています」を送ると、相手のホームに届きます（夜行ゲームスの佐久間として送られます）。</div>'
+       +people.map((p,i)=>'<div class="person"><div class="av" style="background:'+p.col+'">'+p.c+'</div><div class="pb"><div class="pn">'+p.n+'<span class="st'+(p.st==='ニュービー'?' nb':'')+'">'+p.st+'</span></div>'
+         +'<div class="po">'+p.one+'</div><div class="sk">'+p.sk.map(s=>'<span>'+s+'</span>').join('')+'</div></div>'
+         +'<button class="ofr'+(p.sent?' done':'')+'" onclick="offer(this,'+i+')">'+(p.sent?'送りました':'気になっています')+'</button></div>').join('');
+    }else{
+      t='参加の受け付け';
+      h='<div class="note">参加の仕方</div>'
+       +'<div class="modebox"><button class="'+(approval?'':'on')+'" onclick="setMode(false)">フリーイン<small>押せばすぐ参加</small></button>'
+       +'<button class="'+(approval?'on':'')+'" onclick="setMode(true)">承認制<small>リクエストを承認</small></button></div>'
+       +'<div class="note">届いている参加リクエスト</div>'
+       +reqs.map((r,i)=>'<div class="req'+(r.done?' done':'')+'"><div class="av" style="background:'+r.col+'">'+r.c+'</div><div class="rb"><b>'+r.n+'</b><div>'+r.m+'</div></div>'
+         +(r.done?'<span style="font-size:11px;color:var(--text-muted)">'+r.done+'</span>':'<button class="ok" onclick="answer('+i+',\'承認しました\')">承認</button><button class="ng" onclick="answer('+i+',\'見送りました\')">見送る</button>')+'</div>').join('');
+    }
+    $('#shTitle').textContent=t;$('#shBody').innerHTML=h;
+    $('#phone').classList.add('open-sheet');$('#sheet').classList.add('show');
+    if(kind==='write')setTimeout(()=>{const ta=$('#wTa');if(ta)ta.focus();},300);
+  }
+  function closeSheet(){$('#phone').classList.remove('open-sheet');$('#sheet').classList.remove('show');}
+  function postClip(){
+    const v=$('#wTa').value.trim();if(!v){toast('本文を書いてください');return;}
+    clips.unshift({who:'佐久間',c:'佐',col:'#6b5a3e',tx:v.replace(/</g,'&lt;'),likes:0,imp:'0',text:true});
+    renderClips(true);closeSheet();toast('クリップを出しました。夜行ゲームスのクリップとして並びます');
+  }
+  function offer(b,i){if(people[i].sent)return;people[i].sent=true;b.classList.add('done');b.textContent='送りました';toast(people[i].n+'さんに「気になっています」を送りました');}
+  function setMode(a){approval=a;$('#modeTag').style.display=a?'none':'';openSheet('req');toast(a?'承認制にしました。参加にはリクエストと承認が要ります':'フリーインにしました。押せばすぐ参加できます');}
+  function answer(i,txt){reqs[i].done=txt;const left=reqs.filter(r=>!r.done).length;$('#reqBadge').textContent=left;$('#reqBadge').style.display=left?'':'none';openSheet('req');toast(reqs[i].n+'さんの参加を'+txt);}
+</script>
+</body>
+</html>
