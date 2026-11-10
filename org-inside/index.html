@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Wiclass プロトタイプ — 組織の中（やること版）</title>
+<title>Wiclass プロトタイプ — 組織の中（ロール版）</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{
-    /* DESIGN.md のトークン */
     --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
     --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
-    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;--accent-ink:#2c3e50;
+    --accent-gold:#c4a35a;--accent-copper:#b87333;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
     --like-glow:#c4a35a33;--border:#3a3833;--border-light:#4a4840;--member:#8fa886;
   }
   body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
@@ -37,7 +36,6 @@
   .body::-webkit-scrollbar{display:none;}
   .sec{display:flex;align-items:center;gap:8px;padding:20px 16px 8px;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);}
   .sec::after{content:'';flex:1;height:1px;background:var(--border);}
-  .sec .n{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);}
   .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';border:1px solid var(--border-light);flex:0 0 auto;}
 
   /* ===== 1. おかえり＋あなたがいない間に ===== */
@@ -47,13 +45,32 @@
   .since{margin-top:10px;display:flex;flex-direction:column;gap:7px;}
   .since .it{display:flex;align-items:flex-start;gap:8px;font-family:'Noto Serif JP';font-size:12.5px;line-height:1.6;}
   .since .ic{flex:0 0 18px;text-align:center;color:var(--text-secondary);}
-  .since .it b{font-weight:600;}
   .since .g{color:var(--accent-gold);font-family:'IBM Plex Mono';}
   .since .up{color:#a9c2a0;}
-  .since .go{color:var(--member);cursor:pointer;white-space:nowrap;}
+  .since .go{color:var(--member);cursor:pointer;white-space:nowrap;margin-left:4px;}
 
-  /* ===== 2. あなたの持ち場 ===== */
-  .mine{display:flex;flex-direction:column;gap:8px;padding:0 16px;}
+  /* ===== 2. あなたの持ち場（ロール＋やること） ===== */
+  .mine-wrap{padding:0 16px;display:flex;flex-direction:column;gap:10px;}
+
+  /* ロールカード（任される の核心） */
+  .role-card{background:var(--bg-card);border:1.5px solid var(--member);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+  .role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--member),transparent);}
+  .role-label{font-family:'IBM Plex Mono';font-size:10px;color:var(--member);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .role-title{font-family:'Noto Serif JP';font-size:22px;font-weight:600;line-height:1.3;letter-spacing:.03em;}
+  .role-from{display:flex;align-items:center;gap:6px;margin-top:10px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);}
+  .role-from .av{width:20px;height:20px;font-size:9px;}
+  .role-from .who{color:var(--text-primary);}
+  .role-from .when{color:var(--text-muted);margin-left:auto;font-family:'IBM Plex Mono';font-size:10px;}
+  .role-desc{margin-top:8px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);line-height:1.7;padding-top:8px;border-top:1px solid var(--border);}
+
+  /* ロール未付与 */
+  .no-role{background:var(--bg-card);border:1px dashed var(--border-light);border-radius:8px;padding:16px;text-align:center;}
+  .no-role .nr1{font-family:'Noto Serif JP';font-size:14px;color:var(--text-secondary);}
+  .no-role .nr2{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.6;}
+
+  /* 自分がやっているやること（ロールの下） */
+  .mine-tasks{display:flex;flex-direction:column;gap:8px;}
+  .mine-task-label{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);letter-spacing:.06em;padding:0 2px;}
   .task{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer;}
   .task.mineT{border-left:3px solid var(--member);}
   .task .tt{font-family:'Noto Serif JP';font-size:14.5px;font-weight:600;line-height:1.5;}
@@ -67,19 +84,23 @@
   .b-done{background:var(--text-primary);color:var(--bg-deep);border:1px solid var(--text-primary);}
   .b-sub{background:transparent;color:var(--text-secondary);border:1px solid var(--border-light);}
   .b-take{background:#4a6741;color:var(--text-primary);border:1px solid #4a6741;}
-  /* 任されたこと（依頼が届いている） */
-  .ask{border:1px solid #6a8a61;background:#4a674114;border-radius:6px;padding:12px;}
-  .ask .from{display:flex;align-items:center;gap:8px;font-family:'Noto Serif JP';font-size:11.5px;color:var(--member);}
-  .ask .from .av{width:22px;height:22px;font-size:10px;}
-  .ask .tt{font-family:'Noto Serif JP';font-size:14.5px;font-weight:600;margin-top:6px;line-height:1.5;}
-  .ask .msg{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-top:3px;line-height:1.7;}
+
+  /* ロール付与のお知らせ（新規依頼） */
+  .role-ask{border:1px solid var(--accent-gold);background:#c4a35a0d;border-radius:8px;padding:14px;}
+  .role-ask .ra-label{font-family:'IBM Plex Mono';font-size:10px;color:var(--accent-gold);letter-spacing:.08em;margin-bottom:8px;}
+  .role-ask .ra-from{display:flex;align-items:center;gap:8px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);margin-bottom:8px;}
+  .role-ask .ra-from .av{width:22px;height:22px;font-size:10px;}
+  .role-ask .ra-title{font-family:'Noto Serif JP';font-size:18px;font-weight:600;line-height:1.4;}
+  .role-ask .ra-msg{font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);margin-top:6px;line-height:1.7;}
+  .role-ask .btns{display:flex;gap:8px;margin-top:12px;}
+  .role-ask .btns button{flex:1;padding:9px 0;border-radius:4px;font-family:'Noto Serif JP';font-size:13px;cursor:pointer;}
 
   /* ===== 3. ミッションの道のり ===== */
   .road{margin:0 16px;padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:6px;}
   .road .mis{font-family:'Noto Serif JP';font-size:13.5px;font-weight:600;line-height:1.6;}
   .stops{position:relative;display:flex;justify-content:space-between;margin-top:16px;}
   .stops::before{content:'';position:absolute;left:8px;right:8px;top:7px;height:2px;background:var(--border-light);}
-  .stops .fill{position:absolute;left:8px;top:7px;height:2px;background:var(--accent-gold);transition:width .8s ease-out;}
+  .stops .fill{position:absolute;left:8px;top:7px;height:2px;background:var(--accent-gold);}
   .stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:64px;}
   .stop i{width:16px;height:16px;border-radius:50%;background:var(--bg-deep);border:2px solid var(--border-light);display:block;}
   .stop.ok i{background:var(--accent-gold);border-color:var(--accent-gold);}
@@ -99,6 +120,17 @@
   .who .av{width:22px;height:22px;font-size:10px;}
   .addtask{margin:10px 16px 0;padding:11px;border:1px dashed var(--border-light);border-radius:6px;text-align:center;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);cursor:pointer;}
 
+  /* ===== メンバーのロール一覧 ===== */
+  .roles-list{display:flex;flex-direction:column;gap:8px;padding:0 16px;}
+  .rl-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;}
+  .rl-row .av{width:30px;height:30px;font-size:12px;}
+  .rl-row .rb{flex:1;min-width:0;}
+  .rl-row .rn{font-family:'Noto Serif JP';font-size:13px;}
+  .rl-row .rt{font-family:'Noto Serif JP';font-size:11px;color:var(--text-secondary);margin-top:1px;}
+  .rl-row .badge{font-family:'Noto Serif JP';font-size:11px;padding:2px 9px;border-radius:3px;border:1px solid var(--border-light);color:var(--text-secondary);}
+  .rl-row .badge.me{border-color:var(--member);color:var(--member);}
+  .assign-btn{margin:8px 16px 0;padding:10px;border:1px dashed var(--border-light);border-radius:6px;text-align:center;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);cursor:pointer;}
+
   /* ===== 5. 最近できたこと（記録） ===== */
   .log{display:flex;flex-direction:column;padding:0 16px;}
   .rec{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
@@ -108,8 +140,6 @@
   .rec .rs{font-size:10.5px;color:var(--text-muted);}
   .clap{flex:0 0 auto;font-family:'Noto Serif JP';font-size:11.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--border-light);background:transparent;color:var(--text-secondary);cursor:pointer;}
   .clap.done{border-color:var(--member);color:var(--member);}
-  .rec.new{animation:pop .7s ease-out;}
-  @keyframes pop{0%{background:#4a674144}100%{background:transparent}}
 
   /* できた！のお祝い */
   .party{position:absolute;inset:0;z-index:48;background:#1a1a17ee;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;
@@ -124,7 +154,7 @@
   .party.show .spark{animation:fly 1.1s ease-out forwards;}
   @keyframes fly{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 
-  /* やることの中（話はここでする） */
+  /* やることの中 */
   .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40;}
   .sheet{position:absolute;left:0;right:0;bottom:0;max-height:80%;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;
     transform:translateY(100%);transition:transform .35s ease-out;z-index:41;display:flex;flex-direction:column;}
@@ -169,7 +199,7 @@
 </head>
 <body>
 
-<div class="caption">Wiclass プロトタイプ — <b>組織の中（やること版）</b>。感じてもらう4つ（任される・貢献・認められる・ワクワク）から作った叩き台。上から ①おかえり＋あなたがいない間に ②あなたの持ち場 ③ミッションの道のり ④やることボード ⑤最近できたこと。会話は、それぞれのやることの中でする。あなた＝佐久間。</div>
+<div class="caption">Wiclass プロトタイプ — <b>組織の中（ロール版）</b>。「任される」＝タスクではなく<b>ロール（役割・肩書）が組織から渡される</b>こと。開くと自分のロールが最初に目に入る。あなた＝佐久間（サウンド担当）。</div>
 
 <div class="phone" id="phone">
   <div class="notch"></div>
@@ -179,29 +209,51 @@
     <div><div class="nm">夜行ゲームス</div><div class="pub" onclick="toast('外向けのページへ')">外向けのページ ›</div></div>
     <div class="tools">
       <div class="tool" title="人を探す" onclick="toast('人を探す（オファー可の人に「気になっています」）')"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></div>
-      <div class="tool" title="参加の受け付け" onclick="toast('参加の受け付け')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M17 8v6M14 11h6"/></svg><span class="bd">2</span></div>
+      <div class="tool" title="参加の受け付け" onclick="toast('参加の受け付け')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M17 8v6M14 11h6"/></svg><span class="bd">1</span></div>
     </div>
   </div>
 
   <div class="body" id="body">
 
-    <!-- ① おかえり＋あなたがいない間に（存在の承認・ワクワク・外からの反応） -->
+    <!-- ① おかえり＋あなたがいない間に -->
     <div class="hello">
       <div class="h1">おかえりなさい、佐久間さん</div>
       <div class="h2">あなたがいない間に（2日）</div>
       <div class="since">
         <div class="it"><span class="ic">✓</span><span><b>Mizuki</b>さんが「2面の背景」をできたにしました</span></div>
-        <div class="it"><span class="ic">→</span><span><b>田中 健</b>さんから、あなたに任せたいことが届いています</span><span class="go" onclick="document.getElementById('askCard').scrollIntoView({behavior:'smooth',block:'center'})">見る ›</span></div>
         <div class="it"><span class="ic">♥</span><span>外から <span class="g">♥26</span> の投資がありました（通勤ラジオの小川さん ほか）</span></div>
         <div class="it"><span class="ic">↑</span><span>戦場で、夜行ゲームスの界隈の順位が <span class="up">3位 → 2位</span> に上がりました</span></div>
       </div>
     </div>
 
-    <!-- ② あなたの持ち場（任される） -->
+    <!-- ② あなたの持ち場（ロール＋やること） -->
     <div class="sec">あなたの持ち場</div>
-    <div class="mine" id="mine"></div>
+    <div class="mine-wrap">
 
-    <!-- ③ ミッションの道のり（ワクワク・貢献が動く） -->
+      <!-- ロールカード（「任される」の核心） -->
+      <div class="role-card">
+        <div class="role-label">あなたのロール</div>
+        <div class="role-title">サウンド担当</div>
+        <div class="role-from">
+          <div class="av" style="width:20px;height:20px;font-size:9px;background:#8b3a3a">田</div>
+          <span><span class="who">田中 健</span>から任された</span>
+          <span class="when">3週間前</span>
+        </div>
+        <div class="role-desc">BGM・効果音・音響演出の一切を担当する。外向けのページでは表示しない。</div>
+      </div>
+
+      <!-- 自分のやっていること（ロールの下） -->
+      <div class="mine-tasks">
+        <div class="mine-task-label">このロールでいまやっていること</div>
+        <div class="task mineT" onclick="openTask(1)">
+          <div class="tt">ボス戦の効果音</div>
+          <div class="tm"><span class="st doing">やってる</span><span class="talk">話 2</span></div>
+          <div class="btns"><button class="b-done" onclick="event.stopPropagation();done(1)">できた</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ ミッションの道のり -->
     <div class="sec">ミッションまでの道のり</div>
     <div class="road">
       <div class="mis">2Dアクション「LUNA」を完成させ、Steamで1万本売る。</div>
@@ -215,15 +267,21 @@
       <div class="pct">正式版まで：やること <b id="doneN">14</b> / <b>22</b> できた</div>
     </div>
 
-    <!-- ④ やることボード（任される・貢献） -->
+    <!-- ④ やることボード -->
     <div class="sec">やること</div>
     <div class="board-h" id="tabs"></div>
     <div class="board" id="board"></div>
     <div class="addtask" onclick="toast('やることを書く（モックでは省略）')">＋ やることを書く</div>
 
-    <!-- ⑤ 最近できたこと＝記録（認められる） -->
+    <!-- ⑤ メンバーのロール一覧 -->
+    <div class="sec">メンバーのロール</div>
+    <div class="roles-list" id="rolesList"></div>
+    <div class="assign-btn" onclick="toast('ロールを渡す（創業者・リーダーのみ。受け取る側は「引き受ける／今回は見送る」を選べる）')">＋ ロールを渡す</div>
+
+    <!-- ⑥ 最近できたこと -->
     <div class="sec">最近できたこと</div>
     <div class="log" id="log"></div>
+
   </div>
 
   <nav class="foot">
@@ -233,10 +291,10 @@
       <div class="mo on" style="background:#3d4f6a">夜</div>
       <div class="mo" style="background:#2c3e50" onclick="toast('週刊ざつだんの中へ')">雑</div>
     </div>
-    <div class="fb" onclick="toast('DMへ（組織の外の人と1対1）')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>DM<span class="dot">2</span></div>
+    <div class="fb" onclick="toast('DMへ（組織の外の人と1対1）')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>DM</div>
   </nav>
 
-  <!-- やることの中（話はここでする） -->
+  <!-- やることの中 -->
   <div class="scrim" onclick="closeTask()"></div>
   <div class="sheet" id="sheet">
     <div class="sh"><span class="x" onclick="closeTask()">×</span><div class="tt" id="tTitle"></div><div class="tm" id="tMeta"></div></div>
@@ -244,7 +302,7 @@
     <div class="si"><input id="tIn" placeholder="このやることについて話す" onkeydown="if(event.key==='Enter'){event.preventDefault();say();}"><button onclick="say()">送る</button></div>
   </div>
 
-  <!-- できた！のお祝い -->
+  <!-- できた！ お祝い -->
   <div class="party" id="party">
     <div class="big">できた！</div>
     <div class="what" id="pWhat"></div>
@@ -260,67 +318,77 @@
 
 <script>
   const $=s=>document.querySelector(s);
-  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);}
 
-  // メンバー（個人＝丸）
   const P={佐久間:'#6b5a3e',田中:'#8b3a3a',Mizuki:'#4a6741',山本:'#3d4f6a',Aya:'#3d3530',小林:'#5a4a40'};
   const ME='佐久間';
-  function av(n,s){return '<div class="av" style="width:'+s+'px;height:'+s+'px;font-size:'+Math.round(s*.42)+'px;background:'+(P[n]||P[n.split(' ')[0]])+'">'+n[0]+'</div>';}
+  function av(n,s){const bg=P[n]||P[n.split(' ')[0]]||'#555';return '<div class="av" style="width:'+s+'px;height:'+s+'px;font-size:'+Math.round(s*.42)+'px;background:'+bg+'">'+n[0]+'</div>';}
 
-  // やること（状態は「だれか募集／やってる／できた」の3つだけ）
+  // メンバーのロール
+  const memberRoles=[
+    {name:'田中 健',role:'ディレクター',me:false},
+    {name:'佐久間',role:'サウンド担当',me:true},
+    {name:'Mizuki',role:'キャラデザ担当',me:false},
+    {name:'山本',role:'シナリオ担当',me:false},
+    {name:'Aya',role:'プログラマー',me:false},
+    {name:'小林',role:'（ロールなし）',me:false,none:true},
+  ];
+
+  // やること
   let tasks=[
     {id:1,t:'ボス戦の効果音',st:'doing',who:'佐久間',talk:[['田中','金属っぽい重さがほしい'],['佐久間','3層重ねてみました。明日上げます']]},
-    {id:2,t:'タイトル画面のジングル',st:'ask',who:'佐久間',from:'田中 健',msg:'効果音の雰囲気に合わせて、10秒くらいのジングルをお願いしたいです。',talk:[]},
-    {id:3,t:'2章のシナリオ',st:'open',who:null,talk:[['山本','1章の続きから。誰か一緒に考えませんか']]},
-    {id:4,t:'Steamのストアページの文章',st:'open',who:null,talk:[]},
-    {id:5,t:'3面のボスのドット絵',st:'doing',who:'Mizuki',talk:[['Mizuki','ラフはできた']]},
-    {id:6,t:'セーブ機能',st:'doing',who:'Aya',talk:[]},
-    {id:7,t:'2面の背景',st:'done',who:'Mizuki',talk:[],when:'昨日',clap:3},
-    {id:8,t:'体験版の不具合報告まとめ',st:'done',who:'山本',talk:[],when:'3日前',clap:5}
+    {id:2,t:'2章のシナリオ',st:'open',who:null,talk:[['山本','1章の続きから。誰か一緒に考えませんか']]},
+    {id:3,t:'Steamのストアページの文章',st:'open',who:null,talk:[]},
+    {id:4,t:'3面のボスのドット絵',st:'doing',who:'Mizuki',talk:[['Mizuki','ラフはできた']]},
+    {id:5,t:'セーブ機能',st:'doing',who:'Aya',talk:[]},
+    {id:6,t:'2面の背景',st:'done',who:'Mizuki',talk:[],when:'昨日',clap:3},
+    {id:7,t:'体験版の不具合報告まとめ',st:'done',who:'山本',talk:[],when:'3日前',clap:5}
   ];
   let tab='open',doneN=14;
   const label={open:'だれか募集',doing:'やってる',done:'できた'};
 
   function stTag(t){return '<span class="st '+(t.st==='doing'?'doing':t.st==='open'?'open':'')+'">'+(label[t.st]||'')+'</span>';}
+
   function render(){
-    // ② あなたの持ち場：任されたこと（依頼）と、自分がやっていること
-    $('#mine').innerHTML=tasks.filter(t=>t.who===ME&&(t.st==='ask'||t.st==='doing')).map(t=>t.st==='ask'
-      ?'<div class="ask" id="askCard"><div class="from">'+av(t.from,22)+'<span>'+t.from+'さんから、あなたに任せたいこと</span></div><div class="tt">'+t.t+'</div><div class="msg">'+t.msg+'</div>'
-        +'<div class="task" style="padding:0;border:none;background:none;cursor:default"><div class="btns"><button class="b-take" onclick="accept('+t.id+')">引き受ける</button><button class="b-sub" onclick="decline('+t.id+')">今回は見送る</button></div></div></div>'
-      :'<div class="task mineT" onclick="openTask('+t.id+')"><div class="tt">'+t.t+'</div><div class="tm">'+stTag(t)+'<span>あなたが担当</span><span class="talk">話 '+t.talk.length+'</span></div>'
-        +'<div class="btns"><button class="b-done" onclick="event.stopPropagation();done('+t.id+')">できた</button></div></div>').join('')
-      ||'<div class="addtask" style="margin:0" onclick="setTab(\'open\')">いまは持ち場がありません。だれか募集のやることを見る ›</div>';
     // ④ やることボード
     const cnt=s=>tasks.filter(t=>t.st===s).length;
     $('#tabs').innerHTML=['open','doing','done'].map(s=>'<span class="tab'+(tab===s?' on':'')+'" onclick="setTab(\''+s+'\')">'+label[s]+'<b>'+cnt(s)+'</b></span>').join('');
     $('#board').innerHTML=tasks.filter(t=>t.st===tab).map(t=>'<div class="task" onclick="openTask('+t.id+')"><div class="tt">'+t.t+'</div><div class="tm">'+stTag(t)
       +(t.who?'<span class="who">'+av(t.who,22)+t.who+'</span>':'<span>まだ誰も</span>')+'<span class="talk">話 '+t.talk.length+'</span></div>'
       +(t.st==='open'?'<div class="btns"><button class="b-take" onclick="event.stopPropagation();take('+t.id+')">わたしがやる</button><button class="b-sub" onclick="event.stopPropagation();toast(\'メンバーを選んで「任せたい」と頼む（モックでは省略）\')">誰かに任せたい</button></div>':'')+'</div>').join('');
-    // ⑤ 最近できたこと
-    $('#log').innerHTML=tasks.filter(t=>t.st==='done').map(t=>'<div class="rec'+(t.fresh?' new':'')+'">'+av(t.who,30)+'<div class="rb"><div class="rt"><b>'+t.who+'</b>さんが「'+t.t+'」をできたにしました</div><div class="rs">'+t.when+'</div></div>'
+
+    // ⑤ メンバーのロール一覧
+    $('#rolesList').innerHTML=memberRoles.map(m=>'<div class="rl-row">'+av(m.name,30)+'<div class="rb"><div class="rn">'+m.name+'</div></div>'
+      +'<span class="badge'+(m.me?' me':'')+(m.none?' ':'')+'">'+m.role+'</span></div>').join('');
+
+    // ⑥ 最近できたこと
+    $('#log').innerHTML=tasks.filter(t=>t.st==='done').map(t=>'<div class="rec">'+av(t.who,30)+'<div class="rb"><div class="rt"><b>'+t.who+'</b>さんが「'+t.t+'」をできたにしました</div><div class="rs">'+t.when+'</div></div>'
       +'<button class="clap'+(t.clapped?' done':'')+'" onclick="clap('+t.id+')">拍手 '+t.clap+'</button></div>').join('');
-    // ③ 道のりのバー（正式版の点までのうち、どこまで来たか）
+
+    // ③ 道のりのバー
     $('#doneN').textContent=doneN;
     const stops=$('#stops');const w=stops.clientWidth-16;const seg=w/3;
     $('#fill').style.width=(seg*1+seg*(doneN/22))+'px';
   }
+
   function setTab(s){tab=s;render();}
   const byId=id=>tasks.find(t=>t.id===id);
-  function accept(id){const t=byId(id);t.st='doing';render();toast('引き受けました。「'+t.t+'」はあなたの持ち場です。田中さんに届きます');}
-  function decline(id){const t=byId(id);t.st='open';t.who=null;render();toast('今回は見送りました。「だれか募集」に戻ります');}
-  function take(id){const t=byId(id);t.st='doing';t.who=ME;render();toast('「'+t.t+'」を引き受けました。あなたの持ち場に入りました');}
+  function take(id){const t=byId(id);t.st='doing';t.who=ME;render();toast('「'+t.t+'」を引き受けました');}
   function clap(id){const t=byId(id);if(t.clapped)return;t.clapped=true;t.clap++;render();toast(t.who+'さんに拍手が届きます');}
-  // できた：お祝い → 道のりが進む → 記録に残る → クリップにして外に出せる
+
   let lastDone=null;
-  function done(id){const t=byId(id);t.st='done';t.when='いま';t.clap=0;t.fresh=true;doneN++;lastDone=t;
+  function done(id){const t=byId(id);t.st='done';t.when='いま';t.clap=0;lastDone=t;
     tasks=[t].concat(tasks.filter(x=>x!==t));render();
+    // 持ち場のやること欄を更新
+    document.querySelectorAll('.mine-tasks .task').forEach(el=>el.remove());
     $('#pWhat').textContent='「'+t.t+'」';const p=$('#party');p.querySelectorAll('.spark').forEach(s=>s.remove());
-    for(let k=0;k<18;k++){const s=document.createElement('i');s.className='spark';const a=k/18*Math.PI*2;s.style.setProperty('--dx',Math.cos(a)*130+'px');s.style.setProperty('--dy',Math.sin(a)*130+'px');
+    for(let k=0;k<18;k++){const s=document.createElement('i');s.className='spark';const a=k/18*Math.PI*2;
+      s.style.setProperty('--dx',Math.cos(a)*130+'px');s.style.setProperty('--dy',Math.sin(a)*130+'px');
       s.style.left='50%';s.style.top='42%';p.appendChild(s);}
     p.classList.add('show');}
   function closeParty(){$('#party').classList.remove('show');}
-  function toClip(){closeParty();toast('「'+lastDone.t+'」をクリップにして外に出しました。戦場と外向けのページに並びます');}
-  // やることの中（話）
+  function toClip(){closeParty();toast('「'+lastDone.t+'」をクリップにして外に出しました');}
+
   let cur=null;
   function openTask(id){cur=byId(id);
     $('#tTitle').textContent=cur.t;
