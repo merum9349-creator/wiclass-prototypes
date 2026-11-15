@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織の中：ドキュメント（パーツを開いた画面）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
+    --border:#3a3833;--border-light:#4a4840;--member:#8fa886;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.6;
+    word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:460px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:60;}
+  svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+  .top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:38px 14px 10px;background:var(--bg-surface);border-bottom:1px solid var(--border);}
+  .top .back{font-size:20px;color:var(--text-secondary);cursor:pointer;}
+  .top .ttl{display:flex;flex-direction:column;min-width:0;}
+  .top .ttl b{display:flex;align-items:center;gap:6px;font-family:'Noto Serif JP';font-size:14px;font-weight:600;color:var(--text-secondary);}
+  .top .ttl b svg{width:14px;height:14px;}
+  .top .ttl small{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);}
+  .top .more{margin-left:auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;}
+  .top .more svg{width:18px;height:18px;}
+
+  /* 本文：紙のように1枚ずつ区切って見せる（10枚まで） */
+  .paper{flex:1;min-height:0;overflow-y:auto;padding:18px 0 30px;scrollbar-width:none;}
+  .paper::-webkit-scrollbar{display:none;}
+  .sheetw{position:relative;margin:0 14px;}
+  .doc{position:relative;background:var(--bg-surface);border:1px solid var(--border);border-radius:4px;padding:26px 22px 40px;min-height:540px;outline:none;}
+  .doc h1{font-family:'Noto Serif JP';font-size:21px;font-weight:600;line-height:1.5;margin-bottom:14px;outline:none;}
+  .doc h2{font-family:'Noto Serif JP';font-size:15px;font-weight:600;margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .doc p{font-family:'Noto Serif JP';font-size:14px;line-height:1.95;margin:6px 0;}
+  .doc ul{margin:6px 0 6px 1.2em;font-family:'Noto Serif JP';font-size:14px;line-height:1.9;}
+  .doc figure{margin:12px 0;}
+  .doc figure .im{width:100%;aspect-ratio:16/10;border-radius:3px;border:1px solid var(--border);}
+  .doc figure figcaption{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);margin-top:4px;}
+  .doc figure .sz{float:right;font-family:'IBM Plex Mono';}
+  /* 枚の区切り（何枚目かを右に） */
+  .pb{position:absolute;left:-1px;right:-1px;height:0;border-top:1px dashed var(--border-light);pointer-events:none;}
+  .pb span{position:absolute;right:8px;top:-9px;padding:0 6px;background:var(--bg-surface);font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);}
+
+  /* 下：何枚使っているか＋書くための道具 */
+  .foot{flex:0 0 auto;background:var(--bg-surface);border-top:1px solid var(--border);}
+  .meter{display:flex;align-items:center;gap:10px;padding:8px 14px 0;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);}
+  .meter .bar{flex:1;height:3px;border-radius:2px;background:var(--border);overflow:hidden;}
+  .meter .bar i{display:block;height:100%;background:var(--text-secondary);}
+  .meter.full{color:#c46a6a;}
+  .meter.full .bar i{background:#c46a6a;}
+  .tools{display:flex;align-items:center;justify-content:space-around;padding:8px 8px 14px;}
+  .tools span{width:40px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-family:'Noto Serif JP';font-size:14px;}
+  .tools span:active{background:var(--bg-hover);}
+  .tools svg{width:19px;height:19px;}
+
+  .toast{position:absolute;bottom:110px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:70;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .top{padding-top:calc(12px + env(safe-area-inset-top));}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織の中：ドキュメント</b>（盤面のドキュメントのパーツを押すと開く）。タイトルつきの文章。<b>10枚まで</b>（紙1枚ぶんごとに区切りが入る）。<b>画像も載せられるが、1枚ずつ大きさに制限</b>をかける。メンバー全員が編集できる前提。</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="top">
+    <span class="back" onclick="toast('盤面へ戻る')">←</span>
+    <div class="ttl"><b><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 15h7M9 18h4"/></svg><span id="hdT">シナリオ下書き</span></b><small id="upd">山本 ・ 昨日</small></div>
+    <span class="more" onclick="toast('PDFで書き出す・これまでの版を見る（モックでは省略）')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></span>
+  </div>
+
+  <div class="paper" id="paper">
+    <div class="sheetw">
+      <div class="doc" id="doc" contenteditable="true" spellcheck="false">
+        <h1>シナリオ下書き</h1>
+        <h2>1章のあらすじ</h2>
+        <p>主人公は夜にしか動けない。昼のあいだは村の地下で眠り、日が沈むと目を覚ます。</p>
+        <p>昼の間に村を守ってくれる仲間を集めることが、1章の目的になる。</p>
+        <figure contenteditable="false"><div class="im" style="background:linear-gradient(150deg,#3d4f6a,#141820)"></div><figcaption>主人公の立ち絵（ラフ）<span class="sz">0.8MB</span></figcaption></figure>
+        <h2>2章</h2>
+        <p>2章では、仲間の1人が裏切る。裏切る理由は、1章のうちに少しずつ見せておく。</p>
+        <ul><li>裏切る仲間：鍛冶屋の娘</li><li>きっかけ：村が昼に襲われる</li><li>主人公は助けに行けない</li></ul>
+        <h2>決めていないこと</h2>
+        <p>終わり方を2つ用意するか。山本さんと金曜の定例で決める。</p>
+      </div>
+      <div id="pbs"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="meter" id="meter"><span id="cnt">1枚</span><span class="bar"><i id="barI"></i></span><span>10枚まで</span></div>
+    <div class="tools">
+      <span onclick="fmt('h2')" title="見出し"><b style="font-weight:600">見</b></span>
+      <span onclick="document.execCommand('bold')" title="太字"><b style="font-weight:700">B</b></span>
+      <span onclick="document.execCommand('insertUnorderedList')" title="箇条書き"><svg viewBox="0 0 24 24"><circle cx="5" cy="7" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="17" r="1"/><path d="M9 7h11M9 12h11M9 17h11"/></svg></span>
+      <span onclick="addImage()" title="画像"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg></span>
+      <span onclick="document.execCommand('undo')" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+  // 上限：10枚まで（2026-11-15 Tatsuya）。1枚＝紙1枚ぶんの高さ
+  const MAXP=10, PAGE=540;
+  // 画像の上限（AI案・未確認）：1枚あたり1MBまで。大きい画像は縮めてから載せる
+  const IMG_MAX_MB=1;
+
+  // 枚の区切りを引き直し、何枚使っているかを出す
+  function pages(){
+    const h=$('#doc').scrollHeight, n=Math.max(1,Math.ceil(h/PAGE));
+    let s='';for(let i=1;i<n;i++)s+='<div class="pb" style="top:'+(i*PAGE)+'px"><span>'+(i+1)+'枚目</span></div>';
+    $('#pbs').innerHTML=s;
+    $('#cnt').textContent=n+'枚';$('#barI').style.width=Math.min(100,n/MAXP*100)+'%';
+    $('#meter').classList.toggle('full',n>=MAXP);
+    return n;
+  }
+  // 書き換えたら「最後に直した人」が自分になる。10枚を超えたら知らせる
+  // 見出しのタイトルは本文の1行目（タイトル）と同じ。種類はアイコンで示す
+  $('#doc').addEventListener('input',()=>{const h=$('#doc h1');$('#hdT').textContent=h?h.textContent:'無題';$('#upd').textContent='佐久間（あなた） ・ いま';if(pages()>MAXP)toast('10枚までです。超えた分は保存されません');});
+  function fmt(tag){document.execCommand('formatBlock',false,tag);pages();}
+  // 画像を載せる（モック：選んだことにして、大きさの制限を見せる）
+  let imgN=0;
+  function addImage(){
+    imgN++;
+    if(imgN%2===0){toast('この画像は3.4MBあります。'+IMG_MAX_MB+'MBまでなので、縮めて載せました');}
+    const f=document.createElement('figure');f.contentEditable='false';
+    f.innerHTML='<div class="im" style="background:linear-gradient(135deg,#4a4455,#1c1a22)"></div><figcaption>画像の説明<span class="sz">'+(imgN%2===0?'1.0':'0.6')+'MB</span></figcaption>';
+    $('#doc').appendChild(f);pages();$('#paper').scrollTop=1e6;
+    $('#upd').textContent='佐久間（あなた） ・ いま';
+  }
+  setTimeout(pages,100);
+</script>
+</body>
+</html>
