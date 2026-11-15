@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織の中：カレンダー（パーツを開いた画面）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
+    --border:#3a3833;--border-light:#4a4840;--member:#8fa886;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.6;
+    word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:460px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:60;}
+  svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+  .top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:38px 14px 10px;background:var(--bg-surface);border-bottom:1px solid var(--border);}
+  .top .back{font-size:20px;color:var(--text-secondary);cursor:pointer;}
+  .top .ttl{display:flex;align-items:center;gap:6px;font-family:'Noto Serif JP';font-size:16px;font-weight:600;}
+  .top .ttl svg{width:15px;height:15px;color:var(--text-secondary);}
+
+  /* 月の表 */
+  .mon{flex:0 0 auto;padding:12px 14px 6px;border-bottom:1px solid var(--border);}
+  .mh{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .mh b{font-family:'Noto Serif JP';font-size:15px;font-weight:600;}
+  .mh .nav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;border:1px solid var(--border);}
+  .mh .nav svg{width:14px;height:14px;}
+  .mh .today{margin-left:auto;font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);padding:3px 10px;border:1px solid var(--border-light);border-radius:12px;cursor:pointer;}
+  .g7{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;text-align:center;}
+  .g7 em{font-style:normal;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);padding-bottom:4px;}
+  .g7 em:first-child{color:#b97a7a;}
+  .d{position:relative;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;}
+  .d span{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:13px;color:var(--text-secondary);}
+  .d.has span{color:var(--text-primary);}
+  .d .dots{display:flex;gap:2px;height:4px;margin-top:1px;}
+  .d .dots i{width:4px;height:4px;border-radius:50%;background:var(--member);}
+  .d.today span{background:var(--text-primary);color:var(--bg-deep);font-weight:500;}
+  .d.sel{background:var(--bg-hover);}
+  .d.empty{cursor:default;}
+
+  /* 選んだ日のメモ書き程度の予定 */
+  .list{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 90px;scrollbar-width:none;}
+  .list::-webkit-scrollbar{display:none;}
+  .lh{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);padding:14px 2px 8px;}
+  .ev{display:flex;align-items:flex-start;gap:12px;padding:12px 12px;margin-bottom:6px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border);}
+  .ev .tm{flex:0 0 44px;font-family:'IBM Plex Mono';font-size:13px;padding-top:1px;}
+  .ev .tm.no{color:var(--text-muted);font-family:'Noto Serif JP';font-size:11px;padding-top:3px;}
+  .ev .tx{flex:1;min-width:0;font-family:'Noto Serif JP';font-size:14px;line-height:1.6;}
+  .ev .by{display:flex;align-items:center;gap:5px;margin-top:4px;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);}
+  .ev .by i{width:14px;height:14px;border-radius:50%;display:inline-block;}
+  .ev .go{flex:0 0 auto;font-family:'Noto Serif JP';font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--border-light);color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
+  .ev .go.on{border-color:#6a8a61;color:var(--member);background:#4a674118;}
+  .ev .del{flex:0 0 auto;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px;}
+  .none{font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-muted);padding:6px 2px;}
+
+  /* 右下：予定を書く */
+  .fab{position:absolute;right:18px;bottom:24px;width:52px;height:52px;border-radius:50%;background:var(--text-primary);color:var(--bg-deep);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px #0008;z-index:10;}
+  .fab svg{width:22px;height:22px;stroke-width:2;}
+
+  /* 予定を書くシート（一行メモ＋時刻は任意） */
+  .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .25s;z-index:40;}
+  .scrim.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:14px 14px 0 0;
+    transform:translateY(100%);transition:transform .3s ease-out;z-index:41;padding:12px 16px 22px;}
+  .sheet.show{transform:none;}
+  .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border-light);margin:0 auto 14px;}
+  .sheet .sd{font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);margin-bottom:10px;}
+  .sheet input[type=text]{width:100%;padding:12px 12px;border-radius:6px;border:1px solid var(--border-light);background:var(--bg-deep);color:var(--text-primary);font-family:'Noto Serif JP';font-size:15px;outline:none;}
+  .sheet .row{display:flex;align-items:center;gap:10px;margin-top:12px;font-family:'Noto Serif JP';font-size:13px;color:var(--text-secondary);}
+  .sheet .row input[type=time]{padding:6px 8px;border-radius:5px;border:1px solid var(--border-light);background:var(--bg-deep);color:var(--text-primary);font-family:'IBM Plex Mono';font-size:13px;color-scheme:dark;}
+  .sheet .row small{color:var(--text-muted);font-size:11px;}
+  .sheet .save{width:100%;margin-top:16px;padding:12px;border:none;border-radius:6px;background:var(--text-primary);color:var(--bg-deep);font-family:'Noto Serif JP';font-size:14px;cursor:pointer;}
+
+  .toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:70;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .top{padding-top:calc(12px + env(safe-area-inset-top));}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織の中：カレンダー</b>（盤面のカレンダーのパーツを押すと開く）。<b>やることには期限を付けない</b>（仕事っぽくなりすぎるため）。カレンダーには<b>メモ書き程度の予定</b>だけを入れる：日付＋ひとこと（時刻は付けても付けなくてもいい）。</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="top">
+    <span class="back" onclick="toast('盤面へ戻る')">←</span>
+    <div class="ttl"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>カレンダー</div>
+  </div>
+
+  <div class="mon">
+    <div class="mh">
+      <span class="nav" onclick="toast('前の月（モックでは11月だけ）')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></span>
+      <b>2026年11月</b>
+      <span class="nav" onclick="toast('次の月（モックでは11月だけ）')"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>
+      <span class="today" onclick="pickDay(15)">今日</span>
+    </div>
+    <div class="g7" id="g7"></div>
+  </div>
+
+  <div class="list" id="list"></div>
+  <div class="fab" onclick="openAdd()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+
+  <div class="scrim" id="scrim" onclick="closeAdd()"></div>
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <div class="sd" id="sd"></div>
+    <input type="text" id="tx" placeholder="例：ボス戦の音を聞く会" onkeydown="if(event.key==='Enter')save()">
+    <div class="row">時刻<input type="time" id="tm"><small>なくてもいい</small></div>
+    <button class="save" onclick="save()">入れる</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+  const ME='佐久間', TODAY=15;
+  const PC={'田中':'#8b3a3a','佐久間':'#6b5a3e','Mizuki':'#4a6741','山本':'#3d4f6a','Aya':'#3d3530'};
+  const WD=['日','月','火','水','木','金','土'];
+  // 予定（メモ書き程度）。by＝書いた人、go＝参加する人（ダッシュボードの「今日の予定」に出すため）
+  // やることの期限はここに出さない（やることに期限を付けないため。2026-11-15 Tatsuya）
+  let EV=[
+    {d:15,t:'22:00',tx:'音の確認会',by:'田中',go:['田中','佐久間']},
+    {d:15,t:'',tx:'ストアの画像を差し替える',by:'Mizuki',go:['Mizuki']},
+    {d:20,t:'21:00',tx:'定例',by:'田中',go:['田中','佐久間','Mizuki','山本','Aya']},
+    {d:23,t:'',tx:'体験版を更新する日',by:'Aya',go:['Aya','佐久間']},
+    {d:27,t:'21:00',tx:'定例',by:'田中',go:['田中','佐久間','Mizuki','山本','Aya']},
+    {d:30,t:'',tx:'ストアページの文章をみんなで読む',by:'山本',go:['山本']}];
+  let day=TODAY;
+
+  function render(){
+    // 2026年11月1日は日曜
+    let g=WD.map(w=>'<em>'+w+'</em>').join('');
+    for(let i=1;i<=30;i++){const n=EV.filter(e=>e.d===i).length;
+      g+='<div class="d'+(i===TODAY?' today':'')+(i===day?' sel':'')+(n?' has':'')+'" onclick="pickDay('+i+')"><span>'+i+'</span><div class="dots">'+'<i></i>'.repeat(Math.min(3,n))+'</div></div>';}
+    $('#g7').innerHTML=g;
+    const wd=WD[(day-1)%7];
+    const L=EV.filter(e=>e.d===day).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99'));
+    $('#list').innerHTML='<div class="lh">11月'+day+'日（'+wd+'）'+(day===TODAY?' ・ 今日':'')+'</div>'
+      +(L.map(e=>{const k=EV.indexOf(e),on=e.go.includes(ME);
+        return '<div class="ev"><span class="tm'+(e.t?'':' no')+'">'+(e.t||'時刻なし')+'</span><div class="tx">'+e.tx
+          +'<div class="by"><i style="background:'+PC[e.by]+'"></i>'+(e.by===ME?'あなた':e.by)+(e.go.length>1?' ・ '+e.go.length+'人が参加':'')+'</div></div>'
+          +'<span class="go'+(on?' on':'')+'" onclick="toggleGo('+k+')">'+(on?'✓ 参加':'参加する')+'</span>'
+          +(e.by===ME?'<span class="del" onclick="del('+k+')">×</span>':'')+'</div>';}).join('')
+        ||'<div class="none">予定はありません</div>');
+  }
+  function pickDay(d){day=d;render();}
+  // 参加する：押すと自分のダッシュボードの「今日の予定」に出る
+  function toggleGo(k){const g=EV[k].go,i=g.indexOf(ME);if(i<0)g.push(ME);else g.splice(i,1);render();}
+  function del(k){EV.splice(k,1);render();toast('予定を消しました');}
+  function openAdd(){$('#sd').textContent='11月'+day+'日（'+WD[(day-1)%7]+'）に入れる';$('#tx').value='';$('#tm').value='';
+    $('#scrim').classList.add('show');$('#sheet').classList.add('show');setTimeout(()=>$('#tx').focus(),300);}
+  function closeAdd(){$('#scrim').classList.remove('show');$('#sheet').classList.remove('show');}
+  function save(){const v=$('#tx').value.trim();if(!v){toast('ひとこと書いてください');return;}
+    EV.push({d:day,t:$('#tm').value,tx:v,by:ME,go:[ME]});closeAdd();render();}
+  render();
+</script>
+</body>
+</html>
