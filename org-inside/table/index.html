@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織の中：表（パーツを開いた画面）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
+    --border:#3a3833;--border-light:#4a4840;--member:#8fa886;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.6;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:460px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:60;}
+  svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ヘッダー：戻る・表のタイトル・最後に直した人・… */
+  .top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:38px 14px 10px;background:var(--bg-surface);}
+  .top .back{font-size:20px;color:var(--text-secondary);cursor:pointer;}
+  .top .ttl{display:flex;flex-direction:column;min-width:0;}
+  .top .ttl b{display:flex;align-items:center;gap:6px;font-family:'Noto Serif JP';font-size:16px;font-weight:600;}
+  .top .ttl b svg{width:15px;height:15px;color:var(--text-secondary);}
+  .top .ttl small{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);}
+  .top .more{margin-left:auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;}
+  .top .more svg{width:18px;height:18px;}
+
+  /* 数式バー：選んだマスの場所と中身。ここでも書き換えられる */
+  .fbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .fbar .ref{flex:0 0 52px;font-family:'IBM Plex Mono';font-size:12px;color:var(--text-secondary);text-align:center;padding:4px 0;border-right:1px solid var(--border);}
+  .fbar input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:'Noto Serif JP';font-size:13.5px;padding:4px 2px;}
+
+  /* 表（1000行×1000列まで。見えている範囲だけ描く） */
+  .grid{flex:1;min-height:0;position:relative;overflow:auto;background:var(--bg-deep);scrollbar-width:thin;scrollbar-color:var(--border-light) transparent;}
+  .space{position:relative;}
+  .cell{position:absolute;height:30px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:0 7px;
+    font-family:'Noto Serif JP';font-size:12.5px;line-height:29px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;}
+  .cell.num{font-family:'IBM Plex Mono';text-align:right;}
+  .cell.hd{font-weight:600;background:var(--bg-card);}
+  .cell.sel{outline:2px solid var(--text-primary);outline-offset:-2px;z-index:2;background:var(--bg-hover);}
+  .cell input{width:100%;height:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font:inherit;}
+  /* 列の見出し（A, B, C…）と行の番号は、スクロールしても残る */
+  .colh,.rowh{position:sticky;z-index:5;font-family:'IBM Plex Mono';font-size:10.5px;color:var(--text-muted);}
+  .colh{top:0;height:24px;z-index:7;background:var(--bg-surface);}
+  .colh i,.rowh i{background:var(--bg-surface);}
+  .colh i,.rowh i{position:absolute;display:flex;align-items:center;justify-content:center;font-style:normal;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .colh i{top:0;height:24px;}
+  .rowh{left:0;width:40px;}
+  .rowh i{left:0;width:40px;height:30px;}
+  .colh i.on,.rowh i.on{color:var(--text-primary);background:var(--bg-hover);}
+  .corner{position:sticky;left:0;top:0;display:block;width:40px;height:24px;z-index:2;background:var(--bg-surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+
+  .toast{position:absolute;bottom:40px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:70;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .top{padding-top:calc(12px + env(safe-area-inset-top));}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織の中：表</b>（盤面の表のパーツを押すと開く）。タイトルと、スプレッドシート。広さは<b>1000行×1000列まで</b>。マスを押すと選べて、もう一度押すか上の欄で書き換えられる（メンバー全員が編集できる前提）。</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="top">
+    <span class="back" onclick="toast('盤面へ戻る')">←</span>
+    <div class="ttl"><b><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 9h16M4 14h16M10 4v16"/></svg>敵のパラメータ</b><small id="upd">山本 ・ 昨日</small></div>
+    <span class="more" onclick="toast('表の名前を変える・CSVで書き出す・CSVを読み込む（モックでは省略）')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></span>
+  </div>
+  <div class="fbar"><span class="ref" id="ref">A1</span><input id="fx" placeholder="" oninput="fromBar(this.value)" onkeydown="if(event.key==='Enter'){this.blur();move(1,0);}"></div>
+  <div class="grid" id="grid">
+    <div class="space" id="space">
+      <div class="colh"><div class="corner"></div><div id="colh"></div></div>
+      <div class="rowh" id="rowh"></div>
+      <div id="cells"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+  // 広さの上限：1000行×1000列（2026-11-15 Tatsuya）
+  const ROWS=1000, COLS=1000, CH=30, HH=24, RW=40;
+  // 列ごとの幅（A列だけ広め。ほかは同じ）
+  const colW=c=>c===0?110:76;
+  const colX=c=>c===0?0:110+(c-1)*76;
+  const totalW=colX(COLS);
+  // 列の名前：A…Z, AA…AZ, …, ALL（1000列目）
+  function colName(c){let s='';c++;while(c>0){const m=(c-1)%26;s=String.fromCharCode(65+m)+s;c=Math.floor((c-1)/26);}return s;}
+
+  // 中身（モック用）。キーは "行,列"
+  const D={};
+  [['敵','HP','速さ','攻撃','出てくる面','メモ'],
+   ['スライム','30','2','4','1','最初の敵。弱く'],
+   ['こうもり','18','5','3','1・2','速いが脆い'],
+   ['骸骨の兵','60','2','8','2'],
+   ['影','120','4','12','3','夜だけ出る'],
+   ['石の番人','240','1','20','3','動かない'],
+   ['ボス（夜の王）','400','3','30','4','3段階で変わる']
+  ].forEach((r,i)=>r.forEach((v,j)=>D[i+','+j]=v));
+  let sel={r:0,c:0}, editing=false;
+
+  const g=$('#grid');
+  $('#space').style.width=(RW+totalW)+'px';$('#space').style.height=(HH+ROWS*CH)+'px';
+  document.querySelector('.colh').style.width=(RW+totalW)+'px';$('#rowh').style.height=(HH+ROWS*CH)+'px';$('#rowh').style.marginTop='-24px';
+
+  // 見えている範囲だけ描く（100万マスを全部は作らない）
+  function draw(){
+    const x=g.scrollLeft, y=g.scrollTop, w=g.clientWidth, h=g.clientHeight;
+    const r0=Math.max(0,Math.floor(y/CH)-2), r1=Math.min(ROWS-1,Math.ceil((y+h)/CH)+2);
+    let c0=0;while(c0<COLS-1&&colX(c0+1)<x)c0++;let c1=c0;while(c1<COLS-1&&colX(c1)<x+w)c1++;
+    let ch='';for(let c=c0;c<=c1;c++)ch+='<i class="'+(c===sel.c?'on':'')+'" style="left:'+(RW+colX(c))+'px;width:'+colW(c)+'px">'+colName(c)+'</i>';
+    $('#colh').innerHTML=ch;
+    let rh='';for(let r=r0;r<=r1;r++)rh+='<i class="'+(r===sel.r?'on':'')+'" style="top:'+(HH+r*CH)+'px">'+(r+1)+'</i>';
+    $('#rowh').innerHTML=rh;
+    let cs='';
+    for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){
+      const v=D[r+','+c]||'', isSel=sel.r===r&&sel.c===c;
+      const cls='cell'+(r===0&&v?' hd':'')+(v&&!isNaN(v)&&r>0?' num':'')+(isSel?' sel':'');
+      cs+='<div class="'+cls+'" data-r="'+r+'" data-c="'+c+'" style="left:'+(RW+colX(c))+'px;top:'+(HH+r*CH)+'px;width:'+colW(c)+'px">'
+        +(isSel&&editing?'<input id="ed" value="'+v.replace(/"/g,'&quot;')+'">':v)+'</div>';
+    }
+    $('#cells').innerHTML=cs;
+    if(editing){const e=$('#ed');e.focus();e.oninput=()=>{D[sel.r+','+sel.c]=e.value;$('#fx').value=e.value;};e.onkeydown=ev=>{if(ev.key==='Enter'){editing=false;move(1,0);}};e.onblur=()=>{if(editing){editing=false;saved();draw();}};}
+  }
+  g.addEventListener('scroll',()=>{if(!editing)draw();});
+  // マスを押す：1回目で選ぶ、選んでいるマスをもう一度押すと書き換え
+  $('#cells').addEventListener('click',e=>{const t=e.target.closest('.cell');if(!t)return;const r=+t.dataset.r,c=+t.dataset.c;
+    if(sel.r===r&&sel.c===c){editing=true;}else{editing=false;sel={r,c};}
+    showSel();draw();});
+  function showSel(){$('#ref').textContent=colName(sel.c)+(sel.r+1);$('#fx').value=D[sel.r+','+sel.c]||'';}
+  function fromBar(v){D[sel.r+','+sel.c]=v;draw();saved();}
+  function move(dr,dc){sel={r:Math.min(ROWS-1,Math.max(0,sel.r+dr)),c:Math.min(COLS-1,Math.max(0,sel.c+dc))};showSel();saved();draw();}
+  // 書き換えたら「最後に直した人」が自分になる（全員が編集できる前提）
+  function saved(){$('#upd').textContent='佐久間（あなた） ・ いま';}
+
+  showSel();draw();
+</script>
+</body>
+</html>
