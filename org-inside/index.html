@@ -38,6 +38,24 @@
   .mission .mk{flex:0 0 auto;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;color:#c8d2e2;}
   .mission .mv{font-family:'Noto Serif JP';font-size:13px;font-weight:600;line-height:1.5;padding-right:18px;}
 
+  /* 個人用のダッシュボード（パーツ「あなた」を開いた画面） */
+  .me .day{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);padding:14px 0 2px;}
+  .me .sec{display:flex;align-items:center;gap:8px;padding:16px 0 8px;font-family:'Noto Serif JP';font-size:13px;font-weight:600;}
+  .me .sec svg{width:14px;height:14px;stroke:var(--text-secondary);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+  .me .sec b{font-family:'IBM Plex Mono';font-weight:400;font-size:12px;color:var(--text-muted);}
+  .me .row{display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:6px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;}
+  .me .row.task{border-left:3px solid var(--member);}
+  .me .row .rt{flex:1;min-width:0;}
+  .me .row .rn{font-family:'Noto Serif JP';font-size:13.5px;line-height:1.45;}
+  .me .row .rs2{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+  .me .row .st{flex:0 0 auto;font-family:'Noto Serif JP';font-size:10.5px;padding:2px 8px;border-radius:10px;border:1px solid var(--border-light);color:var(--text-secondary);}
+  .me .row .st.doing{border-color:#6a8a61;color:var(--member);}
+  .me .row .tf{color:var(--member);}
+  .me .row .tm{flex:0 0 46px;font-family:'IBM Plex Mono';font-size:15px;}
+  .me .row .ppl{display:flex;flex:0 0 auto;}
+  .me .row .ppl i{width:18px;height:18px;border-radius:50%;margin-left:-5px;border:1px solid var(--bg-card);display:block;}
+  .me .none{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);padding:4px 2px;}
+
   /* ===== 盤面：横4×縦6のマス目。広さはこれ以上ふえない（スマホ1画面に収める） ===== */
   /* 盤面は画面より広い。右と下に、続きの端が少し見える（スクロールで見る） */
   .stage{flex:1;min-height:0;padding:10px;position:relative;overflow:auto;scrollbar-width:none;}
@@ -53,6 +71,7 @@
     display:flex;flex-direction:column;min-width:0;min-height:0;transition:box-shadow .2s;}
   /* 見出し：左のアイコン＝パーツの種類、文字＝そのパーツのタイトル（1つだけ）。全パーツ共通 */
   .pc .pt{display:flex;align-items:center;gap:4px;font-family:'Noto Serif JP';font-size:11px;font-weight:600;color:var(--text-primary);line-height:1.3;white-space:nowrap;min-width:0;}
+  .pc .pt .av{flex:0 0 16px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:8.5px;font-weight:400;color:var(--text-primary);}
   .pc .pt .ptt{overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .pc .pt svg{color:var(--text-secondary);}
   .pc .pt svg{width:12px;height:12px;flex:0 0 12px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
@@ -60,10 +79,10 @@
   .pc .sm{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);line-height:1.5;margin-top:2px;}
   .pc .num{font-family:'IBM Plex Mono';font-size:18px;line-height:1.1;}
   /* 見出しの中に置く未読の数（タイトルに重ねない） */
-  .pc .pt .bd.in{position:static;margin-left:auto;flex:0 0 auto;font-weight:400;}
+  .pc .pt .nb.in{position:static;margin-left:auto;flex:0 0 auto;font-weight:400;}
   /* 1列幅では数字の代わりに点（タイトルを削らないため） */
-  .pc .pt .bd.in.dot{position:absolute;top:5px;right:5px;min-width:6px;width:6px;height:6px;padding:0;}
-  .pc .bd{position:absolute;top:6px;right:6px;min-width:17px;height:17px;border-radius:9px;padding:0 4px;background:var(--accent-wine);font-family:'IBM Plex Mono';font-size:9.5px;display:flex;align-items:center;justify-content:center;}
+  .pc .pt .nb.in.dot{position:absolute;top:5px;right:5px;min-width:6px;width:6px;height:6px;padding:0;}
+  .pc .nb{position:absolute;top:6px;right:6px;min-width:17px;height:17px;border-radius:9px;padding:0 4px;background:var(--accent-wine);font-family:'IBM Plex Mono';font-size:9.5px;display:flex;align-items:center;justify-content:center;}
   /* 必須パーツ（クリップを出す・オファー・人の管理）：緑のふち */
   .pc.req{border-color:#6a8a61;background:#4a674114;}
   .pc.req .pt,.pc.req .pt svg{color:var(--member);}
@@ -72,8 +91,9 @@
   .pc.req.center .lb{font-family:'Noto Serif JP';font-size:11px;line-height:1.35;}
   /* 必須：組織のプロフィール（紋章だけ） */
   .pc.prof{padding:0;align-items:center;justify-content:center;gap:5px;}
-  .pc.prof .pfl{font-family:'Noto Serif JP';font-size:10.5px;color:var(--member);}
-  .pc.prof .pcrest{width:54%;aspect-ratio:1;font-size:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .pc.prof .pcrest{position:relative;width:60%;aspect-ratio:1;font-size:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .pc.prof .gear{position:absolute;right:-7px;bottom:-7px;width:22px;height:22px;border-radius:50%;background:var(--bg-deep);border:1px solid #6a8a61;display:flex;align-items:center;justify-content:center;}
+  .pc.prof .gear svg{width:13px;height:13px;stroke:var(--member);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
   .pfpub{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);padding:14px 0 8px;cursor:pointer;}
   .pfrow{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--border);cursor:pointer;}
   .pfrow .pfk{flex:0 0 92px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
@@ -104,6 +124,7 @@
   .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px;flex:1;min-height:0;}
   .cgrid .ci{position:relative;border-radius:4px;background:var(--bg-surface);border:1px solid var(--border);padding:5px 6px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;}
   .cgrid .ci span{font-family:'Noto Serif JP';font-size:10px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 3px #000;}
+  .cgrid.short .ci span{-webkit-line-clamp:1;}
   .cgrid .ci em{font-style:normal;font-family:'IBM Plex Mono';font-size:8.5px;color:var(--text-secondary);}
   /* カレンダー */
   .cgrid7{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-top:4px;text-align:center;}
@@ -155,7 +176,10 @@
   .pc.vline .vl{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .pc.vline .vl i{display:block;width:1px;flex:1;background:var(--border-light);}
   .pc.vline .vl i:first-child{flex:0 0 10px;}
-  .pc.vline .vl span{writing-mode:vertical-rl;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);letter-spacing:.12em;}
+  .pc.vline .vl{width:100%;}
+  .pc.vline .vl span{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-align:center;line-height:1.4;max-width:100%;overflow-wrap:anywhere;word-break:break-all;}
+  /* メモ・区切り線の文字をその場で書き換えているとき */
+  .pc [contenteditable="true"]{outline:1px dashed var(--text-secondary);outline-offset:3px;border-radius:2px;color:var(--text-primary);cursor:text;-webkit-line-clamp:unset;}
   .editing .pc.vline{box-shadow:0 0 0 1px var(--border-light);}
   /* 中身の部品 */
   .bar{height:6px;border-radius:3px;background:var(--border-light);margin-top:8px;overflow:hidden;}
@@ -176,7 +200,7 @@
   .editing .pc .del{display:flex;background:var(--accent-wine);color:var(--text-primary);cursor:pointer;}
   .editing .pc.only .del{display:none;}
   .editing .pc.only .lock{display:flex;width:auto;padding:0 6px;border-radius:9px;background:var(--bg-deep);border:1px solid #6a8a61;color:var(--member);font-size:9px;}
-  .editing .pc .bd{display:none;}
+  .editing .pc .nb{display:none;}
   .ghost{position:absolute;border:2px dashed var(--text-primary);border-radius:6px;pointer-events:none;display:none;z-index:9;}
   .ghost.bad{border-color:var(--accent-wine);}
 
@@ -187,6 +211,57 @@
   .addbar .add{background:var(--text-primary);color:var(--bg-deep);border:none;}
   .addbar .fin{background:transparent;color:var(--text-secondary);border:1px solid var(--border-light);}
   .editing .foot{display:none;}
+  .crest.tap{cursor:pointer;}
+  /* 界隈（外の窓口） */
+  .kcr{display:flex;gap:6px;margin-top:4px;flex-wrap:nowrap;overflow:hidden;padding:3px;}
+  .kcr.col{flex-wrap:wrap;}
+  .kc{flex:0 0 22px;width:22px;height:22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:11px;font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .kc.mine{outline:1.5px solid var(--member);outline-offset:1.5px;}
+  .kc.sm2{flex:0 0 16px;width:16px;height:16px;font-size:8.5px;margin-right:5px;}
+  .knw{display:flex;flex-direction:column;gap:3px;margin-top:5px;}
+  .knw div{font-family:'Noto Serif JP';font-size:10px;line-height:1.4;color:var(--text-secondary);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .knw.long div{-webkit-line-clamp:4;}
+  .knw b{color:var(--text-primary);font-weight:600;}
+  .kjb{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
+  .kjb div{display:flex;align-items:center;font-family:'Noto Serif JP';font-size:10px;line-height:1.3;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .kjb.row{flex-direction:row;gap:12px;}
+  .kjb div{min-width:0;}
+  .kjb.row div{flex:1;}
+  .kjb .kr{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .kfull .kcr.big{gap:14px;overflow-x:auto;padding:6px 2px;}
+  .kfull .kco{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;}
+  .kfull .kco .kc{width:44px;height:44px;flex:0 0 44px;font-size:18px;}
+  .kfull .kco em{font-style:normal;font-family:'Noto Serif JP';font-size:10px;color:var(--text-secondary);max-width:64px;text-align:center;}
+  .kfull .tk .kc{flex:0 0 24px;width:24px;height:24px;}
+  /* オンラインの点（緑＝オンライン／灰＝オフライン） */
+  .onl{margin-left:auto;width:7px;height:7px;border-radius:50%;flex:0 0 7px;background:var(--text-muted);}
+  .onl.on{background:#6fbf73;}
+  /* 絵文字のスタンプ（数つき） */
+  .stp{display:inline-flex;gap:4px;margin-left:auto;flex:0 0 auto;}
+  .stp em{font-style:normal;display:inline-flex;align-items:center;gap:2px;padding:0 5px;border-radius:9px;background:var(--bg-surface);border:1px solid var(--border);font-size:10.5px;line-height:1.6;}
+  .stp em b{font-family:'IBM Plex Mono';font-weight:400;font-size:9.5px;color:var(--text-secondary);}
+  .sm .stp{margin-left:0;}
+  /* 編集を終えるときの確認 */
+  .dlg{position:absolute;inset:0;z-index:60;background:#000a;display:none;align-items:center;justify-content:center;}
+  .dlg.show{display:flex;}
+  .dlg .dbox{width:78%;background:var(--bg-surface);border:1px solid var(--border-light);border-radius:10px;padding:20px 16px 12px;display:flex;flex-direction:column;gap:8px;}
+  .dlg .dt{font-family:'Noto Serif JP';font-size:15px;font-weight:600;text-align:center;margin-bottom:8px;}
+  .dlg button{padding:11px;border-radius:5px;font-family:'Noto Serif JP';font-size:13.5px;cursor:pointer;}
+  .dlg .d1{background:var(--text-primary);color:var(--bg-deep);border:none;}
+  .dlg .d2{background:transparent;color:#c46a6a;border:1px solid var(--border-light);}
+  .dlg .d3{background:transparent;color:var(--text-secondary);border:none;}
+  /* 紋章の左に出るボタン（ふだんは幅0。紋章を押すと開いて、紋章と組織名が右へずれる） */
+  .om{display:flex;gap:6px;width:0;overflow:hidden;transition:width .25s ease-out;flex:0 0 auto;margin-right:-10px;}
+  .om.open{width:114px;margin-right:0;}
+  .omb{flex:0 0 32px;width:32px;height:32px;border-radius:50%;border:1px solid var(--border-light);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--bg-card);}
+  .omb svg{width:17px;height:17px;stroke:var(--text-primary);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .nmw{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .myset .danger{color:#c46a6a;}
+  /* 右下の並べ替えボタン（盤面の上に浮かせる） */
+  .lay{position:absolute;right:16px;bottom:80px;width:44px;height:44px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-light);box-shadow:0 6px 16px #0008;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:25;}
+  .lay svg{width:20px;height:20px;stroke:var(--text-primary);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+  .editing .lay{display:none;}
 
   /* パーツを選ぶシート（ビュッフェ） */
   .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40;}
@@ -211,6 +286,12 @@
   .pv.must .pv-n::before{content:'必須';font-family:'Noto Serif JP';font-size:9px;border:1px solid #6a8a61;color:var(--member);border-radius:3px;padding:0 4px;margin-right:5px;}
   .cat .mustnote{margin-left:8px;color:var(--member);font-size:10.5px;}
   .pv:active .pv-box{outline:2px solid var(--text-primary);}
+  /* 大きさ違いがあるパーツ：カードが重なった形（入れ子） */
+  .pv.multi .pv-box{overflow:visible;box-shadow:4px 4px 0 -1px var(--bg-surface),4px 4px 0 0 var(--border-light),8px 8px 0 -1px var(--bg-surface),8px 8px 0 0 var(--border);margin-right:8px;margin-bottom:8px;}
+  .pv.on .pv-box{outline:2px solid var(--text-primary);outline-offset:1px;}
+  .pv.on .pv-n{font-weight:600;}
+  /* 開いた大きさ違いの段 */
+  .pal.sub{margin:2px 0 6px;padding:10px;border-radius:8px;background:var(--bg-deep);border:1px solid var(--border);}
   /* 編集中：大きさを切り替えるボタン（左下） */
   .pc .rs{display:none;position:absolute;left:4px;bottom:4px;z-index:3;font-family:'IBM Plex Mono';font-size:10px;padding:1px 6px;border-radius:9px;background:var(--bg-deep);border:1px solid var(--text-secondary);color:var(--text-primary);cursor:pointer;}
   .editing .pc .rs{display:block;}
@@ -249,17 +330,22 @@
 </head>
 <body>
 
-<div class="caption">Wiclass プロトタイプ — <b>組織の中（盤面版）</b>。一番上にミッションをいつも掲げる（編集中に押すと組織のプロフィールを編集）。縦スクロールではなく、<b>横8×縦12のマス目の盤面</b>にパーツを置く（広さはそこで打ち止め）。画面には横4列・縦6行ほどが見え、右と下に続きの端が少し見える。緑のふち＝必須（クリップを出す・人を探す・メンバー）。トークルーム・ただの文字・区切り線（横・縦）は、どこにでも置けるユーティリティ。右上の「編集」で、ドラッグで並べ替え・左下の「2×1」で大きさを切り替え・＋でパーツを置く（ユーティリティ／業務／人事／経理／広報／総務に分けて、大きさ違いをプレビューで選べる）・×で外す。パーツは入口で、押すと全画面で開く想定。</div>
+<div class="caption">Wiclass プロトタイプ — <b>組織の中（盤面版）</b>。ヘッダーにミッションをいつも掲げる。紋章を押すと、外向けのページ／組織のプロフィール／この組織でのあなたの設定が出る。<b>横8×縦12のマス目の盤面</b>にパーツを置く（画面には横4列・縦6行ほど。右と下に続きの端が見える）。緑のふち＝必須（クリップを出す・オファー・求人・メンバー）。右下のボタンで並べ替え（ドラッグで移動・左下の「2×1」で大きさ・＋でパーツを置く・×で外す）。完了で、変更があれば保存するか元に戻すかを選ぶ。パーツは入口で、押すと全画面で開く想定。</div>
 
 <div class="phone" id="phone">
   <div class="notch"></div>
 
-  <!-- ヘッダー：左上に紋章と組織名、その下にミッションをずっと掲げる（2026-11-15）。ミッションなどの編集は盤面の「組織のプロフィール」パーツから -->
+  <!-- ヘッダー：左上に紋章と組織名、その下にミッションをずっと掲げる（2026-11-15）。紋章を押すと組織のプロフィール（ミッション・外向けのページの中身を編集） -->
   <div class="topbar">
     <div class="tb1">
-      <div class="crest" style="background:#3d4f6a">夜</div>
-      <div><div class="nm">夜行ゲームス</div><div class="pub" onclick="toast('外向けのページへ')">外向けのページ ›</div></div>
-      <button class="edit" id="editBtn" onclick="toggleEdit()">編集</button>
+      <!-- 紋章を押すと、紋章が右へずれて左に3つのボタンが出る：外向けのページ／組織のプロフィールを編集／この組織でのあなたの設定（2026-11-15） -->
+      <div class="om" id="om">
+        <span class="omb" onclick="toast('外向けのページへ')" title="外向けのページ"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></span>
+        <span class="omb" onclick="openProfile()" title="組織のプロフィール"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/></svg></span>
+        <span class="omb" onclick="openMySet()" title="この組織でのあなたの設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></span>
+      </div>
+      <div class="crest tap" style="background:#3d4f6a" onclick="$('#om').classList.toggle('open')">夜</div>
+      <div class="nmw"><div class="nm">夜行ゲームス</div></div>
     </div>
     <div class="mission">
       <span class="mk">ミッション</span>
@@ -273,10 +359,13 @@
     <div class="ghost" id="ghost"></div>
   </div>
 
+  <!-- 右下：盤面の並べ替え（レイアウト編集）。押すと編集中になる（2026-11-15） -->
+  <div class="lay" onclick="startEdit()" title="並べ替え"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 13.5v8M13.5 17.5h8"/></svg></div>
+
   <!-- 編集中だけ出る -->
   <div class="addbar">
     <button class="add" onclick="openPalette()">＋ パーツを置く</button>
-    <button class="fin" onclick="toggleEdit()">完了</button>
+    <button class="fin" onclick="finishEdit()">完了</button>
   </div>
 
   <nav class="foot">
@@ -301,6 +390,14 @@
     <div class="bd-top"><span class="x" onclick="document.getElementById('bd').classList.remove('show')">←</span><span class="bt" id="bdTitle"></span></div>
     <div class="bd-body" id="bdBody"></div>
   </div>
+
+  <!-- 編集を終えるとき（並びが変わっていたら出る） -->
+  <div class="dlg" id="dlg"><div class="dbox">
+    <div class="dt">変更を保存しますか？</div>
+    <button class="d1" onclick="saveEdit()">保存する</button>
+    <button class="d2" onclick="revertEdit()">元に戻す</button>
+    <button class="d3" onclick="keepEdit()">編集を続ける</button>
+  </div></div>
 
   <div class="toast" id="toast"></div>
 </div>
@@ -336,6 +433,10 @@
     key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2"/>',
     doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 15h7M9 18h4"/>',
     cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+    dash:'<rect x="3" y="3" width="8" height="10" rx="1"/><rect x="13" y="3" width="8" height="6" rx="1"/><rect x="13" y="11" width="8" height="10" rx="1"/><rect x="3" y="15" width="8" height="6" rx="1"/>',
+    person:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
     sheet:'<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 9h16M4 14h16M10 4v16"/>'
   };
   const ico=k=>'<svg viewBox="0 0 24 24">'+I[k]+'</svg>';
@@ -348,11 +449,8 @@
   // 見出し。固定のパーツは名前（1列幅のときは短い名前）、名前をつけるパーツ（部屋・表・ドキュメント・やることボード）はその名前
   const hd=(p,icon,full,short,extra)=>'<div class="pt">'+ico(icon)+'<span class="ptt">'+(p.w>=2||!short?full:short)+'</span>'+(extra||'')+'</div>';
   const TYPES={
-    // 必須（クリップを出す・人を探す・メンバー）も部署の中に入れる。盤面に1つは置いておく（外せるのは2つ目から）
-    // 組織のプロフィール（必須）：1×1だけ。見た目は組織の紋章＋「設定」の一言。押すとミッション・紹介文など外向けのページに出るものを編集（2026-11-15）
-    profile:{kind:'req',cat:'広報',name:'組織のプロフィール',d:'ミッションや外向けのページを編集',sizes:[[1,1]],draw:p=>
-      '<div class="pc req prof"><div class="pcrest" style="background:#3d4f6a">夜</div><div class="pfl">設定</div></div>'},
-    clip:{kind:'req',cat:'広報',name:'クリップを出す',d:'外へ出す',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>big(p)
+    // 必須（クリップを出す・オファー・求人・メンバー）も部署の中に入れる。盤面に1つは置いておく（外せるのは2つ目から）
+    clip:{kind:'req',cat:'広報',name:'クリップを出す',d:'外へ出す',def:[1,1],sizes:[[1,1],[2,1],[2,2]],draw:p=>big(p)
       ?'<div class="pc req"><div class="pt">'+ico('pen')+'<span class="ptt">クリップを出す</span></div><div class="mini">'
         +[['Mizuki','2面の背景','昨日'],['佐久間','ボス戦の効果音（途中）','3日前'],['Aya','ジャンプの着地','5日前']]
           .map(m=>'<div style="display:flex;gap:6px"><span style="color:var(--text-muted);flex:0 0 auto">'+m[0]+'</span><span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+m[1]+'</span><span style="margin-left:auto;color:var(--text-muted);flex:0 0 auto">'+m[2]+'</span></div>').join('')
@@ -362,30 +460,41 @@
       :p.h>=2
       ?'<div class="pc req center">'+ico('pen')+'<div class="lb">クリップを<br>出す</div><div class="sm" style="margin-top:6px">今週 3件</div></div>'
       :'<div class="pc req center">'+ico('pen')+'<div class="lb">クリップを<br>出す</div></div>'},
-    offer:{kind:'req',cat:'人事',name:'人を探す',d:'オファーを出す',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>big(p)
-      ?'<div class="pc req"><div class="pt">'+ico('find')+'<span class="ptt">人を探す</span></div><div class="big" style="font-family:IBM Plex Mono;font-weight:400">12<span class="sm" style="margin-left:6px">人がオファー可</span></div><div class="mini">'
-        +[['小林','サウンド','#3d4f6a'],['ハル','シナリオ','#6b5a3e'],['ユイ','ドット絵','#4a6741']]
-          .map(m=>'<div style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:14px;border-radius:50%;flex:0 0 14px;background:'+m[2]+'"></i>'+m[0]+'<span style="margin-left:auto;color:var(--text-muted)">'+m[1]+'</span></div>').join('')
-        +'</div><div class="sm" style="margin-top:auto">送ったオファー 2・返事待ち</div></div>'
-      :wide(p)
-      ?'<div class="pc req"><div class="pt">'+ico('find')+'<span class="ptt">人を探す</span></div><div class="big" style="font-family:IBM Plex Mono;font-weight:400">12<span class="sm" style="margin-left:6px">人がオファー可</span></div><div class="sm">送ったオファー 2・返事待ち</div></div>'
-      :p.h>=2
-      ?'<div class="pc req center">'+ico('find')+'<div class="lb">人を探す<br>（オファー）</div><div class="big" style="font-family:IBM Plex Mono;font-weight:400;margin-top:6px">12</div><div class="sm">人がオファー可</div></div>'
-      :'<div class="pc req center">'+ico('find')+'<div class="lb">人を探す<br>（オファー）</div></div>'},
-    members:{kind:'req',cat:'人事',name:'メンバー',d:'メンバーと参加リクエスト',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>big(p)
-      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span><span class="cnum">5人</span><span class="bd in" style="margin-left:5px">2</span></div><div class="mini">'
-        +[['田中 健','創業','#8b3a3a'],['佐久間','サウンド','#6b5a3e'],['Mizuki','ドット絵','#4a6741'],['山本','企画','#3d4f6a'],['Aya','プログラム','#3d3530']]
-          .map(m=>'<div style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:14px;border-radius:50%;flex:0 0 14px;background:'+m[2]+'"></i>'+m[0]+'<span style="margin-left:auto;color:var(--text-muted)">'+m[1]+'</span></div>').join('')
+    // オファー・求人（旧：人を探す→おすすめのユーザー）。2×1・2×2では、この組織に合いそうなおすすめのユーザーが出る。縦長なし（2026-11-15 Tatsuya）
+    // 参加リクエストもここで受ける（旧：メンバー）。来ていたら赤い印（2026-11-15 Tatsuya）
+    offer:{kind:'req',cat:'人事',name:'オファー・求人',d:'人を誘う・募集する・参加リクエストを受ける',def:[2,1],sizes:[[1,1],[2,1],[2,2]],draw:p=>{
+      const REQ=2, red=REQ?'<span class="nb in">'+REQ+'</span>':'';
+      const U=[['小林','サウンド','#3d4f6a'],['ハル','シナリオ','#6b5a3e'],['ユイ','ドット絵','#4a6741'],['ケン','プログラム','#5a3d4f']];
+      const av=(m,z)=>'<i style="width:'+z+'px;height:'+z+'px;border-radius:50%;flex:0 0 '+z+'px;display:block;background:'+m[2]+'"></i>';
+      if(big(p)) return '<div class="pc req"><div class="pt">'+ico('find')+'<span class="ptt">オファー・求人</span>'+red+'</div>'+(REQ?'<div class="sm" style="margin-top:4px;color:var(--text-primary)">参加リクエスト '+REQ+'件</div>':'')+'<div class="mini" style="margin-top:6px">'
+        +U.slice(0,REQ?3:4).map(m=>'<div style="display:flex;align-items:center;gap:6px">'+av(m,14)+m[0]+'<span style="margin-left:auto;color:var(--text-muted)">'+m[1]+'</span></div>').join('')+'</div></div>';
+      if(wide(p)) return '<div class="pc req"><div class="pt">'+ico('find')+'<span class="ptt">オファー・求人</span>'+red+'</div><div style="display:flex;gap:4px;margin-top:8px">'
+        +U.map(m=>av(m,22)).join('')+'</div></div>';
+      return '<div class="pc req center">'+ico('find')+'<div class="lb">オファー・<br>求人</div>'+(REQ?'<span class="nb">'+REQ+'</span>':'')+'</div>';}},
+    members:{kind:'req',cat:'人事',name:'メンバー',d:'メンバーと、いまオンラインか',def:[1,2],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>big(p)
+      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span><span class="cnum">6人</span></div><div class="mini">'
+        // 2×2：役割ではなく、いまオンラインかどうか（2026-11-15 Tatsuya）
+        +[['田中 健',1,'#8b3a3a'],['佐久間',1,'#6b5a3e'],['Mizuki',0,'#4a6741'],['山本',1,'#3d4f6a'],['Aya',0,'#3d3530']]
+          .map(m=>'<div style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:14px;border-radius:50%;flex:0 0 14px;background:'+m[2]+'"></i>'+m[0]+'<span class="onl'+(m[1]?' on':'')+'"></span></div>').join('')
         +'</div></div>'
       :wide(p)
-      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span><span class="cnum">5人</span><span class="bd in" style="margin-left:5px">2</span></div><div style="display:flex;margin-top:6px">'+dotC.map(c=>'<i style="width:20px;height:20px;border-radius:50%;margin-right:-5px;border:1px solid var(--bg-card);background:'+c+'"></i>').join('')+'</div><div class="sm" style="margin-top:6px">参加リクエスト 2件</div></div>'
+      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span><span class="cnum">6人</span></div><div style="display:flex;margin-top:6px">'+dotC.map(c=>'<i style="width:20px;height:20px;border-radius:50%;margin-right:-5px;border:1px solid var(--bg-card);background:'+c+'"></i>').join('')+'</div></div>'
       :p.h>=2
-      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span><span class="bd in dot"></span></div><div class="mini">'
+      ?'<div class="pc req"><div class="pt">'+ico('people')+'<span class="ptt">メンバー</span></div><div class="mini">'
         +[['田中','#8b3a3a'],['佐久間','#6b5a3e'],['Mizuki','#4a6741'],['山本','#3d4f6a'],['Aya','#3d3530']]
           .map(m=>'<div style="display:flex;align-items:center;gap:5px;overflow:hidden;white-space:nowrap"><i style="width:12px;height:12px;border-radius:50%;flex:0 0 12px;background:'+m[1]+'"></i>'+m[0]+'</div>').join('')
         +'</div></div>'
-      :'<div class="pc req center">'+ico('people')+'<div class="lb">メンバー<br>5人</div><span class="bd">2</span></div>'},
-    tasks:{kind:'w',cat:'業務',name:'やることボード',d:'プロジェクトごとのやること',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+      :'<div class="pc req center">'+ico('people')+'<div class="lb">メンバー<br>6人</div></div>'},
+    // ダッシュボード（個人用）：自分の担当と今日の予定。押すと全画面。大きいサイズだけ（1×1なし）（2026-11-15 Tatsuya）
+    me:{kind:'w',cat:'業務',name:'あなたのダッシュボード',d:'自分の担当タスクと今日の予定',def:[2,1],sizes:[[2,1],[1,2],[2,2]],draw:p=>{
+      const T=myTasks(), E=myEvents(), h=meHead();
+      if(p.w>=2&&p.h>=2) return '<div class="pc">'+h+'<div class="sm" style="margin-top:4px">担当タスク '+T.length+'</div><div class="mini">'+T.slice(0,3).map(t=>'<div class="me">'+t.t+'</div>').join('')+'</div>'
+        +'<div class="sm" style="margin-top:8px">今日の予定</div><div class="evs">'+(E.map(e=>'<div><b>'+(e.t||'終日')+'</b>'+e.n+'</div>').join('')||'<div>なし</div>')+'</div></div>';
+      if(p.h>=2) return '<div class="pc">'+h+'<div class="num" style="margin-top:4px">'+T.length+'</div><div class="sm">担当タスク</div><div class="num" style="margin-top:8px">'+E.length+'</div><div class="sm">今日の予定</div>'
+        +(E[0]?'<div class="sm" style="margin-top:auto;color:var(--text-primary)">'+(E[0].t||'終日')+' '+E[0].n+'</div>':'')+'</div>';
+      if(p.w>=2) return '<div class="pc">'+h+'<div class="stats"><div><b>'+T.length+'</b>担当タスク</div><div><b>'+E.length+'</b>今日の予定</div></div></div>';
+      return '';}},
+    tasks:{kind:'w',cat:'業務',name:'やることボード',d:'プロジェクトごとのやること',def:[2,2],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
       const B=boardOf(p);const c=countOf(B);const mine=B.tasks.filter(t=>t.who===ME&&t.st!=='done');
       const head=hd(p,'board',p.label||'やること');
       const myLine=mine.length?'<div class="mytask">あなた：'+mine[0].t+(mine.length>1?' ほか'+(mine.length-1):'')+'</div>':'';
@@ -394,14 +503,19 @@
       if(p.h>=2) return '<div class="pc">'+head+myLine+'<div class="sm" style="margin-top:6px">未着手 '+c.open+' ・ 着手中 '+c.doing+'</div><div class="sm">完了 '+c.done+'</div></div>';
       if(p.w>=2) return '<div class="pc">'+head+stats+'</div>';
       return '<div class="pc">'+head+'<div class="num">'+mine.length+'</div><div class="sm">あなたの担当</div></div>';}},
-    done:{kind:'w',cat:'業務',name:'最近できたこと',d:'できたことに拍手',sizes:[[1,1],[2,1],[2,2]],draw:p=>big(p)
-      ?'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="mini"><div>Mizuki「2面の背景」 拍手3</div><div>山本「不具合まとめ」 拍手5</div><div>Aya「セーブ機能」 拍手2</div></div></div>'
-      :wide(p)?'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="big">Mizukiが「2面の背景」</div><div class="sm">拍手 3 ・ 昨日</div></div>'
-      :'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="big">Mizuki</div><div class="sm">拍手 3</div></div>'},
-    welcome:{kind:'w',cat:'人事',name:'ようこそ欄',d:'新しく来た人',sizes:[[1,1],[2,1]],draw:p=>wide(p)
-      ?'<div class="pc">'+hd(p,'hi','ようこそ')+'<div class="big">小林 蓮</div><div class="sm">昨日 参加 ・ 作曲ができます</div></div>'
+    // 完了報告（旧：最近できたこと）：完了したタスクの報告。仲間の反応は絵文字のスタンプ（2026-11-15 Tatsuya）
+    done:{kind:'w',cat:'業務',name:'完了報告',d:'完了したタスクにスタンプ',def:[2,1],sizes:[[1,1],[2,1],[2,2]],draw:p=>{
+      const st=a=>'<span class="stp">'+a.map(x=>'<em>'+x[0]+'<b>'+x[1]+'</b></em>').join('')+'</span>';
+      const h=hd(p,'clap','完了報告');
+      if(big(p)) return '<div class="pc">'+h+'<div class="mini">'
+        +[['Mizuki「2面の背景」',[['🎉',3],['🔥',2]]],['山本「不具合まとめ」',[['🙏',5]]],['Aya「セーブ機能」',[['👏',2],['🎉',1]]]]
+          .map(r=>'<div style="display:flex;align-items:center;gap:6px"><span style="overflow:hidden;text-overflow:ellipsis">'+r[0]+'</span>'+st(r[1])+'</div>').join('')+'</div></div>';
+      if(wide(p)) return '<div class="pc">'+h+'<div class="big">Mizukiが「2面の背景」</div><div class="sm" style="display:flex;align-items:center;gap:6px">'+st([['🎉',3],['🔥',2]])+'昨日</div></div>';
+      return '<div class="pc">'+h+'<div class="big">Mizuki</div><div class="sm">'+st([['🎉',3]])+'</div></div>';}},
+    welcome:{kind:'w',cat:'人事',name:'ようこそ欄',d:'新しく来た人',def:[1,1],sizes:[[1,1],[2,1]],draw:p=>wide(p)
+      ?'<div class="pc">'+hd(p,'hi','ようこそ')+'<div class="big">小林 蓮</div><div class="sm">昨日 参加 ・ 6人目の参加者</div></div>'
       :'<div class="pc">'+hd(p,'hi','ようこそ')+'<div class="big">小林 蓮</div><div class="sm">昨日 参加</div></div>'},
-    cliplist:{kind:'w',cat:'広報',name:'クリップ一覧',d:'この組織が出したクリップ',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+    cliplist:{kind:'w',cat:'広報',name:'クリップ一覧',d:'この組織が出したクリップ',def:[2,2],sizes:[[1,1],[2,1],[2,2]],draw:p=>{
       const L=[{t:'「LUNA」、今日から早期アクセスを始めました',who:'田中',bg:'linear-gradient(150deg,#3d4f6a,#141820)',imp:'2,340'},
                {t:'2面の背景、どっちの色がいいか迷っています',who:'Mizuki',bg:'linear-gradient(135deg,#4a4455,#1c1a22)',imp:'986'},
                {t:'ボス戦の効果音、金属音を3層にした',who:'佐久間',bg:null,imp:'640'},
@@ -411,53 +525,86 @@
       if(p.h>=2) return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ','<span class="cnum">42</span>')+'<div class="mini">'+L.slice(0,3).map(c=>'<div>'+c.t+'</div>').join('')+'</div></div>';
       if(p.w>=2) return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ','<span class="cnum">42</span>')+'<div class="big" style="font-size:12px">'+L[0].t+'</div><div class="sm">'+L[0].who+' ・ インプ '+L[0].imp+'</div></div>';
       return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ')+'<div class="num">42</div><div class="sm">今週 +3</div></div>';}},
-    // 資本と戦況（旧：資本の動き＋対抗戦の戦況＋出資者の壁）。界隈の順位は受け取った資本（影響力）で決まり、資本は出資者から来るので1つにまとめた（2026-11-15）
-    capital:{kind:'w',cat:'経理',name:'資本と戦況',d:'受け取った資本・出資者・界隈での順位',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
-      const h=hd(p,'wall','資本と戦況','資本'), cap='<div class="num" style="color:var(--accent-gold)">♥'+(p.w>=2?' ':'')+'312</div>';
-      const rk='<span class="sm" style="color:#a9c2a0">↑1</span>';
-      if(p.w>=2&&p.h>=2) return '<div class="pc">'+h+'<div style="display:flex;align-items:baseline;gap:12px">'+cap+'<div class="num">2位 '+rk+'</div></div><div class="sm">今週 +26 ・ 1位 ピクセル工房 まで ♥228</div>'
-        +'<div class="sm" style="margin-top:8px">出資者 128人</div><div class="mini"><div>通勤ラジオの小川 ♥8</div><div>高橋 ♥5</div><div>さとう ♥3</div></div></div>';
-      if(p.h>=2) return '<div class="pc">'+h+cap+'<div class="sm">今週 +26</div><div class="num" style="margin-top:8px">2位</div><div class="sm" style="color:#a9c2a0">↑1</div><div class="sm" style="margin-top:auto">出資者 128人</div></div>';
-      if(p.w>=2) return '<div class="pc">'+h+'<div style="display:flex;align-items:baseline;gap:12px">'+cap+'<div class="num">2位 '+rk+'</div></div><div class="sm">出資者 128人 ・ 今週 +26</div></div>';
-      return '<div class="pc">'+h+cap+'<div class="sm">界隈 2位</div></div>';}},
+    // 資本（旧：資本と戦況）。受け取った資本と出資者。界隈の順位は出さない（2026-11-15 Tatsuya「戦況はいらない」）
+    capital:{kind:'w',cat:'経理',name:'資本',d:'受け取った資本と出資者',def:[1,1],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+      const h=hd(p,'wall','資本'), cap='<div class="num" style="color:var(--accent-gold)">♥'+(p.w>=2?' ':'')+'312</div>';
+      if(p.w>=2&&p.h>=2) return '<div class="pc">'+h+cap+'<div class="sm">今週 +26 ・ 出資者 128人</div><div class="mini"><div>通勤ラジオの小川 ♥8</div><div>高橋 ♥5</div><div>さとう ♥3</div></div></div>';
+      if(p.h>=2) return '<div class="pc">'+h+cap+'<div class="sm">今週 +26</div><div class="num" style="margin-top:8px">128</div><div class="sm">出資者</div></div>';
+      if(p.w>=2) return '<div class="pc">'+h+cap+'<div class="sm">出資者 128人 ・ 今週 +26</div></div>';
+      return '<div class="pc">'+h+cap+'<div class="sm">今週 +26</div></div>';}},
+    // 界隈（外の窓口）：ホームにある「夜行ゲームスの界隈」の組織・クリップ・求人を、組織の中から見る。大きさは1×1〜2×2の4つ（2026-11-15 Tatsuya）
+    kai:{kind:'w',cat:'広報',name:'界隈',d:'この組織の界隈のクリップ',def:[2,2],sizes:[[1,1],[2,1],[2,2]],draw:p=>{
+      // 界隈のクリップだけを出す。数・組織・出来事は出さない。縦長なし（2026-11-15 Tatsuya）
+      const h=hd(p,'globe','夜行ゲームスの界隈','界隈');
+      const tiles=(n,cols,short)=>'<div class="cgrid'+(short?' short':'')+'" style="grid-template-columns:repeat('+cols+',1fr)">'+KAI.clips.slice(0,n).map(c=>'<div class="ci"'+(c.bg?' style="background:'+c.bg+'"':'')+'><span>'+c.tx+'</span><em>'+c.org+'</em></div>').join('')+'</div>';
+      if(p.h===1) return '<div class="pc">'+h+tiles(1,1,true)+'</div>';
+      return '<div class="pc">'+h+tiles(4,2)+'</div>';}},
     // ユーティリティ（どこにでも置ける）
-    room:{kind:'u',cat:'ユーティリティ',name:'トークルーム',d:'話す部屋。いくつでも',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+    room:{kind:'u',cat:'ユーティリティ',name:'トークルーム',d:'話す部屋。いくつでも',def:[2,1],sizes:[[1,1],[2,1],[2,2]],draw:p=>{
       // 大きいほど、最近の話を多く見せる（1×1・2×1＝最後のひとこと／1×2＝3件／2×2＝4件）
       const log=p.log||[['佐久間','金属音を3層にしてみた'],['田中','いいね、明日聞く'],['Mizuki','ボスの攻撃に合わせたい'],['佐久間','タイミング送ります']];
       const n=p.h>=2?(p.w>=2?4:3):0;
       const lines=n?'<div class="rlog">'+log.slice(-n).map(m=>'<div><b>'+m[0]+'</b>'+m[1]+'</div>').join('')+'</div>':'<div class="last">'+(p.last||'まだ話はありません')+'</div>';
-      return '<div class="pc room">'+hd(p,'talk',p.label||'新しい部屋',null,p.unread?(p.w>=2?'<span class="bd in">'+p.unread+'</span>':'<span class="bd in dot"></span>'):'')+lines
+      return '<div class="pc room">'+hd(p,'talk',p.label||'新しい部屋',null,p.unread?(p.w>=2?'<span class="nb in">'+p.unread+'</span>':'<span class="nb in dot"></span>'):'')+lines
         +'<div class="who">'+dotC.slice(0,p.n||0).map(c=>'<i style="background:'+c+'"></i>').join('')+'</div></div>';}},
-    sheet:{kind:'u',cat:'ユーティリティ',name:'表',d:'表計算（Excel・スプレッドシートのファイルも開ける）',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+    sheet:{kind:'u',cat:'ユーティリティ',name:'表',d:'表計算（CSVを読み込める・書き出せる）',def:[2,2],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
       const rows=[['敵','HP','速さ'],['スライム','30','2'],['こうもり','18','5'],['ボス','400','3'],['影','120','4']];
-      const r=p.h>=2?5:(p.w>=2?2:0), c=p.w>=2?3:2;
+      // 1×1でも表の一部を見せる（行と列の数は出さない。2026-11-15 Tatsuya）
+      const r=p.h>=2?5:2, c=p.w>=2?3:2;
       return '<div class="pc tbl">'+hd(p,'sheet',p.label||'新しい表')
-        +(r?'<table class="tb">'+rows.slice(0,r).map((x,i)=>'<tr>'+x.slice(0,c).map(v=>i?'<td>'+v+'</td>':'<th>'+v+'</th>').join('')+'</tr>').join('')+'</table>':'<div class="sm">5行 × 3列</div>')+'</div>';}},
+        +(r?'<table class="tb">'+rows.slice(0,r).map((x,i)=>'<tr>'+x.slice(0,c).map(v=>i?'<td>'+v+'</td>':'<th>'+v+'</th>').join('')+'</tr>').join('')+'</table>':'')+'</div>';}},
     // メモ（タイトルなし）とドキュメント（タイトルあり）の2種類（2026-11-15）
-    memo:{kind:'u',cat:'ユーティリティ',name:'メモ',d:'タイトルなしの短い文',sizes:[[1,1],[2,1],[4,1],[1,2],[2,2]],draw:p=>
+    memo:{kind:'u',cat:'ユーティリティ',name:'メモ',d:'タイトルなしの短い文',def:[2,1],sizes:[[1,1],[2,1],[4,1],[1,2],[2,2]],draw:p=>
       '<div class="pc note"><div class="ntx">'+(p.label||'ここに書けます')+'</div></div>'},
-    doc:{kind:'u',cat:'ユーティリティ',name:'ドキュメント',d:'タイトルつきの文章',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+    doc:{kind:'u',cat:'ユーティリティ',name:'ドキュメント',d:'タイトルつきの文章',def:[2,1],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
       // ドキュメントは画像も載せられる想定（叩き台では未実装）
       const body=p.body||[];const n=p.h>=2?(p.w>=2?5:4):(p.w>=2?1:0);
       return '<div class="pc memo">'+hd(p,'doc',p.label||'無題')
         +(n&&body.length?'<div class="dbody">'+body.slice(0,n).map(t=>'<div>'+t+'</div>').join('')+'</div>':'')
         +(p.who?'<div class="upd">'+p.who+'</div>':'')+'</div>';}},
-    cal:{kind:'u',cat:'ユーティリティ',name:'カレンダー',d:'定例や締め切りの予定',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
-      // 予定（モック用）。11月のカレンダー
-      const ev=[{d:20,t:'21:00',n:'定例'},{d:23,t:'',n:'体験版の更新'},{d:27,t:'21:00',n:'定例'},{d:30,t:'',n:'ストアページ締め切り'}];
+    cal:{kind:'u',cat:'ユーティリティ',name:'カレンダー',d:'メモ書き程度の予定',def:[1,2],sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+      const ev=EV;
       if(p.w>=2&&p.h>=2){
         // 月の表（2026年11月1日は日曜なので、1日を日曜の列から始める）
         let cells='';for(let i=1;i<=30;i++){const e=ev.find(x=>x.d===i);cells+='<span class="cd'+(i===15?' today':'')+(e?' has':'')+'">'+i+'</span>';}
         return '<div class="pc">'+hd(p,'cal','カレンダー','予定','<span class="cnum">11月</span>')+'<div class="cgrid7">'+['日','月','火','水','木','金','土'].map(x=>'<em>'+x+'</em>').join('')+cells+'</div>'
-          +'<div class="sm" style="margin-top:auto">次：20日（金）21:00 定例</div></div>';}
+          +'<div class="sm" style="margin-top:auto">次：今日 22:00 音の確認会</div></div>';}
       const n=p.h>=2?4:(p.w>=2?2:1);
-      if(n===1) return '<div class="pc">'+hd(p,'cal','カレンダー','予定')+'<div class="big">金 21:00</div><div class="sm">定例</div></div>';
+      if(n===1) return '<div class="pc">'+hd(p,'cal','カレンダー','予定')+'<div class="big">今日 22:00</div><div class="sm">音の確認会</div></div>';
       return '<div class="pc">'+hd(p,'cal','カレンダー','予定')+'<div class="evs">'+ev.slice(0,n).map(e=>'<div><b>'+e.d+'日</b>'+(e.t?e.t+' ':'')+e.n+'</div>').join('')+'</div></div>';}},
-    line:{kind:'u',cat:'ユーティリティ',name:'横の区切り線',d:'盤面を上下に区切る。名前つき',sizes:[[4,1],[2,1]],draw:p=>'<div class="pc line"><div class="ln">'+(p.label||'区切り')+'</div></div>'},
-    vline:{kind:'u',cat:'ユーティリティ',name:'縦の区切り線',d:'盤面を左右に区切る。名前つき',sizes:[[1,2],[1,3],[1,4],[1,6]],draw:p=>'<div class="pc vline"><div class="vl"><i></i><span>'+(p.label||'区切り')+'</span><i></i></div></div>'}
+    line:{kind:'u',cat:'ユーティリティ',name:'横の区切り線',d:'盤面を上下に区切る。名前つき',def:[4,1],sizes:[[2,1],[3,1],[4,1],[6,1]],draw:p=>'<div class="pc line"><div class="ln">'+(p.label||'区切り')+'</div></div>'},
+    vline:{kind:'u',cat:'ユーティリティ',name:'縦の区切り線',d:'盤面を左右に区切る。名前つき',def:[1,4],sizes:[[1,2],[1,3],[1,4],[1,6]],draw:p=>'<div class="pc vline"><div class="vl"><i></i><span>'+(p.label||'区切り')+'</span><i></i></div></div>'}
   };
   // 初期配置で大きさを書いていないパーツは、いちばん目の大きさ
   const firstSize=t=>TYPES[t].sizes[0];
+
+  // ===== 予定（モック用。11月）。カレンダーのパーツと「あなた」の今日の予定で共有。who＝参加する人 =====
+  const TODAY=15;
+  const EV=[{d:15,t:'22:00',n:'音の確認会',who:['佐久間','田中']},{d:15,t:'',n:'ストアの画像を差し替え',who:['Mizuki']},
+    {d:20,t:'21:00',n:'定例',who:['田中','佐久間','Mizuki','山本','Aya']},{d:23,t:'',n:'体験版を更新する日',who:['Aya','佐久間']},
+    {d:27,t:'21:00',n:'定例',who:['田中','佐久間','Mizuki','山本','Aya']},{d:30,t:'',n:'ストアページの文章をみんなで読む',who:['山本']}];
+
+  // ===== 界隈のデータ（モック用。戦場の「夜行ゲームスの界隈」と同じ中身。組織は左から影響力のある順） =====
+  const KAI={newClips:8,
+    // 界隈の出来事（組織の動き）
+    news:[['深夜バグ部','が求人を出しました'],['ピクセル工房','のメンバーが8人になりました'],['あおぞらノベル','に新しく2人が参加しました']],
+    orgs:[{nm:'ピクセル工房',c:'ピ',col:'#4a4455'},{nm:'夜行ゲームス',c:'夜',col:'#3d4f6a',mine:true},{nm:'深夜バグ部',c:'深',col:'#5a4a40'},{nm:'三日月インタラクティブ',c:'三',col:'#2c3e50'},{nm:'あおぞらノベル',c:'青',col:'#4a6741'}],
+    clips:[{org:'ピクセル工房',tx:'ドット絵の歩きモーション、8コマから6コマに減らしても違和感がないか試してる'},
+      {org:'深夜バグ部',tx:'テストプレイ会、日曜にやります',bg:'linear-gradient(160deg,#5a4a40,#1c1814)'},
+      {org:'三日月インタラクティブ',tx:'ホラーの効果音って、無音の時間のほうが怖い気がする'},
+      {org:'ピクセル工房',tx:'新作のタイトル画面',bg:'linear-gradient(135deg,#4a4455,#121018)'},
+      {org:'あおぞらノベル',tx:'背景を1枚描くのに3日。早く描ける人のやり方を知りたい'},
+      {org:'夜行ゲームス',tx:'「LUNA」、今日からSteamで早期アクセスを始めました',bg:'linear-gradient(150deg,#3d4f6a,#141820)'},
+      {org:'深夜バグ部',tx:'パズルの難易度、3段階にするか迷い中'},
+      {org:'三日月インタラクティブ',tx:'新作の舞台は廃校です',bg:'linear-gradient(150deg,#2c3e50,#10161c)'}],
+    jobs:[{role:'ドット絵のアニメーター',c:'ピ',col:'#4a4455'},{role:'シナリオを書ける人',c:'三',col:'#2c3e50'},{role:'Steamのストアページを作る人',c:'深',col:'#5a4a40'},{role:'背景を描ける人',c:'青',col:'#4a6741'}]};
+  // 界隈を開いた画面（ホームの界隈ブロックと同じ並び：組織→クリップ→求人）
+  function openKai(){
+    $('#bdTitle').textContent='夜行ゲームスの界隈';
+    $('#bdBody').innerHTML='<div class="cgrid" style="grid-template-columns:1fr 1fr;grid-auto-rows:92px;margin-top:12px">'+KAI.clips.map(c=>'<div class="ci"'+(c.bg?' style="background:'+c.bg+'"':'')+'><span>'+c.tx+'</span><em>'+c.org+'</em></div>').join('')+'</div>';
+    $('#bd').classList.add('show');
+  }
+
 
   // ===== やることボードの中身（ボードごとに別。モック用） =====
   const ME='佐久間';
@@ -479,15 +626,15 @@
   let pieces=[
     {t:'memo',c:1,r:1,w:2,h:1,label:'金曜21時から定例。ボス戦の音を見ます'},{t:'tasks',c:3,r:1,w:2,h:1,label:'体験版の更新'},
     {t:'line',c:1,r:2,label:'制作'},
-    {t:'tasks',c:1,r:3,w:2,h:2,label:'LUNA 正式版'},{t:'profile',c:3,r:3},{t:'room',c:3,r:4,label:'音の部屋',last:'佐久間：金属音を3層に',n:2,unread:3},{t:'room',c:4,r:4,label:'絵の部屋',last:'Mizuki：ラフできた',n:2},
+    {t:'tasks',c:1,r:3,w:2,h:2,label:'LUNA 正式版'},{t:'me',c:3,r:3,w:2,h:1},{t:'room',c:3,r:4,label:'音の部屋',last:'佐久間：金属音を3層に',n:2,unread:3},{t:'room',c:4,r:4,label:'絵の部屋',last:'Mizuki：ラフできた',n:2},
     {t:'line',c:1,r:5,label:'仲間と外'},
     {t:'clip',c:1,r:6},{t:'offer',c:2,r:6},{t:'members',c:3,r:6},{t:'room',c:4,r:6,label:'ロビー',last:'田中：小林さん、ようこそ',n:4,unread:1},
     // 右の続き
     {t:'cliplist',c:5,r:1,w:2,h:2},{t:'capital',c:5,r:3,w:2,h:1},
     // 下の続き
     {t:'doc',c:5,r:4,w:2,h:2,label:'シナリオ下書き',body:['1章のあらすじ','主人公は夜にしか動けない。','昼の間に村を守る仲間を集める。','2章では、仲間の1人が裏切る。'],who:'山本 ・ 昨日'},{t:'sheet',c:7,r:4,w:2,h:2,label:'敵のパラメータ'},
-    {t:'welcome',c:1,r:7},{t:'done',c:3,r:7,w:2,h:1},{t:'memo',c:1,r:8,w:4,h:1,label:'年内に正式版の日付を決める'},{t:'cal',c:5,r:6,w:2,h:2}
-  ].map(p=>Object.assign({id:++uid},p,p.w?{}:(()=>{const def={notice:[2,1],duty:[2,1],tasks:[2,2],road:[2,1]}[p.t]||firstSize(p.t);return {w:def[0],h:def[1]};})()));
+    {t:'welcome',c:1,r:7},{t:'done',c:3,r:7,w:2,h:1},{t:'memo',c:1,r:8,w:4,h:1,label:'年内に正式版の日付を決める'},{t:'kai',c:1,r:9,w:2,h:2},{t:'cal',c:5,r:6,w:2,h:2}
+  ].map(p=>Object.assign({id:++uid},p,p.w?{}:(()=>{const def={tasks:[2,2],line:[4,1]}[p.t]||firstSize(p.t);return {w:def[0],h:def[1]};})()));
 
   // ===== 描画 =====
   function render(){
@@ -503,7 +650,20 @@
     });
     $('#gridBg').innerHTML='<i></i>'.repeat(COLS*ROWS);
   }
-  function openPiece(p){const T=TYPES[p.t];if(p.t==='line'||p.t==='vline')return;if(p.t==='profile'){openProfile();return;}if(p.t==='tasks'){openBoard(p);return;}toast((p.label||T.name)+' を全画面で開く（モックでは省略）');}
+  function openPiece(p){const T=TYPES[p.t];if(p.t==='line'||p.t==='vline'||p.t==='memo'){inlineEdit(p);return;}if(p.t==='me'){openMe();return;}if(p.t==='kai'){openKai();return;}if(p.t==='tasks'){openBoard(p);return;}toast((p.label||T.name)+' を全画面で開く（モックでは省略）');}
+
+  // ===== メモと区切り線：編集できる人は、押すとその場で文字だけ書き換えられる（2026-11-15 Tatsuya） =====
+  // （モックでは、見ている人＝佐久間は編集できる前提）
+  function inlineEdit(p){
+    const el=document.querySelector('#board [data-id="'+p.id+'"]');if(!el)return;
+    const tx=el.querySelector(p.t==='memo'?'.ntx':p.t==='line'?'.ln':'.vl span');if(!tx)return;
+    tx.contentEditable='true';tx.focus();
+    const r=document.createRange();r.selectNodeContents(tx);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);
+    const done=()=>{tx.contentEditable='false';p.label=tx.textContent.trim()||(p.t==='memo'?'ここに書けます':'区切り');render();};
+    tx.onblur=done;
+    // 区切り線は1行なのでEnterで確定。メモは改行できる
+    tx.onkeydown=e=>{if(e.key==='Enter'&&p.t!=='memo'){e.preventDefault();tx.blur();}if(e.key==='Escape')tx.blur();};
+  }
 
   // ===== やることボードを開いた画面 =====
   function openBoard(p){
@@ -523,6 +683,27 @@
   }
   const PC={'佐久間':'#6b5a3e','田中':'#8b3a3a','Mizuki':'#4a6741','山本':'#3d4f6a','Aya':'#3d3530'};
 
+  // ===== あなた（個人用のダッシュボード。パーツ「あなた」と、それを開いた画面） =====
+  // この組織の全部のやることボードから、自分の担当（完了以外）を集める。今日の予定は自分が参加するものだけ
+  // 盤面はメンバー全員が同じ並びを見るが、このパーツの中身は見ている人ごとに変わる
+  function myTasks(){const mine=[];Object.entries(BOARDS).forEach(([b,B])=>B.tasks.forEach(t=>{if(t.who===ME&&t.st!=='done')mine.push(Object.assign({b},t));}));
+    return mine.sort((a,b)=>(a.st==='doing'?0:1)-(b.st==='doing'?0:1));}
+  // 見出しは本人のアイコン（個人は丸）＋「あなたのダッシュボード」
+  function meHead(){return '<div class="pt"><i class="av" style="background:'+(PC[ME]||'#3d3530')+'">'+ME[0]+'</i><span class="ptt">あなたのダッシュボード</span></div>';}
+  function myEvents(){return EV.filter(e=>e.d===TODAY&&e.who.includes(ME));}
+  function meHtml(){
+    const mine=myTasks(), evs=myEvents();
+    return '<div class="day">11月15日（日）</div>'
+      +'<div class="sec">'+ico('board')+'担当タスク<b>'+mine.length+'</b></div>'
+      +(mine.map(t=>'<div class="row task" onclick="openBoardByName(\''+t.b+'\')"><div class="rt"><div class="rn">'+t.t+'</div><div class="rs2">'+t.b+(t.from&&t.st==='open'?' ・ <span class="tf">'+t.from+'さんから依頼</span>':'')+'</div></div>'
+        +'<span class="st'+(t.st==='doing'?' doing':'')+'">'+(t.st==='doing'?'着手中':'未着手')+'</span></div>').join('')||'<div class="none">いまはありません</div>')
+      +'<div class="sec">'+ico('cal')+'今日の予定<b>'+evs.length+'</b></div>'
+      +(evs.map(e=>'<div class="row" onclick="toast(\'予定を開く（モックでは省略）\')"><span class="tm">'+(e.t||'終日')+'</span><div class="rt"><div class="rn">'+e.n+'</div><div class="rs2">'+e.who.join('・')+'</div></div>'
+        +'<span class="ppl">'+e.who.map(w=>'<i style="background:'+(PC[w]||'#3d3530')+'"></i>').join('')+'</span></div>').join('')||'<div class="none">今日の予定はありません</div>');
+  }
+  function openBoardByName(b){const p=pieces.find(q=>q.t==='tasks'&&q.label===b)||{label:b};openBoard(p);}
+  function openMe(){$('#bdTitle').textContent='あなたのダッシュボード';$('#bdBody').innerHTML='<div class="me">'+meHtml()+'</div>';$('#bd').classList.add('show');}
+
   // ===== 置ける場所の判定（盤面の外に出ない・重ならない） =====
   function fits(c,r,w,h,skip){
     if(c<1||r<1||c+w-1>COLS||r+h-1>ROWS)return false;
@@ -540,12 +721,31 @@
       ['帯の画像','<span class="pfimg"></span>'],['メンバーの一言','田中 健「音が好きな人、一緒に作りませんか」'],
       ['募集中','サウンド ・ シナリオ'],['参加のしかた','すぐ参加できる']];
     $('#bdTitle').textContent='組織のプロフィール';
-    $('#bdBody').innerHTML='<div class="pfpub" onclick="toast(\'外向けのページへ\')">外向けのページを見る ›</div>'
-      +rows.map(r=>'<div class="pfrow" onclick="toast(\''+r[0]+'を編集（モックでは省略）\')"><span class="pfk">'+r[0]+'</span><span class="pfv">'+r[1]+'</span><span class="pfa">›</span></div>').join('');
+    $('#bdBody').innerHTML=rows.map(r=>'<div class="pfrow" onclick="toast(\''+r[0]+'を編集（モックでは省略）\')"><span class="pfk">'+r[0]+'</span><span class="pfv">'+r[1]+'</span><span class="pfa">›</span></div>').join('');
     $('#bd').classList.add('show');
   }
-  function toggleEdit(){editing=!editing;$('#phone').classList.toggle('editing',editing);$('#editBtn').textContent=editing?'完了':'編集';
-    if(!editing)toast('並びを保存しました。メンバー全員の画面がこの並びになります');}
+  // この組織でのあなたの設定（通知・抜ける など）
+  function openMySet(){
+    $('#bdTitle').textContent='この組織でのあなたの設定';
+    $('#bdBody').innerHTML='<div class="myset">'
+      +[['通知','すべて']].map(r=>'<div class="pfrow" onclick="toast(\''+r[0]+'を変える（モックでは省略）\')"><span class="pfk">'+r[0]+'</span><span class="pfv">'+r[1]+'</span><span class="pfa">›</span></div>').join('')
+      +'<div class="pfrow" onclick="toast(\'この組織を抜ける（確認を出す。モックでは省略）\')"><span class="pfv danger">この組織を抜ける</span></div></div>';
+    $('#bd').classList.add('show');
+  }
+  // ===== レイアウト編集：始めるときに今の並びを控えておき、完了のときに「保存する／元に戻す」を選ぶ（2026-11-15） =====
+  let snap=null;
+  const sig=a=>JSON.stringify(a.map(p=>[p.id,p.t,p.c,p.r,p.w,p.h,p.label||'']));
+  function setEditing(v){editing=v;$('#phone').classList.toggle('editing',v);}
+  function startEdit(){snap=JSON.parse(JSON.stringify(pieces));setEditing(true);}
+  function finishEdit(){
+    // 何も変わっていなければ、そのまま閉じる
+    if(sig(pieces)===sig(snap)){setEditing(false);snap=null;return;}
+    $('#dlg').classList.add('show');
+  }
+  function saveEdit(){$('#dlg').classList.remove('show');setEditing(false);snap=null;toast('並びを保存しました');}
+  function revertEdit(){$('#dlg').classList.remove('show');pieces=snap;snap=null;setEditing(false);render();toast('元の並びに戻しました');}
+  function keepEdit(){$('#dlg').classList.remove('show');}
+  function toggleEdit(){editing?finishEdit():startEdit();}
   function cellAt(x,y){const r=$('#board').getBoundingClientRect();
     return {c:Math.floor((x-r.left)/(CW+GAP))+1,r:Math.floor((y-r.top)/(CH+GAP))+1};}
   function startDrag(e,p,el){
@@ -568,19 +768,34 @@
   function removePiece(e,id){e.stopPropagation();const p=pieces.find(q=>q.id===id);if(TYPES[p.t].kind==='req'&&pieces.filter(q=>q.t===p.t).length===1){toast(TYPES[p.t].name+' は必須です。盤面に1つは置いておきます');return;}pieces=pieces.filter(q=>q.id!==id);render();toast((p.label||TYPES[p.t].name)+' を外しました');}
 
   // ===== ビュッフェ：パーツを選んで置く =====
-  function openPalette(){
-    // カテゴリごとに、パーツ×大きさ違いを横に並べる（実際の見た目のプレビュー）
-    // 品書きの分け方は、会社の部署のような分け方（2026-11-15 Tatsuya）。ユーティリティが一番上
+  // パーツを置く（品書き）。同じパーツの大きさ違いは入れ子：まずパーツを1つずつ並べ、押すとその下に大きさ違いが開く（2026-11-15 Tatsuya）
+  let palOpen=null;
+  function pvLabel(k){return k==='tasks'?'LUNA 正式版':k==='memo'?'ここに書けます':k==='doc'?'新しいドキュメント':k==='sheet'?'新しい表':k==='room'?'新しい部屋':(k==='line'||k==='vline')?'区切り':'';}
+  // プレビュー1つ（実物と同じ比率で縮小）
+  function pvBox(k,T,w,h,maxW,maxH){const cell=cellSize();const pv={t:k,w,h,label:pvLabel(k),n:k==='room'?2:0};
+    // 大きさの違いが分かるように、どのパーツも同じ縮尺で描く（2マス分が約150pxになる縮尺）。区切り線だけは長い辺が収まるように縮める（横は幅200px・縦は高さ150pxまで）（2026-11-15 Tatsuya）
+    const line=(k==='line'||k==='vline');
+    const sc=line?Math.min(1,200/(w*cell.w),150/(h*cell.h)):Math.min(1,150/(2*cell.w),150/(2*cell.h));
+    return '<div class="pv-box" style="width:'+(w*cell.w*sc)+'px;height:'+(h*cell.h*sc)+'px"><div class="pv-in" style="width:'+(w*cell.w-7)+'px;height:'+(h*cell.h-7)+'px;transform:scale('+sc+')">'+T.draw(pv)+'</div></div>';}
+  function renderPalette(){
+    // カテゴリの分け方は会社の部署のような分け方（2026-11-15 Tatsuya）。ユーティリティが一番上
     const cats=['ユーティリティ','業務','人事','経理','広報','総務'];
-    const cell=cellSize();
-    $('#palette').innerHTML=cats.filter(c=>Object.values(TYPES).some(T=>T.cat===c)).map(c=>'<div class="cat">'+c+(Object.values(TYPES).some(T=>T.cat===c&&T.kind==='req')?'<span class="mustnote">必須は盤面に1つ置いておく</span>':'')+'</div><div class="pal">'+Object.entries(TYPES).filter(([,T])=>T.cat===c).flatMap(([k,T])=>T.sizes.map(([w,h])=>{
-        const pv={t:k,w,h,label:k==='tasks'?'LUNA 正式版':k==='memo'?'ここに書けます':k==='doc'?'新しいドキュメント':k==='sheet'?'新しい表':k==='room'?'新しい部屋':(k==='line'||k==='vline')?'区切り':k==='text'?'ここに文字を書けます':'',n:k==='room'?2:0};
-        const sc=Math.min(1,150/(w*cell.w),118/(h*cell.h));
-        return '<div class="pv'+(T.kind==='req'?' must':'')+'" onclick="addPiece(\''+k+'\','+w+','+h+')"><div class="pv-box" style="width:'+(w*cell.w*sc)+'px;height:'+(h*cell.h*sc)+'px">'
-          +'<div class="pv-in" style="width:'+(w*cell.w-7)+'px;height:'+(h*cell.h-7)+'px;transform:scale('+sc+')">'+T.draw(pv)+'</div></div>'
-          +'<div class="pv-n">'+T.name+'</div><div class="pv-s">'+w+'×'+h+'マス</div></div>';})).join('')+'</div>').join('');
-    $('#phone').classList.add('open-sheet');$('#sheet').classList.add('show');
+    const keep={};document.querySelectorAll('#palette .pal[data-c]').forEach(e=>keep[e.dataset.c]=e.scrollLeft);
+    $('#palette').innerHTML=cats.filter(c=>Object.values(TYPES).some(T=>T.cat===c)).map(c=>{
+      const items=Object.entries(TYPES).filter(([,T])=>T.cat===c);
+      const row='<div class="pal" data-c="'+c+'">'+items.map(([k,T])=>{
+        // 代表の見た目は、そのパーツの基本の大きさ（def。なければ一番小さい大きさ）。大きさ違いがあるものは、カードが重なった形で「中にまだある」と分かるように
+        const [w,h]=T.def||T.sizes[0], multi=T.sizes.length>1;
+        return '<div class="pv'+(T.kind==='req'?' must':'')+(multi?' multi':'')+(palOpen===k?' on':'')+'" onclick="'+(multi?'togglePal(\''+k+'\')':'addPiece(\''+k+'\','+w+','+h+')')+'">'
+          +pvBox(k,T,w,h,150,96)+'<div class="pv-n">'+T.name+'</div></div>';}).join('')+'</div>';
+      // 開いているパーツが、このカテゴリにあれば、その下に大きさ違いを並べる
+      const op=items.find(([k])=>k===palOpen);
+      const sub=op?'<div class="pal sub">'+op[1].sizes.map(([w,h])=>'<div class="pv'+(op[1].kind==='req'?' must':'')+'" onclick="addPiece(\''+op[0]+'\','+w+','+h+')">'+pvBox(op[0],op[1],w,h,150,118)+'<div class="pv-s">'+w+'×'+h+'</div></div>').join('')+'</div>':'';
+      return '<div class="cat">'+c+(items.some(([,T])=>T.kind==='req')?'<span class="mustnote">必須は盤面に1つ置いておく</span>':'')+'</div>'+row+sub;}).join('');
+    document.querySelectorAll('#palette .pal[data-c]').forEach(e=>{if(keep[e.dataset.c])e.scrollLeft=keep[e.dataset.c];});
   }
+  function togglePal(k){palOpen=palOpen===k?null:k;renderPalette();}
+  function openPalette(){palOpen=null;renderPalette();$('#phone').classList.add('open-sheet');$('#sheet').classList.add('show');}
   // 盤面の1マスの大きさ（プレビューを実物と同じ比率で描くため）
   function cellSize(){return {w:CW+GAP,h:CH+GAP};}
   function closePalette(){$('#phone').classList.remove('open-sheet');$('#sheet').classList.remove('show');}
