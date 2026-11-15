@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wiclass プロトタイプ — 組織の中：トークルーム（パーツを開いた画面）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    /* DESIGN.md のトークン */
+    --bg-deep:#1a1a17;--bg-surface:#22211d;--bg-card:#2a2924;--bg-hover:#33322c;
+    --text-primary:#e8e4d9;--text-secondary:#a09a8a;--text-muted:#6b6659;
+    --accent-gold:#c4a35a;--accent-wine:#8b3a3a;--accent-forest:#4a6741;--accent-navy:#3d4f6a;
+    --border:#3a3833;--border-light:#4a4840;--member:#8fa886;
+  }
+  body{font-family:'IBM Plex Sans','Noto Serif JP',sans-serif;background:#111;color:var(--text-primary);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 12px;line-height:1.6;
+    word-break:auto-phrase;line-break:strict;overflow-wrap:anywhere;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);text-align:center;max-width:460px;}
+  .caption b{color:var(--text-secondary);font-weight:500;}
+  .phone{width:100%;max-width:430px;height:820px;background:var(--bg-deep);border:2px solid var(--border-light);
+    border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6);}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--bg-deep);border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;z-index:60;}
+  svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* 画面（部屋・スレッド・やること）。スレッドとやることは右から重なって出る */
+  .scr{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg-deep);}
+  .scr.over{transform:translateX(100%);transition:transform .28s ease-out;z-index:20;}
+  .scr.over.show{transform:none;}
+  #task{z-index:25;}
+
+  /* ヘッダー */
+  .top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:38px 14px 10px;background:var(--bg-surface);border-bottom:1px solid var(--border);}
+  .top .back{font-size:20px;color:var(--text-secondary);cursor:pointer;}
+  .top .ttl{display:flex;align-items:center;gap:6px;font-family:'Noto Serif JP';font-size:16px;font-weight:600;min-width:0;}
+  .top .ttl svg{width:15px;height:15px;color:var(--text-secondary);flex:0 0 15px;}
+  .top .sub{font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);font-weight:400;}
+  .top .ppl{margin-left:auto;display:flex;cursor:pointer;}
+  .top .ppl i{width:24px;height:24px;border-radius:50%;border:2px solid var(--bg-surface);margin-left:-7px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;}
+  .top .more{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;}
+  .top .more svg{width:18px;height:18px;}
+
+  /* 会話（Slackのように左寄せの一列） */
+  .log{flex:1;min-height:0;overflow-y:auto;padding:6px 0 10px;scrollbar-width:none;}
+  .log::-webkit-scrollbar{display:none;}
+  .day{display:flex;align-items:center;gap:10px;margin:14px 16px 6px;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);}
+  .day::before,.day::after{content:'';flex:1;height:1px;background:var(--border);}
+  .unread{display:flex;align-items:center;gap:10px;margin:10px 16px 4px;font-family:'Noto Serif JP';font-size:11px;color:#c46a6a;}
+  .unread::after{content:'';flex:1;height:1px;background:#8b3a3a99;}
+  .msg{display:flex;gap:10px;padding:6px 16px;cursor:pointer;position:relative;}
+  .msg.sel{background:var(--bg-surface);}
+  .msg .av{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:13px;}
+  .msg.cont{padding-top:1px;}
+  .msg.cont .av{visibility:hidden;height:0;}
+  .msg .bd{flex:1;min-width:0;}
+  .msg .nm{display:flex;align-items:baseline;gap:8px;font-family:'Noto Serif JP';font-size:13px;font-weight:600;}
+  .msg .nm em{font-style:normal;font-family:'IBM Plex Mono';font-size:10.5px;font-weight:400;color:var(--text-muted);}
+  .msg .tx{font-family:'Noto Serif JP';font-size:14px;line-height:1.65;margin-top:1px;}
+  /* 添付：音 */
+  .snd{display:flex;align-items:center;gap:10px;margin-top:6px;padding:9px 12px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);max-width:290px;}
+  .snd .pl{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--text-primary);color:var(--bg-deep);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .snd .pl svg{width:12px;height:12px;fill:currentColor;stroke:none;}
+  .snd .wv{display:flex;align-items:center;gap:2px;height:26px;}
+  .snd .wv i{flex:1;background:var(--text-secondary);border-radius:1px;opacity:.7;}
+  .snd .meta{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-muted);white-space:nowrap;}
+  .snd .fn{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--text-secondary);margin-top:2px;}
+  .img{margin-top:6px;width:220px;height:140px;border-radius:8px;border:1px solid var(--border);}
+  /* スタンプ */
+  .stp{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .stp span{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:11px;background:var(--bg-surface);border:1px solid var(--border);font-size:12px;cursor:pointer;}
+  .stp span b{font-family:'IBM Plex Mono';font-weight:400;font-size:10.5px;color:var(--text-secondary);}
+  .stp span.mine{border-color:#6a8a61;background:#4a674122;}
+  /* 紐づいたやること（送るときに選ぶ） */
+  .tag{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:2px 9px;border-radius:4px;border:1px solid #6a8a6188;background:#4a674118;font-family:'Noto Serif JP';font-size:11px;color:var(--member);cursor:pointer;}
+  .tag svg{width:12px;height:12px;}
+  /* スレッドの入口（返信の数・返した人・最後の時刻） */
+  .th{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:4px;margin-left:-4px;padding:3px 8px 3px 4px;border-radius:5px;cursor:pointer;}
+  .th:hover{background:var(--bg-surface);}
+  .th .fa{display:flex;}
+  .th .fa i{width:18px;height:18px;border-radius:4px;margin-right:2px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:8.5px;}
+  .th b{font-family:'Noto Serif JP';font-size:12px;font-weight:600;color:#9db7d6;}
+  .th em{font-style:normal;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);}
+
+  /* スレッドの画面 */
+  .parent{border-bottom:1px solid var(--border);padding-bottom:8px;}
+  .rcount{display:flex;align-items:center;gap:10px;margin:8px 16px 4px;font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-muted);}
+  .rcount::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* やることの画面（やることボードから開いたときと同じ） */
+  .tk-head{padding:16px 16px 12px;border-bottom:1px solid var(--border);}
+  .tk-head .tt{font-family:'Noto Serif JP';font-size:18px;font-weight:600;line-height:1.5;}
+  .tk-head .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:11px;border:1px solid var(--border-light);font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);}
+  .chip.doing{border-color:#6a8a61;color:var(--member);}
+  .chip i{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:8px;color:var(--text-primary);}
+  .tsec{display:flex;align-items:center;gap:8px;padding:14px 16px 4px;font-family:'Noto Serif JP';font-size:12.5px;color:var(--text-secondary);}
+  .tsec b{font-family:'IBM Plex Mono';font-weight:400;color:var(--text-muted);}
+  .tsec::after{content:'';flex:1;height:1px;background:var(--border);}
+  .rin{margin:10px 16px 0;font-family:'Noto Serif JP';font-size:11px;color:var(--text-muted);cursor:pointer;}
+  .from{font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-muted);margin-left:auto;}
+
+  /* 入力 */
+  .inpw{flex:0 0 auto;background:var(--bg-surface);border-top:1px solid var(--border);padding:8px 12px 14px;}
+  .chips{display:flex;gap:6px;margin-bottom:8px;min-height:0;}
+  .pick{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;border:1px dashed var(--border-light);font-family:'Noto Serif JP';font-size:11.5px;color:var(--text-secondary);cursor:pointer;}
+  .pick svg{width:12px;height:12px;}
+  .pick.on{border-style:solid;border-color:#6a8a61;color:var(--member);background:#4a674118;}
+  .pick .x{margin-left:3px;color:var(--text-muted);}
+  .inp{display:flex;align-items:flex-end;gap:8px;}
+  .inp .add{flex:0 0 36px;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;}
+  .inp .add svg{width:18px;height:18px;}
+  .inp textarea{flex:1;resize:none;height:38px;max-height:110px;padding:8px 12px;border-radius:19px;border:1px solid var(--border-light);background:var(--bg-deep);color:var(--text-primary);font-family:'Noto Serif JP';font-size:14px;line-height:1.5;outline:none;}
+  .inp .send{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:var(--text-primary);color:var(--bg-deep);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.35;}
+  .inp .send.on{opacity:1;}
+  .inp .send svg{width:16px;height:16px;}
+
+  /* 下から出るシート（メッセージを押したとき／やることを選ぶとき） */
+  .scrim{position:absolute;inset:0;background:#0009;opacity:0;pointer-events:none;transition:opacity .25s;z-index:40;}
+  .scrim.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;max-height:75%;overflow-y:auto;background:var(--bg-surface);border-top:1px solid var(--border-light);border-radius:14px 14px 0 0;
+    transform:translateY(100%);transition:transform .3s ease-out;z-index:41;padding:12px 14px 22px;}
+  .sheet.show{transform:none;}
+  .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border-light);margin:0 auto 12px;}
+  .sheet .emo{display:flex;justify-content:space-between;padding:4px 4px 14px;border-bottom:1px solid var(--border);}
+  .sheet .emo span{width:44px;height:44px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:21px;cursor:pointer;}
+  .sheet .emo span.more{font-size:18px;color:var(--text-secondary);}
+  .sheet .act{display:flex;align-items:center;gap:12px;padding:13px 6px;font-family:'Noto Serif JP';font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);}
+  .sheet .act:last-child{border-bottom:none;}
+  .sheet .act svg{width:18px;height:18px;color:var(--text-secondary);}
+  .sheet .act small{margin-left:auto;font-size:11px;color:var(--text-muted);}
+  .sheet .sh{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);padding:10px 4px 6px;}
+  .sheet .opt{display:flex;align-items:center;gap:10px;padding:11px 8px;border-radius:6px;cursor:pointer;font-family:'Noto Serif JP';font-size:14px;}
+  .sheet .opt:hover{background:var(--bg-card);}
+  .sheet .opt small{margin-left:auto;font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .sheet .opt .bn{display:block;font-size:10.5px;color:var(--text-muted);}
+
+  .toast{position:absolute;bottom:110px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg-card);border:1px solid var(--border-light);
+    padding:10px 18px;border-radius:4px;font-size:12px;font-family:'Noto Serif JP';z-index:70;width:300px;text-align:center;opacity:0;transition:all .4s;pointer-events:none;line-height:1.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    body{padding:0;gap:0;background:var(--bg-deep);}
+    .caption{display:none;}
+    .phone{max-width:none;height:100dvh;border:none;border-radius:0;box-shadow:none;}
+    .notch{display:none;}
+    .top{padding-top:calc(12px + env(safe-area-inset-top));}
+    .toast{width:auto;max-width:calc(100% - 40px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="caption">Wiclass プロトタイプ — <b>組織の中：トークルーム</b>（盤面のトークルームのパーツを押すと開く）。Slackのように、返信は<b>スレッド</b>（「返信 3件」を押すと開く）。送るときに<b>自分のやることを選んで紐づけられる</b>。紐づいたやることを押すと<b>やることの画面</b>（やることボードから開いたときと同じ）が開き、そのやることについての話とスレッドが見える。</div>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+
+  <!-- 部屋 -->
+  <div class="scr" id="room">
+    <div class="top">
+      <span class="back" onclick="toast('盤面へ戻る')">←</span>
+      <div class="ttl"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>音の部屋</span></div>
+      <div class="ppl" onclick="toast('この部屋にいる人：田中 健・佐久間（あなた）')"><i style="background:#8b3a3a">田</i><i style="background:#6b5a3e">佐</i></div>
+      <span class="more" onclick="toast('部屋の設定：名前を変える・この部屋にいる人・通知（モックでは省略）')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></span>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="inpw" id="inpRoom"></div>
+  </div>
+
+  <!-- スレッド -->
+  <div class="scr over" id="thread">
+    <div class="top">
+      <span class="back" onclick="closeThread()">←</span>
+      <div class="ttl"><span>スレッド</span><span class="sub">音の部屋</span></div>
+    </div>
+    <div class="log" id="tlog"></div>
+    <div class="inpw" id="inpThread"></div>
+  </div>
+
+  <!-- やること（やることボードから開いたときと同じ画面） -->
+  <div class="scr over" id="task">
+    <div class="top">
+      <span class="back" onclick="closeTask()">←</span>
+      <div class="ttl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span>LUNA 正式版</span></div>
+    </div>
+    <div class="log" id="tklog"></div>
+  </div>
+
+  <div class="scrim" id="scrim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet"></div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+  const ME='佐久間';
+  const PC={'田中':'#8b3a3a','佐久間':'#6b5a3e','Mizuki':'#4a6741','山本':'#3d4f6a','Aya':'#3d3530'};
+  const QUICK=['👍','🎉','🔥','🙏','👀'];
+  const BOARD='LUNA 正式版';
+  // やること（モック用。やることボードと同じデータ）
+  const TASKS=[
+    {id:'t1',t:'ボス戦の効果音',st:'doing',who:'佐久間',board:BOARD},
+    {id:'t2',t:'タイトル画面のジングル',st:'open',who:'佐久間',from:'田中',board:BOARD},
+    {id:'t3',t:'更新のお知らせ文',st:'open',who:'佐久間',board:'体験版の更新'},
+    {id:'t4',t:'3面のボスのドット絵',st:'doing',who:'Mizuki',board:BOARD},
+    {id:'t5',t:'2章のシナリオ',st:'open',who:null,board:BOARD}];
+  const T=id=>TASKS.find(x=>x.id===id);
+  const STN={doing:'着手中',open:'未着手',done:'完了'};
+
+  // 会話（モック用）。task＝紐づいたやること。re＝スレッドの返信
+  let M=[
+    {day:'昨日'},
+    {id:1,who:'田中',t:'21:40',tx:'ボス戦、もう少し重たい音にしたい。今のは軽く聞こえる',task:'t1',re:[
+      {who:'佐久間',t:'22:05',tx:'了解。金属音を足してみます'},
+      {who:'佐久間',t:'23:12',snd:{fn:'boss_metal_v2.wav',len:'0:12'}},
+      {who:'田中',t:'23:30',tx:'方向はこれ。もう一段重く',st:{'👍':['佐久間']}}]},
+    {day:'今日'},
+    {id:2,who:'佐久間',t:'10:18',tx:'金属音を3層にしてみた。低い方を少し強めに',snd:{fn:'boss_metal_v3.wav',len:'0:14'},task:'t1',re:[
+      {who:'田中',t:'12:31',tx:'聞いた！ 3層いい。一気に重たくなった'},
+      {who:'田中',t:'12:32',tx:'2層目だけ少し下げたい。剣の音とぶつかってる気がする'},
+      {who:'田中',t:'12:35',img:'linear-gradient(150deg,#3d4f6a,#141820)',tx:'ボス戦の画面。ここで鳴る'}],unreadRe:3},
+    {unread:true},
+    {id:3,who:'田中',t:'13:02',tx:'タイトル画面のジングル、来週でいいので一度ラフを聞かせてください',task:'t2'},
+    {id:4,who:'田中',t:'13:05',tx:'金曜の定例、音の確認から始めます',st:{'🙏':['田中']}}
+  ];
+  let sel=null, openTh=null, pick={room:null,thread:null};
+
+  // ===== 描画 =====
+  function wave(seed){let h='',x=seed.length*7;for(let i=0;i<34;i++){x=(x*37+11)%97;h+='<i style="height:'+(25+x%70)+'%"></i>';}return h;}
+  function body(m,ctx){
+    const st=m.st?'<div class="stp">'+Object.entries(m.st).map(([e,ws])=>'<span class="'+(ws.includes(ME)?'mine':'')+'">'+e+'<b>'+ws.length+'</b></span>').join('')+'</div>':'';
+    const snd=m.snd?'<div class="snd"><span class="pl" onclick="event.stopPropagation();toast(\'再生（モックでは省略）\')"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><div style="flex:1;min-width:0"><div class="wv">'+wave(m.snd.fn)+'</div><div class="fn">'+m.snd.fn+'</div></div><span class="meta">'+m.snd.len+'</span></div>':'';
+    // やることの画面の中では、どれも同じやることなので札は出さない
+    const tag=(m.task&&ctx!=='task'&&ctx!=='thread-view')?'<div class="tag" onclick="event.stopPropagation();openTask(\''+m.task+'\')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>'+T(m.task).t+'</div>':'';
+    // スレッドの入口（部屋の一覧とやることの画面で出す。スレッドの中では出さない）
+    const th=(ctx!=='thread'&&ctx!=='parent'&&ctx!=='thread-view'&&m.re&&m.re.length)?'<div class="th" onclick="event.stopPropagation();openThread('+m.id+')"><span class="fa">'+[...new Set(m.re.map(r=>r.who))].map(w=>'<i style="background:'+PC[w]+'">'+w[0]+'</i>').join('')+'</span><b>返信 '+m.re.length+'件</b><em>'+(m.unreadRe?'未読 '+m.unreadRe+' ・ ':'')+'最後 '+m.re[m.re.length-1].t+'</em></div>':'';
+    return (m.tx?'<div class="tx">'+m.tx+'</div>':'')+snd+(m.img?'<div class="img" style="background:'+m.img+'"></div>':'')+tag+st+th;
+  }
+  function row(m,cont,ctx,i){
+    return '<div class="msg'+(cont?' cont':'')+(sel&&sel.m===m?' sel':'')+'" onclick="openSheet(\''+ctx+'\','+i+')"><span class="av" style="background:'+(PC[m.who]||'#3d3530')+'">'+m.who[0]+'</span><div class="bd">'
+      +(cont?'':'<div class="nm">'+(m.who===ME?m.who+'（あなた）':m.who)+'<em>'+m.t+'</em></div>')+body(m,ctx)+'</div></div>';
+  }
+  function render(){
+    let prev=null;
+    $('#log').innerHTML=M.map((m,i)=>{
+      if(m.day){prev=null;return '<div class="day">'+m.day+'</div>';}
+      if(m.unread){prev=null;return '<div class="unread">ここから未読</div>';}
+      const cont=prev===m.who&&!M[i-1].re;prev=m.who;return row(m,cont,'room',i);}).join('');
+    if(openTh)renderThread();
+    $('#inpRoom').innerHTML=composer('room');$('#inpThread').innerHTML=composer('thread');
+  }
+  // 入力欄：送る前に、紐づけるやることを選べる
+  function composer(where){
+    const p=pick[where];
+    return '<div class="chips">'+(p?'<span class="pick on" onclick="openPicker(\''+where+'\')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>'+T(p).t+'<span class="x" onclick="event.stopPropagation();pick.'+where+'=null;render()">×</span></span>'
+        :'<span class="pick" onclick="openPicker(\''+where+'\')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>やることを紐づける</span>')+'</div>'
+      +'<div class="inp"><span class="add" onclick="toast(\'画像・音・ファイルを送る（モックでは省略）\')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>'
+      +'<textarea id="ta_'+where+'" rows="1" placeholder="'+(where==='room'?'音の部屋に送る':'スレッドに返信')+'" oninput="this.nextElementSibling.classList.toggle(\'on\',this.value.trim()!==\'\')"></textarea>'
+      +'<span class="send" onclick="send(\''+where+'\')"><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-7z"/></svg></span></div>';
+  }
+
+  // ===== スレッド =====
+  function openThread(id){openTh=M.find(m=>m.id===id);openTh.unreadRe=0;renderThread();$('#thread').classList.add('show');render();}
+  function closeThread(){$('#thread').classList.remove('show');openTh=null;}
+  function renderThread(){const m=openTh;let prev=null;
+    $('#tlog').innerHTML='<div class="parent">'+row(m,false,'parent',0)+'</div><div class="rcount">返信 '+m.re.length+'件</div>'
+      +m.re.map((r,i)=>{const cont=prev===r.who;prev=r.who;return row(r,cont,'thread',i);}).join('');}
+
+  // ===== やることの画面（やることボードからも、ここが開く） =====
+  function openTask(id){const t=T(id);
+    // 部屋に送られた話と、スレッドの中の返信の両方を集める（返信は、どのスレッドの中かを添える）
+    const msgs=M.filter(m=>m.task===id);
+    const res=[];M.forEach(m=>(m.re||[]).forEach(r=>{if(r.task===id)res.push({r,p:m});}));
+    $('#tklog').innerHTML='<div class="tk-head"><div class="tt">'+t.t+'</div><div class="row"><span class="chip'+(t.st==='doing'?' doing':'')+'">'+STN[t.st]+'</span>'
+      +'<span class="chip">'+(t.who?'<i style="background:'+PC[t.who]+'">'+t.who[0]+'</i>'+(t.who===ME?'あなた':t.who):'担当なし')+'</span>'
+      +(t.from?'<span class="from">'+t.from+'さんから依頼</span>':'')+'</div></div>'
+      +'<div class="tsec">このやることの話<b>'+(msgs.length+res.length)+'</b></div>'
+      +(msgs.map(m=>row(m,false,'task',M.indexOf(m))).join('')
+        +res.map(x=>'<div class="rin" onclick="openThread('+x.p.id+')">スレッドの返信：'+(x.p.tx||'').slice(0,18)+'…</div>'+row(x.r,false,'thread-view',0)).join('')
+        ||'<div class="rcount" style="margin-top:12px">まだありません</div>');
+    $('#task').classList.add('show');}
+  function closeTask(){$('#task').classList.remove('show');}
+
+  // ===== シート =====
+  function sheet(html){$('#sheet').innerHTML='<div class="grab"></div>'+html;$('#scrim').classList.add('show');$('#sheet').classList.add('show');}
+  function closeSheet(){$('#scrim').classList.remove('show');$('#sheet').classList.remove('show');sel=null;render();}
+  // メッセージを押したとき：スタンプ／スレッドで返信／クリップにする
+  function openSheet(ctx,i){if(ctx==='thread-view')return;const m=ctx==='thread'?openTh.re[i]:ctx==='parent'?openTh:M[i];sel={m,ctx};render();
+    sheet('<div class="emo">'+QUICK.map(e=>'<span onclick="stamp(\''+e+'\')">'+e+'</span>').join('')+'<span class="more" onclick="toast(\'ほかの絵文字（使える範囲は未決）\')">＋</span></div>'
+      +(ctx==='room'||ctx==='task'?'<div class="act" onclick="replyTh()"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>スレッドで返信する</div>':'')
+      +'<div class="act" onclick="toClip()"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>クリップにする<small>外に出す</small></div>');}
+  function stamp(e){const m=sel.m;m.st=m.st||{};const ws=m.st[e]||(m.st[e]=[]);const k=ws.indexOf(ME);if(k<0)ws.push(ME);else ws.splice(k,1);if(!ws.length)delete m.st[e];closeSheet();}
+  function replyTh(){const m=sel.m;closeSheet();if(!m.re)m.re=[];if(!m.id)m.id=Date.now();openThread(m.id);setTimeout(()=>{const ta=$('#ta_thread');if(ta)ta.focus();},300);}
+  function toClip(){closeSheet();toast('クリップの下書きを作りました（中身を整えて外に出す。画面は省略）');}
+  // 紐づけるやることを選ぶ：自分の担当を上、同じボードのほかのやることを下
+  function openPicker(where){
+    const mine=TASKS.filter(t=>t.who===ME&&t.st!=='done'), rel=TASKS.filter(t=>t.who!==ME&&t.board===BOARD&&t.st!=='done');
+    const opt=t=>'<div class="opt" onclick="pick.'+where+'=\''+t.id+'\';closeSheet()"><span>'+t.t+'<span class="bn">'+t.board+'</span></span><small>'+STN[t.st]+(t.who&&t.who!==ME?' ・ '+t.who:'')+(t.who?'':' ・ 担当なし')+'</small></div>';
+    sheet('<div class="sh">あなたの担当</div>'+mine.map(opt).join('')+'<div class="sh">ほかのやること（LUNA 正式版）</div>'+rel.map(opt).join(''));}
+
+  // ===== 送る =====
+  function send(where){const ta=$('#ta_'+where);const v=ta.value.trim();if(!v)return;
+    const d=new Date(), t=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+    const m={who:ME,t,tx:v,task:pick[where]};
+    if(where==='thread'){openTh.re.push(m);}else{m.id=Date.now();M.push(m);}
+    pick[where]=null;render();
+    if(where==='thread')$('#tlog').scrollTop=1e6;else $('#log').scrollTop=1e6;
+    if(m.task)toast('やること「'+T(m.task).t+'」にも出ます');}
+
+  render();
+  setTimeout(()=>{const u=document.querySelector('#log .unread');if(u)$('#log').scrollTop=u.offsetTop-260;},50);
+</script>
+</body>
+</html>
