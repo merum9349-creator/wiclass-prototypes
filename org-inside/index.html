@@ -37,9 +37,7 @@
     background:linear-gradient(120deg,#3d4f6a,#3d4f6a99);clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%);}
   .mission .mk{flex:0 0 auto;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;color:#c8d2e2;}
   .mission .mv{font-family:'Noto Serif JP';font-size:13px;font-weight:600;line-height:1.5;padding-right:18px;}
-  .mission .me{display:none;margin-left:auto;flex:0 0 auto;font-family:'Noto Serif JP';font-size:10.5px;padding:1px 8px;border-radius:10px;border:1px solid var(--text-primary);margin-right:14px;}
-  .editing .mission{cursor:pointer;box-shadow:0 0 0 1px var(--text-secondary);}
-  .editing .mission .me{display:block;}
+
   /* ===== 盤面：横4×縦6のマス目。広さはこれ以上ふえない（スマホ1画面に収める） ===== */
   /* 盤面は画面より広い。右と下に、続きの端が少し見える（スクロールで見る） */
   .stage{flex:1;min-height:0;padding:10px;position:relative;overflow:auto;scrollbar-width:none;}
@@ -64,7 +62,7 @@
   /* 見出しの中に置く未読の数（タイトルに重ねない） */
   .pc .pt .bd.in{position:static;margin-left:auto;flex:0 0 auto;font-weight:400;}
   /* 1列幅では数字の代わりに点（タイトルを削らないため） */
-  .pc .pt .bd.in.dot{min-width:7px;width:7px;height:7px;padding:0;}
+  .pc .pt .bd.in.dot{position:absolute;top:5px;right:5px;min-width:6px;width:6px;height:6px;padding:0;}
   .pc .bd{position:absolute;top:6px;right:6px;min-width:17px;height:17px;border-radius:9px;padding:0 4px;background:var(--accent-wine);font-family:'IBM Plex Mono';font-size:9.5px;display:flex;align-items:center;justify-content:center;}
   /* 必須パーツ（クリップを出す・オファー・人の管理）：緑のふち */
   .pc.req{border-color:#6a8a61;background:#4a674114;}
@@ -72,11 +70,25 @@
   .pc.req.center{align-items:center;justify-content:center;text-align:center;gap:4px;}
   .pc.req.center svg{width:22px;height:22px;stroke:var(--member);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
   .pc.req.center .lb{font-family:'Noto Serif JP';font-size:11px;line-height:1.35;}
+  /* 必須：組織のプロフィール（紋章だけ） */
+  .pc.prof{padding:0;align-items:center;justify-content:center;gap:5px;}
+  .pc.prof .pfl{font-family:'Noto Serif JP';font-size:10.5px;color:var(--member);}
+  .pc.prof .pcrest{width:54%;aspect-ratio:1;font-size:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-weight:600;color:var(--text-primary);border:1px solid var(--border-light);}
+  .pfpub{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);padding:14px 0 8px;cursor:pointer;}
+  .pfrow{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .pfrow .pfk{flex:0 0 92px;font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);}
+  .pfrow .pfv{flex:1;min-width:0;font-family:'Noto Serif JP';font-size:13px;line-height:1.5;display:flex;align-items:center;}
+  .pfrow .pfa{color:var(--text-muted);}
+  .pfimg{display:block;width:100%;height:28px;border-radius:3px;background:linear-gradient(120deg,#3d4f6a,#1c2230);}
   /* ユーティリティ：トークルーム */
   .pc.room{background:var(--bg-surface);}
   .pc.room .rn{font-family:'Noto Serif JP';font-size:13px;font-weight:600;margin-top:2px;}
   .pc.room .last{font-family:'Noto Serif JP';font-size:10px;color:var(--text-muted);line-height:1.45;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   /* ドキュメント・表（注意：下から出るシートの .sheet と衝突するので、表は .tbl） */
+  /* メモ：枠なし。盤面の背景の上に、見出しのような大きい文字で直接出す（2026-11-15） */
+  .pc.note{background:transparent;border:1px dashed transparent;padding:4px 2px;justify-content:center;}
+  .pc.note .ntx{font-family:'Noto Serif JP';font-size:16px;font-weight:600;line-height:1.5;color:var(--text-primary);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;}
+  .editing .pc.note{box-shadow:none;border-color:var(--border-light);}
   .pc.memo .mtx{font-family:'Noto Serif JP';font-size:12.5px;line-height:1.6;color:var(--text-primary);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;overflow:hidden;}
   .pc.memo .mt{font-family:'Noto Serif JP';font-size:12.5px;font-weight:600;line-height:1.55;}
   .pc.memo .dbody{margin-top:4px;font-family:'Noto Serif JP';font-size:10.5px;color:var(--text-secondary);line-height:1.55;}
@@ -242,17 +254,16 @@
 <div class="phone" id="phone">
   <div class="notch"></div>
 
-  <!-- ヘッダー：左上に紋章と組織名、その下にミッションをずっと掲げる（2026-11-15）。編集中にミッションを押すと組織のプロフィールを編集 -->
+  <!-- ヘッダー：左上に紋章と組織名、その下にミッションをずっと掲げる（2026-11-15）。ミッションなどの編集は盤面の「組織のプロフィール」パーツから -->
   <div class="topbar">
     <div class="tb1">
       <div class="crest" style="background:#3d4f6a">夜</div>
       <div><div class="nm">夜行ゲームス</div><div class="pub" onclick="toast('外向けのページへ')">外向けのページ ›</div></div>
       <button class="edit" id="editBtn" onclick="toggleEdit()">編集</button>
     </div>
-    <div class="mission" onclick="editProfile()">
+    <div class="mission">
       <span class="mk">ミッション</span>
       <span class="mv">2Dアクション「LUNA」を完成させ、Steamで1万本売る。</span>
-      <span class="me">編集</span>
     </div>
   </div>
 
@@ -338,6 +349,9 @@
   const hd=(p,icon,full,short,extra)=>'<div class="pt">'+ico(icon)+'<span class="ptt">'+(p.w>=2||!short?full:short)+'</span>'+(extra||'')+'</div>';
   const TYPES={
     // 必須（クリップを出す・人を探す・メンバー）も部署の中に入れる。盤面に1つは置いておく（外せるのは2つ目から）
+    // 組織のプロフィール（必須）：1×1だけ。見た目は組織の紋章＋「設定」の一言。押すとミッション・紹介文など外向けのページに出るものを編集（2026-11-15）
+    profile:{kind:'req',cat:'広報',name:'組織のプロフィール',d:'ミッションや外向けのページを編集',sizes:[[1,1]],draw:p=>
+      '<div class="pc req prof"><div class="pcrest" style="background:#3d4f6a">夜</div><div class="pfl">設定</div></div>'},
     clip:{kind:'req',cat:'広報',name:'クリップを出す',d:'外へ出す',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>big(p)
       ?'<div class="pc req"><div class="pt">'+ico('pen')+'<span class="ptt">クリップを出す</span></div><div class="mini">'
         +[['Mizuki','2面の背景','昨日'],['佐久間','ボス戦の効果音（途中）','3日前'],['Aya','ジャンプの着地','5日前']]
@@ -384,15 +398,6 @@
       ?'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="mini"><div>Mizuki「2面の背景」 拍手3</div><div>山本「不具合まとめ」 拍手5</div><div>Aya「セーブ機能」 拍手2</div></div></div>'
       :wide(p)?'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="big">Mizukiが「2面の背景」</div><div class="sm">拍手 3 ・ 昨日</div></div>'
       :'<div class="pc">'+hd(p,'clap','最近できたこと','できた')+'<div class="big">Mizuki</div><div class="sm">拍手 3</div></div>'},
-    mvp:{kind:'w',cat:'人事',name:'今週のMVP',d:'組織の中だけ。上だけ見せる',sizes:[[1,1],[2,1]],draw:p=>wide(p)
-      ?'<div class="pc">'+hd(p,'star','今週のMVP','MVP')+'<div class="big">Mizuki</div><div class="sm">完了 3 ・ 拍手 11</div></div>'
-      :'<div class="pc">'+hd(p,'star','今週のMVP','MVP')+'<div class="big">Mizuki</div><div class="sm">完了 3</div></div>'},
-    wall:{kind:'w',cat:'経理',name:'出資者の壁',d:'外から出資してくれた人',sizes:[[1,1],[2,1]],draw:p=>wide(p)
-      ?'<div class="pc">'+hd(p,'wall','出資者の壁','出資者')+'<div class="sm">高橋・さとう・kenta・小川 ほか 124人</div></div>'
-      :'<div class="pc">'+hd(p,'wall','出資者の壁','出資者')+'<div class="num">128</div><div class="sm">人</div></div>'},
-    rank:{kind:'w',cat:'広報',name:'対抗戦の戦況',d:'界隈の中で何位か',sizes:[[1,1],[2,1]],draw:p=>wide(p)
-      ?'<div class="pc">'+hd(p,'flag','対抗戦の戦況','戦況')+'<div class="num">2位 <span class="sm" style="color:#a9c2a0">↑1</span></div><div class="sm">1位 ピクセル工房 まで ♥228</div></div>'
-      :'<div class="pc">'+hd(p,'flag','対抗戦の戦況','戦況')+'<div class="num">2位</div><div class="sm" style="color:#a9c2a0">↑ 1つ上がった</div></div>'},
     welcome:{kind:'w',cat:'人事',name:'ようこそ欄',d:'新しく来た人',sizes:[[1,1],[2,1]],draw:p=>wide(p)
       ?'<div class="pc">'+hd(p,'hi','ようこそ')+'<div class="big">小林 蓮</div><div class="sm">昨日 参加 ・ 作曲ができます</div></div>'
       :'<div class="pc">'+hd(p,'hi','ようこそ')+'<div class="big">小林 蓮</div><div class="sm">昨日 参加</div></div>'},
@@ -406,9 +411,15 @@
       if(p.h>=2) return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ','<span class="cnum">42</span>')+'<div class="mini">'+L.slice(0,3).map(c=>'<div>'+c.t+'</div>').join('')+'</div></div>';
       if(p.w>=2) return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ','<span class="cnum">42</span>')+'<div class="big" style="font-size:12px">'+L[0].t+'</div><div class="sm">'+L[0].who+' ・ インプ '+L[0].imp+'</div></div>';
       return '<div class="pc">'+hd(p,'pen','クリップ一覧','クリップ')+'<div class="num">42</div><div class="sm">今週 +3</div></div>';}},
-    capital:{kind:'w',cat:'経理',name:'資本の動き',d:'受け取った資本と、最近の増え方',sizes:[[1,1],[2,1]],draw:p=>wide(p)
-      ?'<div class="pc">'+hd(p,'wall','資本の動き','資本')+'<div class="num" style="color:var(--accent-gold)">♥ 312</div><div class="sm">今週 +26（通勤ラジオの小川 ほか）</div></div>'
-      :'<div class="pc">'+hd(p,'wall','資本の動き','資本')+'<div class="num" style="color:var(--accent-gold)">♥312</div><div class="sm">今週 +26</div></div>'},
+    // 資本と戦況（旧：資本の動き＋対抗戦の戦況＋出資者の壁）。界隈の順位は受け取った資本（影響力）で決まり、資本は出資者から来るので1つにまとめた（2026-11-15）
+    capital:{kind:'w',cat:'経理',name:'資本と戦況',d:'受け取った資本・出資者・界隈での順位',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
+      const h=hd(p,'wall','資本と戦況','資本'), cap='<div class="num" style="color:var(--accent-gold)">♥'+(p.w>=2?' ':'')+'312</div>';
+      const rk='<span class="sm" style="color:#a9c2a0">↑1</span>';
+      if(p.w>=2&&p.h>=2) return '<div class="pc">'+h+'<div style="display:flex;align-items:baseline;gap:12px">'+cap+'<div class="num">2位 '+rk+'</div></div><div class="sm">今週 +26 ・ 1位 ピクセル工房 まで ♥228</div>'
+        +'<div class="sm" style="margin-top:8px">出資者 128人</div><div class="mini"><div>通勤ラジオの小川 ♥8</div><div>高橋 ♥5</div><div>さとう ♥3</div></div></div>';
+      if(p.h>=2) return '<div class="pc">'+h+cap+'<div class="sm">今週 +26</div><div class="num" style="margin-top:8px">2位</div><div class="sm" style="color:#a9c2a0">↑1</div><div class="sm" style="margin-top:auto">出資者 128人</div></div>';
+      if(p.w>=2) return '<div class="pc">'+h+'<div style="display:flex;align-items:baseline;gap:12px">'+cap+'<div class="num">2位 '+rk+'</div></div><div class="sm">出資者 128人 ・ 今週 +26</div></div>';
+      return '<div class="pc">'+h+cap+'<div class="sm">界隈 2位</div></div>';}},
     // ユーティリティ（どこにでも置ける）
     room:{kind:'u',cat:'ユーティリティ',name:'トークルーム',d:'話す部屋。いくつでも',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
       // 大きいほど、最近の話を多く見せる（1×1・2×1＝最後のひとこと／1×2＝3件／2×2＝4件）
@@ -424,7 +435,7 @@
         +(r?'<table class="tb">'+rows.slice(0,r).map((x,i)=>'<tr>'+x.slice(0,c).map(v=>i?'<td>'+v+'</td>':'<th>'+v+'</th>').join('')+'</tr>').join('')+'</table>':'<div class="sm">5行 × 3列</div>')+'</div>';}},
     // メモ（タイトルなし）とドキュメント（タイトルあり）の2種類（2026-11-15）
     memo:{kind:'u',cat:'ユーティリティ',name:'メモ',d:'タイトルなしの短い文',sizes:[[1,1],[2,1],[4,1],[1,2],[2,2]],draw:p=>
-      '<div class="pc memo"><div class="mtx">'+(p.label||'ここに書けます')+'</div>'+(p.who?'<div class="upd">'+p.who+'</div>':'')+'</div>'},
+      '<div class="pc note"><div class="ntx">'+(p.label||'ここに書けます')+'</div></div>'},
     doc:{kind:'u',cat:'ユーティリティ',name:'ドキュメント',d:'タイトルつきの文章',sizes:[[1,1],[2,1],[1,2],[2,2]],draw:p=>{
       // ドキュメントは画像も載せられる想定（叩き台では未実装）
       const body=p.body||[];const n=p.h>=2?(p.w>=2?5:4):(p.w>=2?1:0);
@@ -468,14 +479,14 @@
   let pieces=[
     {t:'memo',c:1,r:1,w:2,h:1,label:'金曜21時から定例。ボス戦の音を見ます'},{t:'tasks',c:3,r:1,w:2,h:1,label:'体験版の更新'},
     {t:'line',c:1,r:2,label:'制作'},
-    {t:'tasks',c:1,r:3,w:2,h:2,label:'LUNA 正式版'},{t:'room',c:3,r:4,label:'音の部屋',last:'佐久間：金属音を3層に',n:2,unread:3},{t:'room',c:4,r:4,label:'絵の部屋',last:'Mizuki：ラフできた',n:2},
+    {t:'tasks',c:1,r:3,w:2,h:2,label:'LUNA 正式版'},{t:'profile',c:3,r:3},{t:'room',c:3,r:4,label:'音の部屋',last:'佐久間：金属音を3層に',n:2,unread:3},{t:'room',c:4,r:4,label:'絵の部屋',last:'Mizuki：ラフできた',n:2},
     {t:'line',c:1,r:5,label:'仲間と外'},
     {t:'clip',c:1,r:6},{t:'offer',c:2,r:6},{t:'members',c:3,r:6},{t:'room',c:4,r:6,label:'ロビー',last:'田中：小林さん、ようこそ',n:4,unread:1},
     // 右の続き
-    {t:'cliplist',c:5,r:1,w:2,h:2},{t:'rank',c:5,r:3},{t:'mvp',c:6,r:3},{t:'wall',c:7,r:3,w:2,h:1},
+    {t:'cliplist',c:5,r:1,w:2,h:2},{t:'capital',c:5,r:3,w:2,h:1},
     // 下の続き
     {t:'doc',c:5,r:4,w:2,h:2,label:'シナリオ下書き',body:['1章のあらすじ','主人公は夜にしか動けない。','昼の間に村を守る仲間を集める。','2章では、仲間の1人が裏切る。'],who:'山本 ・ 昨日'},{t:'sheet',c:7,r:4,w:2,h:2,label:'敵のパラメータ'},
-    {t:'welcome',c:1,r:7},{t:'capital',c:2,r:7},{t:'done',c:3,r:7,w:2,h:1},{t:'memo',c:1,r:8,w:4,h:1,label:'年内に正式版の日付を決める'},{t:'cal',c:5,r:6,w:2,h:2}
+    {t:'welcome',c:1,r:7},{t:'done',c:3,r:7,w:2,h:1},{t:'memo',c:1,r:8,w:4,h:1,label:'年内に正式版の日付を決める'},{t:'cal',c:5,r:6,w:2,h:2}
   ].map(p=>Object.assign({id:++uid},p,p.w?{}:(()=>{const def={notice:[2,1],duty:[2,1],tasks:[2,2],road:[2,1]}[p.t]||firstSize(p.t);return {w:def[0],h:def[1]};})()));
 
   // ===== 描画 =====
@@ -492,7 +503,7 @@
     });
     $('#gridBg').innerHTML='<i></i>'.repeat(COLS*ROWS);
   }
-  function openPiece(p){const T=TYPES[p.t];if(p.t==='line'||p.t==='vline')return;if(p.t==='tasks'){openBoard(p);return;}toast((p.label||T.name)+' を全画面で開く（モックでは省略）');}
+  function openPiece(p){const T=TYPES[p.t];if(p.t==='line'||p.t==='vline')return;if(p.t==='profile'){openProfile();return;}if(p.t==='tasks'){openBoard(p);return;}toast((p.label||T.name)+' を全画面で開く（モックでは省略）');}
 
   // ===== やることボードを開いた画面 =====
   function openBoard(p){
@@ -522,7 +533,17 @@
   // ===== 編集：ドラッグでマス目に合わせて動かす =====
   let editing=false,drag=null,moved=false;
   // 組織のプロフィールの編集（名前・紋章・ミッション・紹介文・帯の画像）。編集中だけ開ける
-  function editProfile(){if(!editing)return;toast('組織のプロフィールを編集（名前・紋章・ミッション・紹介文・帯の画像）。モックでは省略');}
+  // 組織のプロフィール（必須パーツ）を開いた画面：ミッションや外向けのページに出るものを編集する
+  function openProfile(){
+    const rows=[['紋章','<span class="crest" style="background:#3d4f6a;width:26px;height:26px;flex:0 0 26px;font-size:13px">夜</span>'],['組織名','夜行ゲームス'],
+      ['ミッション','2Dアクション「LUNA」を完成させ、Steamで1万本売る。'],['紹介文','夜にしか動けない主人公の2Dアクションを作っている5人です。'],
+      ['帯の画像','<span class="pfimg"></span>'],['メンバーの一言','田中 健「音が好きな人、一緒に作りませんか」'],
+      ['募集中','サウンド ・ シナリオ'],['参加のしかた','すぐ参加できる']];
+    $('#bdTitle').textContent='組織のプロフィール';
+    $('#bdBody').innerHTML='<div class="pfpub" onclick="toast(\'外向けのページへ\')">外向けのページを見る ›</div>'
+      +rows.map(r=>'<div class="pfrow" onclick="toast(\''+r[0]+'を編集（モックでは省略）\')"><span class="pfk">'+r[0]+'</span><span class="pfv">'+r[1]+'</span><span class="pfa">›</span></div>').join('');
+    $('#bd').classList.add('show');
+  }
   function toggleEdit(){editing=!editing;$('#phone').classList.toggle('editing',editing);$('#editBtn').textContent=editing?'完了':'編集';
     if(!editing)toast('並びを保存しました。メンバー全員の画面がこの並びになります');}
   function cellAt(x,y){const r=$('#board').getBoundingClientRect();
