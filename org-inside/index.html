@@ -703,33 +703,37 @@
     {clip:'ボス戦の効果音、金属音を3層にした',imp:'+18',who:'通勤ラジオの小川 ほか3人',when:'今日'},
     {clip:'タイトル画面のジングル、10秒版できた',imp:'+7',who:'さとう ほか1人',when:'昨日'}
   ];
-  // この組織で自分が出したクリップ
+  // この組織で自分が出したクリップ（bgは画像・グラデの代わり）
   const MY_CLIPS_IN_ORG=[
-    {t:'ボス戦の効果音、金属音を3層にした',imp:'640',when:'3日前'},
-    {t:'タイトル画面のジングル、10秒版できた',imp:'312',when:'1週間前'},
-    {t:'足音の効果音セット、地面ごとに8種類',imp:'208',when:'2週間前'}
+    {t:'ボス戦の効果音、金属音を3層にした',imp:'640',when:'3日前',bg:'linear-gradient(150deg,#2a2318,#1a1510)'},
+    {t:'タイトル画面のジングル、10秒版できた',imp:'312',when:'1週間前',bg:'linear-gradient(135deg,#1e2630,#111820)'},
+    {t:'足音の効果音セット、地面ごとに8種類',imp:'208',when:'2週間前',bg:'linear-gradient(150deg,#1f2420,#141810)'}
   ];
   function meHtml(){
     const mine=myTasks(), evs=myEvents();
     const st=a=>'<span class="stp">'+a.map(x=>'<em>'+x[0]+'<b>'+x[1]+'</b></em>').join('')+'</span>';
+    // お知らせ：完了報告への反応 ＋ クリップへの投資通知をまとめる
+    const notices=[
+      ...MY_DONE_REACTIONS.map(r=>({kind:'reaction',label:'「'+r.task+'」への反応',sub:r.board+' ・ '+r.when,right:st(r.stamps)})),
+      ...MY_CLIP_INVEST.map(c=>({kind:'invest',label:c.clip,sub:c.who+' ・ '+c.when,right:'<span class="inv">♥'+c.imp+'</span>'}))
+    ];
     return '<div class="day">11月15日（日）</div>'
       // 担当タスク
       +'<div class="sec">'+ico('board')+'担当タスク<b>'+mine.length+'</b></div>'
       +(mine.map(t=>'<div class="row task" onclick="openBoardByName(\''+t.b+'\')"><div class="rt"><div class="rn">'+t.t+'</div><div class="rs2">'+t.b+(t.from&&t.st==='open'?' ・ <span class="tf">'+t.from+'さんから依頼</span>':'')+'</div></div>'
         +'<span class="st'+(t.st==='doing'?' doing':'')+'">'+(t.st==='doing'?'着手中':'未着手')+'</span></div>').join('')||'<div class="none">いまはありません</div>')
-      // 完了報告への反応
-      +'<div class="sec">'+ico('clap')+'完了報告への反応<b>'+MY_DONE_REACTIONS.length+'</b></div>'
-      +MY_DONE_REACTIONS.map(r=>'<div class="row" onclick="toast(\''+r.task+' を開く（モックでは省略）\')"><div class="rt"><div class="rn">「'+r.task+'」</div><div class="rs2">'+r.board+' ・ '+r.when+'</div></div>'+st(r.stamps)+'</div>').join('')
-      // クリップへの投資通知
-      +'<div class="sec">'+ico('pen')+'クリップへの投資<b>'+MY_CLIP_INVEST.length+'</b></div>'
-      +MY_CLIP_INVEST.map(c=>'<div class="row" onclick="toast(\'クリップを開く（モックでは省略）\')"><div class="rt"><div class="rn">'+c.clip+'</div><div class="rs2">'+c.who+' ・ '+c.when+'</div></div><span class="inv">♥'+c.imp+'</span></div>').join('')
-      // この組織でのクリップ一覧
-      +'<div class="sec">'+ico('pen')+'この組織でのクリップ<b>'+MY_CLIPS_IN_ORG.length+'</b></div>'
-      +MY_CLIPS_IN_ORG.map(c=>'<div class="row" onclick="toast(\'クリップを開く（モックでは省略）\')"><div class="rt"><div class="rn">'+c.t+'</div><div class="rs2">'+c.when+'</div></div><span class="imp">インプ '+c.imp+'</span></div>').join('')
-      // 今日の予定
+      // 今日の予定（担当タスクの下）
       +'<div class="sec">'+ico('cal')+'今日の予定<b>'+evs.length+'</b></div>'
       +(evs.map(e=>'<div class="row" onclick="toast(\'予定を開く（モックでは省略）\')"><span class="tm">'+(e.t||'終日')+'</span><div class="rt"><div class="rn">'+e.n+'</div><div class="rs2">'+e.who.join('・')+'</div></div>'
-        +'<span class="ppl">'+e.who.map(w=>'<i style="background:'+(PC[w]||'#3d3530')+'"></i>').join('')+'</span></div>').join('')||'<div class="none">今日の予定はありません</div>');
+        +'<span class="ppl">'+e.who.map(w=>'<i style="background:'+(PC[w]||'#3d3530')+'"></i>').join('')+'</span></div>').join('')||'<div class="none">今日の予定はありません</div>')
+      // お知らせ（完了報告への反応 ＋ クリップへの投資）
+      +'<div class="sec">'+ico('hi')+'お知らせ<b>'+notices.length+'</b></div>'
+      +notices.map(n=>'<div class="row" onclick="toast(\'開く（モックでは省略）\')"><div class="rt"><div class="rn">'+n.label+'</div><div class="rs2">'+n.sub+'</div></div>'+n.right+'</div>').join('')
+      // この組織でのクリップ（画像付きタイル）
+      +'<div class="sec">'+ico('pen')+'この組織でのクリップ<b>'+MY_CLIPS_IN_ORG.length+'</b></div>'
+      +'<div class="cgrid" style="grid-auto-rows:88px">'
+      +MY_CLIPS_IN_ORG.map(c=>'<div class="ci"'+(c.bg?' style="background:'+c.bg+'"':'')+' onclick="toast(\'クリップを開く（モックでは省略）\')"><span>'+c.t+'</span><em>インプ '+c.imp+' ・ '+c.when+'</em></div>').join('')
+      +'</div>';
   }
   function openBoardByName(b){const p=pieces.find(q=>q.t==='tasks'&&q.label===b)||{label:b};openBoard(p);}
   function openMe(){$('#bdTitle').textContent='あなたのダッシュボード';$('#bdBody').innerHTML='<div class="me">'+meHtml()+'</div>';$('#bd').classList.add('show');}
