@@ -55,6 +55,9 @@
   .me .row .ppl{display:flex;flex:0 0 auto;}
   .me .row .inv{flex:0 0 auto;font-family:'IBM Plex Mono';font-size:12px;color:var(--accent-gold);white-space:nowrap;}
   .me .row .imp{flex:0 0 auto;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .ndis{flex:0 0 auto;background:none;border:none;color:var(--text-muted);font-size:15px;padding:0 2px 0 6px;cursor:pointer;line-height:1;}
+  .more-btn{font-family:'Noto Serif JP';font-size:12px;color:var(--text-secondary);text-align:center;padding:8px 0 4px;cursor:pointer;}
+  .clip-like{color:var(--accent-gold);font-family:'IBM Plex Mono';font-size:9px;margin-right:4px;}
   .me .row .ppl i{width:18px;height:18px;border-radius:50%;margin-left:-5px;border:1px solid var(--bg-card);display:block;}
   .me .none{font-family:'Noto Serif JP';font-size:12px;color:var(--text-muted);padding:4px 2px;}
 
@@ -693,50 +696,88 @@
   // 見出しは本人のアイコン（個人は丸）＋「あなたのダッシュボード」
   function meHead(){return '<div class="pt"><i class="av" style="background:'+(PC[ME]||'#3d3530')+'">'+ME[0]+'</i><span class="ptt">あなたのダッシュボード</span></div>';}
   function myEvents(){return EV.filter(e=>e.d===TODAY&&e.who.includes(ME));}
-  // 自分の完了報告への反応（スタンプ）
-  const MY_DONE_REACTIONS=[
-    {task:'ボス戦の効果音',board:'制作',stamps:[['🔥',4],['🎉',2]],when:'2時間前'},
-    {task:'タイトル画面のジングル',board:'制作',stamps:[['🙏',3],['👏',1]],when:'昨日'}
+  // お知らせデータ（全種類まとめ）
+  let ME_NOTICES=[
+    {id:'n1',kind:'reaction', label:'「ボス戦の効果音」への反応',    sub:'制作 ・ 2時間前',  right:'stp', stamps:[['🔥',4],['🎉',2]]},
+    {id:'n2',kind:'invest',   label:'ボス戦の効果音、金属音を3層にした', sub:'通勤ラジオの小川 ほか3人 ・ 今日', right:'inv', imp:'+18'},
+    {id:'n3',kind:'comment',  label:'タイトル画面のジングルへのコメント', sub:'田中 健「いいね、明日聞く」 ・ 昨日', right:''},
+    {id:'n4',kind:'offer',    label:'オファーへの返答',              sub:'高橋 — 参加に興味があります ・ 昨日', right:''},
+    {id:'n5',kind:'mention',  label:'山本さんがメンションしました',     sub:'「@佐久間さん サウンドどうなってますか」 ・ 2日前', right:''},
+    {id:'n6',kind:'invest',   label:'タイトル画面のジングル、10秒版できた', sub:'さとう ほか1人 ・ 昨日', right:'inv', imp:'+7'},
   ];
-  // 自分のクリップへの新着投資通知
-  const MY_CLIP_INVEST=[
-    {clip:'ボス戦の効果音、金属音を3層にした',imp:'+18',who:'通勤ラジオの小川 ほか3人',when:'今日'},
-    {clip:'タイトル画面のジングル、10秒版できた',imp:'+7',who:'さとう ほか1人',when:'昨日'}
-  ];
-  // この組織で自分が出したクリップ（bgは画像・グラデの代わり）
+  // この組織で自分が出したクリップ（bgは画像・グラデの代わり、いいね数付き）
   const MY_CLIPS_IN_ORG=[
-    {t:'ボス戦の効果音、金属音を3層にした',imp:'640',when:'3日前',bg:'linear-gradient(150deg,#2a2318,#1a1510)'},
-    {t:'タイトル画面のジングル、10秒版できた',imp:'312',when:'1週間前',bg:'linear-gradient(135deg,#1e2630,#111820)'},
-    {t:'足音の効果音セット、地面ごとに8種類',imp:'208',when:'2週間前',bg:'linear-gradient(150deg,#1f2420,#141810)'}
+    {t:'ボス戦の効果音、金属音を3層にした',   imp:'640', like:'18', when:'3日前',    bg:'linear-gradient(150deg,#2a2318,#1a1510)'},
+    {t:'タイトル画面のジングル、10秒版できた', imp:'312', like:'7',  when:'1週間前',  bg:'linear-gradient(135deg,#1e2630,#111820)'},
+    {t:'足音の効果音セット、地面ごとに8種類', imp:'208', like:'3',  when:'2週間前',  bg:'linear-gradient(150deg,#1f2420,#141810)'}
   ];
+  let meNoticeExpanded=false;
+  function dismissNotice(id,el){
+    ME_NOTICES=ME_NOTICES.filter(n=>n.id!==id);
+    const wrap=el.closest('.nrow');
+    wrap.style.transition='transform .25s ease,opacity .25s ease,max-height .3s ease,margin .3s ease,padding .3s ease';
+    wrap.style.transform='translateX(100%)';wrap.style.opacity='0';
+    wrap.style.maxHeight='0';wrap.style.overflow='hidden';wrap.style.marginBottom='0';
+    setTimeout(()=>openMe(),320);
+  }
+  function toggleNotices(){meNoticeExpanded=!meNoticeExpanded;openMe();}
   function meHtml(){
     const mine=myTasks(), evs=myEvents();
     const st=a=>'<span class="stp">'+a.map(x=>'<em>'+x[0]+'<b>'+x[1]+'</b></em>').join('')+'</span>';
-    // お知らせ：完了報告への反応 ＋ クリップへの投資通知をまとめる
-    const notices=[
-      ...MY_DONE_REACTIONS.map(r=>({kind:'reaction',label:'「'+r.task+'」への反応',sub:r.board+' ・ '+r.when,right:st(r.stamps)})),
-      ...MY_CLIP_INVEST.map(c=>({kind:'invest',label:c.clip,sub:c.who+' ・ '+c.when,right:'<span class="inv">♥'+c.imp+'</span>'}))
-    ];
+    const visible=meNoticeExpanded?ME_NOTICES:ME_NOTICES.slice(0,3);
+    const hasMore=ME_NOTICES.length>3;
+    // お知らせの各行（スワイプ or ×で消せる）
+    function nRow(n,i){
+      const right=n.right==='stp'?st(n.stamps||[]):n.right==='inv'?'<span class="inv">♥'+n.imp+'</span>':'';
+      return '<div class="nrow" id="nrow_'+n.id+'" data-nid="'+n.id+'" style="max-height:80px;margin-bottom:6px">'
+        +'<div class="row" style="margin:0" onclick="toast(\'開く（モックでは省略）\')">'
+        +'<div class="rt"><div class="rn">'+n.label+'</div><div class="rs2">'+n.sub+'</div></div>'
+        +right
+        +'<button class="ndis" onclick="event.stopPropagation();dismissNotice(\''+n.id+'\',this)" title="消す">×</button>'
+        +'</div></div>';
+    }
     return '<div class="day">11月15日（日）</div>'
       // 担当タスク
       +'<div class="sec">'+ico('board')+'担当タスク<b>'+mine.length+'</b></div>'
       +(mine.map(t=>'<div class="row task" onclick="openBoardByName(\''+t.b+'\')"><div class="rt"><div class="rn">'+t.t+'</div><div class="rs2">'+t.b+(t.from&&t.st==='open'?' ・ <span class="tf">'+t.from+'さんから依頼</span>':'')+'</div></div>'
         +'<span class="st'+(t.st==='doing'?' doing':'')+'">'+(t.st==='doing'?'着手中':'未着手')+'</span></div>').join('')||'<div class="none">いまはありません</div>')
-      // 今日の予定（担当タスクの下）
+      // 今日の予定
       +'<div class="sec">'+ico('cal')+'今日の予定<b>'+evs.length+'</b></div>'
       +(evs.map(e=>'<div class="row" onclick="toast(\'予定を開く（モックでは省略）\')"><span class="tm">'+(e.t||'終日')+'</span><div class="rt"><div class="rn">'+e.n+'</div><div class="rs2">'+e.who.join('・')+'</div></div>'
         +'<span class="ppl">'+e.who.map(w=>'<i style="background:'+(PC[w]||'#3d3530')+'"></i>').join('')+'</span></div>').join('')||'<div class="none">今日の予定はありません</div>')
-      // お知らせ（完了報告への反応 ＋ クリップへの投資）
-      +'<div class="sec">'+ico('hi')+'お知らせ<b>'+notices.length+'</b></div>'
-      +notices.map(n=>'<div class="row" onclick="toast(\'開く（モックでは省略）\')"><div class="rt"><div class="rn">'+n.label+'</div><div class="rs2">'+n.sub+'</div></div>'+n.right+'</div>').join('')
-      // この組織でのクリップ（画像付きタイル）
+      // お知らせ（3件まで表示、もっと見るでプルダウン、×で消去）
+      +'<div class="sec">'+ico('hi')+'お知らせ<b>'+ME_NOTICES.length+'</b></div>'
+      +(ME_NOTICES.length?visible.map((n,i)=>nRow(n,i)).join('')
+        +(hasMore?'<div class="more-btn" onclick="toggleNotices()">'+(meNoticeExpanded?'▲ 閉じる':'▼ もっと見る（'+(ME_NOTICES.length-3)+'件）')+'</div>':'')
+        :'<div class="none">お知らせはありません</div>')
+      // この組織でのクリップ（画像付きタイル＋いいね数）
       +'<div class="sec">'+ico('pen')+'この組織でのクリップ<b>'+MY_CLIPS_IN_ORG.length+'</b></div>'
-      +'<div class="cgrid" style="grid-auto-rows:88px">'
-      +MY_CLIPS_IN_ORG.map(c=>'<div class="ci"'+(c.bg?' style="background:'+c.bg+'"':'')+' onclick="toast(\'クリップを開く（モックでは省略）\')"><span>'+c.t+'</span><em>インプ '+c.imp+' ・ '+c.when+'</em></div>').join('')
+      +'<div class="cgrid" style="grid-auto-rows:96px">'
+      +MY_CLIPS_IN_ORG.map(c=>'<div class="ci"'+(c.bg?' style="background:'+c.bg+'"':'')+' onclick="toast(\'クリップを開く（モックでは省略）\')">'
+        +'<span>'+c.t+'</span>'
+        +'<em><span class="clip-like">♥'+c.like+'</span> インプ '+c.imp+'</em></div>').join('')
       +'</div>';
   }
   function openBoardByName(b){const p=pieces.find(q=>q.t==='tasks'&&q.label===b)||{label:b};openBoard(p);}
-  function openMe(){$('#bdTitle').textContent='あなたのダッシュボード';$('#bdBody').innerHTML='<div class="me">'+meHtml()+'</div>';$('#bd').classList.add('show');}
+  function openMe(){$('#bdTitle').textContent='あなたのダッシュボード';$('#bdBody').innerHTML='<div class="me">'+meHtml()+'</div>';initSwipe();$('#bd').classList.add('show');}
+  // スワイプで消す
+  function initSwipe(){
+    document.querySelectorAll('.nrow').forEach(el=>{
+      let sx=0,sw=false;
+      el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sw=true;},{passive:true});
+      el.addEventListener('touchmove',e=>{
+        if(!sw)return;
+        const dx=e.touches[0].clientX-sx;
+        if(Math.abs(dx)>8)el.querySelector('.row').style.transform='translateX('+dx+'px)';
+      },{passive:true});
+      el.addEventListener('touchend',e=>{
+        if(!sw)return;sw=false;
+        const dx=e.changedTouches[0].clientX-sx;
+        if(Math.abs(dx)>80){dismissNotice(el.dataset.nid,el.querySelector('.row'));}
+        else{el.querySelector('.row').style.transform='';}
+      },{passive:true});
+    });
+  }
 
   // ===== 置ける場所の判定（盤面の外に出ない・重ならない） =====
   function fits(c,r,w,h,skip){
